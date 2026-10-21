@@ -122,6 +122,33 @@ function persistBankFromInput(arr){
 // Never expose server code, environment examples, or the editable bank (which includes answers).
 app.use(['/data','/server.js','/package.json','/package-lock.json','/.env.example'], (req,res)=>res.sendStatus(404));
 app.use(express.static(__dirname, { extensions:['html'], dotfiles:'ignore' }));
+app.use(express.static(process.cwd(), { extensions:['html'], dotfiles:'ignore' }));
+
+function sendHtml(res, fileName) {
+  const possiblePaths = [
+    path.join(__dirname, fileName),
+    path.join(process.cwd(), fileName),
+    path.resolve(fileName)
+  ];
+  for (const p of possiblePaths) {
+    try {
+      if (fs.existsSync(p)) return res.sendFile(p);
+    } catch (_) {}
+  }
+  for (const p of possiblePaths) {
+    try {
+      const content = fs.readFileSync(p, 'utf8');
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.send(content);
+    } catch (_) {}
+  }
+  res.status(404).send(`Cannot find ${fileName}`);
+}
+
+app.get('/', (req, res) => sendHtml(res, 'index.html'));
+app.get('/index.html', (req, res) => sendHtml(res, 'index.html'));
+app.get('/quiz.html', (req, res) => sendHtml(res, 'quiz.html'));
+app.get('/quiz', (req, res) => res.redirect('/quiz.html'));
 app.get('/healthz', (req,res)=>res.json({ok:true, service:'strategy-court-live-quiz', activeRoom:game?game.roomCode:null, participants:participantTotal()}));
 app.get('/api/quiz-info',(req,res)=>res.json({supportsLiveParticipants:true, maxParticipants:MAX_PARTICIPANTS, questionCount:questionBank.length, activeRoom:game?game.roomCode:null}));
 app.get('/api/room-code', (req,res)=>res.json({ok:true, roomCode: game ? game.roomCode : roomCode()}));
