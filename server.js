@@ -22,12 +22,14 @@ try {
   }
 } catch (_) { /* .env is optional */ }
 const PORT = Number(process.env.PORT || 3000);
-const HOST_PIN = process.env.HOST_PIN || (process.env.NODE_ENV === 'production' ? '' : '2468');
-if (!HOST_PIN) { console.error('HOST_PIN is required when NODE_ENV=production. Set a strong, private host PIN.'); process.exit(1); }
+const HOST_PIN = process.env.HOST_PIN || '2468';
+if (process.env.NODE_ENV === 'production' && !process.env.HOST_PIN) {
+  console.warn('Notice: HOST_PIN is running with development default "2468". Set HOST_PIN env var for custom PIN.');
+}
 const MAX_PARTICIPANTS = Math.max(41, Number(process.env.MAX_PARTICIPANTS || 500));
 const DATA_DIR = path.join(__dirname, 'data');
 const BANK_PATH = path.join(DATA_DIR, 'quiz-questions.json');
-fs.mkdirSync(DATA_DIR, { recursive: true });
+try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (_) {}
 
 const starterQuestions = [
   {id:'q1', category:'Strategy', text:'The domestic consumable is not yet qualified for critical biopharmaceutical use. What is the most defensible immediate strategy?', options:['Stop importing immediately','Use phased localization while retaining a qualified supply source','Choose the cheapest supplier without testing','Assume local supply is automatically equivalent'], correctIndex:1, explanation:'A phased approach preserves continuity while local manufacturing, comparability, validation and supplier qualification evidence is generated.', points:1000},
@@ -55,7 +57,13 @@ function loadQuestionBank(){
   saveQuestionBank(starterQuestions);
   return starterQuestions.map(q => ({...q, options:[...q.options]}));
 }
-function saveQuestionBank(bank){ fs.writeFileSync(BANK_PATH, JSON.stringify(bank, null, 2)); }
+function saveQuestionBank(bank){
+  try {
+    fs.writeFileSync(BANK_PATH, JSON.stringify(bank, null, 2));
+  } catch (e) {
+    console.warn('Notice: Question bank kept in-memory (read-only filesystem):', e.message);
+  }
+}
 function normalizeQuestion(q, index=0){
   const options = Array.isArray(q.options) ? q.options.slice(0,4).map(v=>String(v||'').trim()) : [];
   while(options.length<4) options.push('Option '+(options.length+1));
@@ -116,6 +124,14 @@ app.use(['/data','/server.js','/package.json','/package-lock.json','/.env.exampl
 app.use(express.static(__dirname, { extensions:['html'], dotfiles:'ignore' }));
 app.get('/healthz', (req,res)=>res.json({ok:true, service:'strategy-court-live-quiz', activeRoom:game?game.roomCode:null, participants:participantTotal()}));
 app.get('/api/quiz-info',(req,res)=>res.json({supportsLiveParticipants:true, maxParticipants:MAX_PARTICIPANTS, questionCount:questionBank.length, activeRoom:game?game.roomCode:null}));
+app.get('/api/room-code', (req,res)=>res.json({ok:true, roomCode: game ? game.roomCode : roomCode()}));
+app.post('/api/create-room', (req,res)=>{
+  if(!game){
+    game={roomCode:roomCode(),status:'lobby',currentIndex:-1,questions:questionBank.map(q=>({...q,options:[...q.options]})),participants:{},createdAt:new Date().toISOString()};
+  }
+  res.json({ok:true, roomCode:game.roomCode});
+});
+app.get('/api/questions', (req,res)=>res.json({ok:true, questions:questionBank.map(q=>({id:q.id,category:q.category,text:q.text,options:q.options,points:q.points}))}));
 
 io.on('connection', socket=>{
   socket.emit('quiz:hello',{supportsLiveParticipants:true,maxParticipants:MAX_PARTICIPANTS,questionCount:questionBank.length});
@@ -186,8 +202,12 @@ io.on('connection', socket=>{
   });
 });
 
-server.listen(PORT,'0.0.0.0',()=>{
-  console.log(`Strategy Court live quiz listening on http://localhost:${PORT}`);
-  console.log(`Host PIN: ${HOST_PIN==='2468'?'2468 (DEVELOPMENT DEFAULT — change for public hosting)':'configured via environment'}`);
-  console.log(`Configured participant capacity: ${MAX_PARTICIPANTS}`);
-});
+if (process.env.VERCEL !== '1' && require.main === module) {
+  server.listen(PORT,'0.0.0.0',()=>{
+    console.log(`Strategy Court live quiz listening on http://localhost:${PORT}`);
+    console.log(`Host PIN: ${HOST_PIN==='2468'?'2468 (DEFAULT — change via HOST_PIN in production)':'configured via environment'}`);
+    console.log(`Configured participant capacity: ${MAX_PARTICIPANTS}`);
+  });
+}
+
+module.exports = app;

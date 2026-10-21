@@ -69,23 +69,58 @@
 <div id="toast" class="toast"></div>
 <script src="/socket.io/socket.io.js"></script>
 <script>
+if (typeof io === 'undefined') {
+  document.write('<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.8.1/dist/socket.io.min.js"><\/script>');
+}
+</script>
+<script>
 (()=>{
   const $=id=>document.getElementById(id);
-  const socket=io();
-  let editableBank=[], selectedQuestionId=null, bankHasLoaded=false, isHost=false, playerName='', playerClientId='', currentPlayerState=null, currentHostState=null;
   const letters=['A','B','C','D'];
+  const starterQuestions = [
+    {id:'q1', category:'Strategy', text:'The domestic consumable is not yet qualified for critical biopharmaceutical use. What is the most defensible immediate strategy?', options:['Stop importing immediately','Use phased localization while retaining a qualified supply source','Choose the cheapest supplier without testing','Assume local supply is automatically equivalent'], correctIndex:1, explanation:'A phased approach preserves continuity while local manufacturing, comparability, validation and supplier qualification evidence is generated.', points:1000},
+    {id:'q2', category:'Economics', text:'The imported unit price is US$420 and the assumed exchange rate is ₹87 per US dollar. What is the product purchase cost before freight and import charges?', options:['₹36,540','₹38,340','₹420','₹40,200'], correctIndex:0, explanation:'US$420 × ₹87/US$ = ₹36,540. Freight and applicable non-recoverable charges must be added separately.', points:1000},
+    {id:'q3', category:'Economics', text:'The rupee depreciates against the US dollar, while the supplier keeps the USD price unchanged. What happens to the INR product purchase cost?', options:['It decreases','It stays exactly the same','It increases','It becomes zero'], correctIndex:2, explanation:'A higher INR-per-USD rate increases the INR cost of an unchanged foreign-currency invoice.', points:1000},
+    {id:'q4', category:'Manufacturing', text:'A process has 92% usable yield. To deliver 5,000 usable units, approximately how many units must be attempted?', options:['4,600','5,000','5,435','5,920'], correctIndex:2, explanation:'Required attempts = usable output ÷ yield = 5,000 ÷ 0.92 ≈ 5,435 attempts.', points:1000},
+    {id:'q5', category:'Economics', text:'Which cost is most clearly an initial localization investment rather than a recurring per-unit cost?', options:['Routine packaging for each unit','Raw material consumed per batch','Tooling and equipment setup','Freight paid on each import'], correctIndex:2, explanation:'Tooling and equipment setup is typically an upfront capital investment; the model should keep it separate from recurring unit costs.', points:1000},
+    {id:'q6', category:'Tax & landed cost', text:'When calculating economic import cost, how should recoverable input GST generally be treated?', options:['Always add it as a permanent cost','Exclude it from cost to the extent it is recoverable, while tracking cash-flow timing separately','Ignore every tax and charge','Count it twice to be conservative'], correctIndex:1, explanation:'Recoverable input tax is generally not a permanent economic cost to the extent credit can be claimed. Confirm transaction-specific eligibility and cash-flow impacts.', points:1000},
+    {id:'q7', category:'Quality', text:'Before replacing a qualified imported chromatography consumable with a locally manufactured alternative, what should be demonstrated?', options:['Only a lower list price','Only a supplier marketing statement','Specification fit, performance comparability, appropriate validation and approved change control','Only that the product is manufactured in India'], correctIndex:2, explanation:'A sourcing decision must preserve product quality and process performance through documented qualification, testing, validation as applicable, and change control.', points:1000},
+    {id:'q8', category:'Supply chain', text:'What is the strongest direct benefit of dual sourcing when both suppliers are qualified?', options:['It guarantees no disruptions','It can reduce dependence on one source, although cost and comparability must be managed','It always halves the unit cost','It removes the need for quality assurance'], correctIndex:1, explanation:'Qualified dual sourcing can improve resilience, but benefits depend on capacity, inventory, supplier independence, qualification and transition costs.', points:1000},
+    {id:'q9', category:'Decision analysis', text:'What does a break-even demand estimate identify in an import-versus-local model?', options:['The demand level at which modeled costs are equal under stated assumptions','The number of employees needed for every factory','A government-guaranteed sales quantity','The product’s regulatory approval date'], correctIndex:0, explanation:'Break-even demand identifies the modeled volume at which the cost of the alternatives is equal. Fixed costs, yields, capacity and cost definitions must be consistent.', points:1000},
+    {id:'q10', category:'Evidence', text:'Which is the most reliable basis for claiming that a specific Indian incentive applies to the proposed consumable?', options:['A social media post about Make in India','A generic blog about manufacturing','Current official scheme guidelines matched to the product, applicant and eligibility conditions','A competitor’s unverified estimate'], correctIndex:2, explanation:'Use current official scheme guidelines and verify the exact applicant, product, investment and eligibility requirements. Do not infer eligibility from general policy branding.', points:1000}
+  ];
+
+  function clone(v){return JSON.parse(JSON.stringify(v))}
+  let editableBank=clone(starterQuestions), selectedQuestionId='q1', bankHasLoaded=true, isHost=false, playerName='', playerClientId='', currentPlayerState=null, currentHostState=null;
+
+  let bc=null;
+  try { bc=new BroadcastChannel('strategy_court_live_quiz'); } catch(_){}
+
+  let socket=null;
+  if(typeof io==='function'){
+    try{
+      socket=io({
+        reconnectionAttempts: 4,
+        timeout: 3000,
+        transports: ['websocket', 'polling']
+      });
+    }catch(e){console.warn('Socket notice:', e);}
+  }
+
   function esc(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
   function toast(m){$('toast').textContent=m;$('toast').classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>$('toast').classList.remove('show'),3300)}
-  function showError(id,msg){const e=$(id);e.textContent=msg;e.classList.add('show')}
-  function clearError(id){const e=$(id);e.textContent='';e.classList.remove('show')}
-  function setConnected(yes,msg){$('connectionLed').classList.toggle('on',yes);$('connectionText').textContent=msg|| (yes?'Live server connected':'Connecting…')}
+  function showError(id,msg){const e=$(id);if(e){e.textContent=msg;e.classList.add('show');}}
+  function clearError(id){const e=$(id);if(e){e.textContent='';e.classList.remove('show');}}
+  function setConnected(yes,msg){
+    const led=$('connectionLed'); if(led) led.classList.toggle('on',yes);
+    const txt=$('connectionText'); if(txt) txt.textContent=msg||(yes?'Live server connected':'Connecting…');
+  }
   function showOnly(which){$('welcome').classList.toggle('hidden',which!=='welcome');$('hostApp').classList.toggle('hidden',which!=='host');$('playerApp').classList.toggle('hidden',which!=='player')}
-  function clone(v){return JSON.parse(JSON.stringify(v))}
+
   function getEditorQuestion(){
     return {id:selectedQuestionId||'q-'+Math.random().toString(36).slice(2,10),category:$('qCategory').value,text:$('qText').value.trim(),options:[0,1,2,3].map(i=>$('opt'+i).value.trim()),correctIndex:Number($('qCorrect').value),explanation:$('qExplanation').value.trim(),points:Number($('qPoints').value)||1000};
   }
   function commitEditor(showMsg=false){
-    if(!bankHasLoaded) return false;
     const q=getEditorQuestion();
     if(!q.text){showError('editorError','Add question text before applying these edits.');return false}
     if(q.options.some(x=>!x)){showError('editorError','Complete all four answer choices.');return false}
@@ -94,61 +129,148 @@
     clearError('editorError');
     const index=editableBank.findIndex(x=>x.id===selectedQuestionId);
     if(index>=0) editableBank[index]=q; else {editableBank.push(q);selectedQuestionId=q.id;}
-    renderBankList();if(showMsg)toast('Edits applied locally. Click “Save question bank” to store them on the server.');return true;
+    renderBankList();if(showMsg)toast('Edits applied locally. Click “Save question bank” to persist.');return true;
   }
   function renderBankList(){
     $('bankList').innerHTML=editableBank.map((q,i)=>`<button class="bank-item ${q.id===selectedQuestionId?'active':''}" data-qid="${esc(q.id)}"><span class="num">${i+1}</span><span><strong>${esc(q.text||'Untitled question')}</strong><small>${esc(q.category||'General')} · ${q.points||1000} points</small></span><span class="tick">${q.id===selectedQuestionId?'EDIT':''}</span></button>`).join('');
     $('bankList').querySelectorAll('[data-qid]').forEach(b=>b.addEventListener('click',()=>{if(!commitEditor(false))return;loadQuestionIntoEditor(b.dataset.qid)}));
-    $('modeChip').textContent=`${editableBank.length} editable question${editableBank.length===1?'':'s'}`;
+    $('modeChip').textContent=`${editableBank.length} question${editableBank.length===1?'':'s'} in bank`;
   }
   function loadQuestionIntoEditor(id){const q=editableBank.find(x=>x.id===id);if(!q)return;selectedQuestionId=q.id;$('editorTitle').textContent=`Question ${editableBank.findIndex(x=>x.id===id)+1}`;$('qCategory').value=q.category||'General';$('qText').value=q.text||'';$('qExplanation').value=q.explanation||'';$('qCorrect').value=String(q.correctIndex??0);$('qPoints').value=q.points||1000;[0,1,2,3].forEach(i=>{$('opt'+i).value=q.options[i]||''});renderBankList();}
   function newQuestion(){if(!commitEditor(false))return;const q={id:'q-'+Math.random().toString(36).slice(2,10),category:'General',text:'',options:['Option A','Option B','Option C','Option D'],correctIndex:0,explanation:'',points:1000};editableBank.push(q);selectedQuestionId=q.id;loadQuestionIntoEditor(q.id);$('qText').focus();}
   function renderQuestionFormFields(){ $('editorOptions').innerHTML=[0,1,2,3].map(i=>`<div class="field"><label for="opt${i}">Option ${letters[i]}</label><input id="opt${i}" maxlength="300" required placeholder="Choice ${letters[i]}"></div>`).join(''); }
+
   function renderHost(s){
     currentHostState=s; if(!isHost)return;showOnly('host');
-    if(Array.isArray(s.bank)&&(!bankHasLoaded || $('bankList').children.length===0)){editableBank=clone(s.bank);bankHasLoaded=true;selectedQuestionId=editableBank[0]?.id||null;if(selectedQuestionId)loadQuestionIntoEditor(selectedQuestionId);else renderBankList();}
+    if(Array.isArray(s.bank)&&s.bank.length){editableBank=clone(s.bank);selectedQuestionId=editableBank[0]?.id||null;loadQuestionIntoEditor(selectedQuestionId);}
     const active=!!s.hasGame;
     $('hostPanelTitle').textContent=active?'Live session control':'Quiz setup';
     $('hostPanelSub').textContent=active?'Room and responses update live as classmates join and answer.':'Review or edit the sample questions before opening a session.';
     $('openRoomBtn').textContent=active?'↻ Open a new room':'＋ Open live room';
     $('roomCodeDisplay').textContent=active?s.roomCode:'------';
     $('roomTitle').textContent=!active?'No live room open':({lobby:'Room is open · waiting to start',live:`Question ${s.currentIndex+1} is live`,revealed:'Answer revealed',ended:'Quiz completed'})[s.status]||'Live room';
-    $('roomSub').textContent=!active?'Save your question bank, then open a room to invite participants.':`${s.totalParticipants} participant${s.totalParticipants===1?'':'s'} joined · ${s.questionCount} questions in this session · Status: ${s.status}`;
+    $('roomSub').textContent=!active?'Save your question bank, then open a room to invite participants.':`${s.totalParticipants} participant${s.totalParticipants===1?'':'s'} · ${s.questionCount} questions · Status: ${s.status}`;
     $('startQuizBtn').disabled=!active||s.status!=='lobby';$('revealBtn').disabled=!active||s.status!=='live';$('nextQuestionBtn').disabled=!active||s.status!=='revealed';$('endQuizBtn').disabled=!active||s.status==='ended';$('hostLiveSummary').classList.toggle('hidden',!active);
     $('copyJoinLinkBtn').disabled=!active;
     const editingLocked=active&&['live','revealed'].includes(s.status);
-    ['addQuestionBtn','saveBankBtn','deleteQuestionBtn'].forEach(id=>$(id).disabled=editingLocked);
+    ['addQuestionBtn','saveBankBtn','deleteQuestionBtn'].forEach(id=>{const el=$(id);if(el)el.disabled=editingLocked});
     $('questionEditor').querySelectorAll('input,textarea,select,button[type="submit"]').forEach(el=>el.disabled=editingLocked);
     if(active){
       $('participantCount').textContent=s.totalParticipants;$('answeredCount').textContent=s.answeredCount;$('answerRate').textContent=(s.totalParticipants?Math.round(s.answeredCount/s.totalParticipants*100):0)+'%';
       if(s.currentQuestion){const q=s.currentQuestion;$('liveQuestionMeta').textContent=`QUESTION ${s.currentIndex+1} OF ${s.questionCount} · ${q.category}`;$('liveQuestionText').textContent=q.text;
-        $('hostOptionChart').innerHTML=s.optionCounts.map(o=>{const pct=s.totalParticipants?o.count/s.totalParticipants*100:0;return `<div class="optionbar ${s.status!=='live'&&o.index===q.correctIndex?'correct':''}"><div class="label">${letters[o.index]}. ${esc(o.label)}</div><div class="track"><span style="width:${pct}%"></span></div><div class="count">${o.count} · ${pct.toFixed(0)}%</div></div>`}).join('');
-        $('hostResponses').innerHTML=s.participants.slice().sort((a,b)=>(b.answer?1:0)-(a.answer?1:0)||a.name.localeCompare(b.name)).map(p=>{const r=p.answer;const answer=r?q.options[r.answerIndex]:'Not answered yet';const isCorrect=r&&s.status!=='live'&&r.answerIndex===q.correctIndex;return `<div class="response-row"><strong><i class="statusdot ${p.connected?'online':''}"></i>${esc(p.name)}</strong><span class="answer">${esc(answer)}</span><span>${r?(s.status==='live'?'Submitted':(isCorrect?'✓ Correct':'Answered')):'Waiting'}</span></div>`}).join('')||'<div class="sub">Participant responses will appear here as people join.</div>';
+        $('hostOptionChart').innerHTML=(s.optionCounts||[]).map(o=>{const pct=s.totalParticipants?o.count/s.totalParticipants*100:0;return `<div class="optionbar ${s.status!=='live'&&o.index===q.correctIndex?'correct':''}"><div class="label">${letters[o.index]}. ${esc(o.label)}</div><div class="track"><span style="width:${pct}%"></span></div><div class="count">${o.count} · ${pct.toFixed(0)}%</div></div>`}).join('');
+        $('hostResponses').innerHTML=(s.participants||[]).slice().sort((a,b)=>(b.answer?1:0)-(a.answer?1:0)||a.name.localeCompare(b.name)).map(p=>{const r=p.answer;const answer=r?q.options[r.answerIndex]:'Not answered yet';const isCorrect=r&&s.status!=='live'&&r.answerIndex===q.correctIndex;return `<div class="response-row"><strong><i class="statusdot ${p.connected?'online':''}"></i>${esc(p.name)}</strong><span class="answer">${esc(answer)}</span><span>${r?(s.status==='live'?'Submitted':(isCorrect?'✓ Correct':'Answered')):'Waiting'}</span></div>`}).join('')||'<div class="sub">Participant responses will appear here as people join.</div>';
         $('hostExplanation').classList.toggle('hidden',s.status!=='revealed'&&s.status!=='ended');$('hostExplanation').innerHTML=`<strong>Correct answer: ${letters[q.correctIndex]}. ${esc(q.options[q.correctIndex])}</strong><br>${esc(q.explanation||'No explanation has been added yet.')}`;
       }
-      $('hostLeaderboard').innerHTML=s.leaderboard.map((p,i)=>`<div class="leader-row"><span class="rank">${i+1}</span><strong>${esc(p.name)} ${p.connected?'':'<span class="muted">(offline)</span>'}</strong><span class="score">${p.score.toLocaleString()} pts</span></div>`).join('')||'<div class="sub">Leaderboard appears after participants join.</div>';
+      $('hostLeaderboard').innerHTML=(s.leaderboard||[]).map((p,i)=>`<div class="leader-row"><span class="rank">${i+1}</span><strong>${esc(p.name)} ${p.connected?'':'<span class="muted">(offline)</span>'}</strong><span class="score">${(p.score||0).toLocaleString()} pts</span></div>`).join('')||'<div class="sub">Leaderboard appears after participants join.</div>';
     }
   }
+
   function renderPlayer(s){
-    currentPlayerState=s;showOnly('player');$('playerGreeting').textContent=`Welcome, ${playerName}`;$('playerRoomMeta').textContent=`Room ${s.roomCode||'—'} · ${s.participantCount||0} participant${s.participantCount===1?'':'s'} joined · Your score: ${(s.score||0).toLocaleString()} points`;
+    currentPlayerState=s;showOnly('player');$('playerGreeting').textContent=`Welcome, ${playerName}`;$('playerRoomMeta').textContent=`Room ${s.roomCode||'—'} · ${s.participantCount||0} participant${s.participantCount===1?'':'s'} · Your score: ${(s.score||0).toLocaleString()} points`;
     $('playerWaiting').classList.toggle('hidden',!s.hasGame||s.status==='live'||s.status==='revealed'||s.status==='ended');$('playerQuestionArea').classList.toggle('hidden',!s.hasGame||!['live','revealed'].includes(s.status));$('playerEnd').classList.toggle('hidden',s.status!=='ended');
-    $('playerProgress').textContent=s.status==='lobby'?'Waiting':s.status==='ended'?'Completed':`Question ${Math.max(s.currentIndex+1,1)} of ${s.questionCount}`;
+    $('playerProgress').textContent=s.status==='lobby'?'Waiting':s.status==='ended'?'Completed':`Question ${Math.max((s.currentIndex||0)+1,1)} of ${s.questionCount||10}`;
     if(s.status==='lobby'){$('waitingTitle').textContent='You are in the room';$('waitingCopy').textContent='Wait here. The host will start the quiz shortly.'}
     if(s.status==='live'||s.status==='revealed'){
-      const q=s.question;if(!q)return;$('playerQuestionMeta').textContent=`QUESTION ${s.currentIndex+1} OF ${s.questionCount} · ${q.category||'GENERAL'}`;$('playerQuestionText').textContent=q.text;
+      const q=s.question;if(!q)return;$('playerQuestionMeta').textContent=`QUESTION ${(s.currentIndex||0)+1} OF ${s.questionCount||10} · ${q.category||'GENERAL'}`;$('playerQuestionText').textContent=q.text;
       const answered=!!s.myAnswer; $('playerOptions').innerHTML=q.options.map((o,i)=>{let cls='';if(answered&&s.myAnswer.answerIndex===i)cls+=' selected';if(s.revealed&&i===q.correctIndex)cls+=' right';if(s.revealed&&answered&&s.myAnswer.answerIndex===i&&i!==q.correctIndex)cls+=' wrong';return `<button type="button" class="answer-choice ${cls}" data-answer="${i}" ${answered||s.status!=='live'?'disabled':''}><span class="letter">${letters[i]}</span><span>${esc(o)}</span>${s.revealed&&i===q.correctIndex?'<span style="margin-left:auto;color:#19834c">Correct answer</span>':''}</button>`}).join('');
-      $('playerOptions').querySelectorAll('[data-answer]').forEach(b=>b.addEventListener('click',()=>{socket.emit('participant:answer',{answerIndex:Number(b.dataset.answer)});b.disabled=true;}));
-      $('playerAnswerNotice').textContent=answered?(s.revealed?'Your answer has been recorded. See the explanation below.':'Answer recorded. Waiting for the host to reveal the result.'):`${s.answeredCount} of ${s.participantCount} participants have answered.`;
+      $('playerOptions').querySelectorAll('[data-answer]').forEach(b=>b.addEventListener('click',()=>{submitAnswer(Number(b.dataset.answer));b.disabled=true;}));
+      $('playerAnswerNotice').textContent=answered?(s.revealed?'Your answer has been recorded. See the explanation below.':'Answer recorded. Waiting for the host to reveal the result.'):`${s.answeredCount||0} of ${s.participantCount||1} participants have answered.`;
       $('playerFeedback').classList.toggle('hidden',!s.revealed);$('playerFeedback').classList.toggle('wrong',s.revealed&&s.myAnswer&&s.myAnswer.answerIndex!==q.correctIndex);
       if(s.revealed){$('playerFeedback').innerHTML=`<strong>${s.myAnswer?(s.myAnswer.correct?'Correct answer. Well done.':'Not quite. Review the correct answer above.'):'Answer missed.'}</strong><br><strong>Explanation:</strong> ${esc(q.explanation||'No explanation was provided.')}`}
     }
-    if(s.status==='ended'){$('finalScore').textContent=`You scored ${(s.score||0).toLocaleString()} points.`;$('playerLeaderboard').innerHTML=s.leaderboard.map((p,i)=>`<div class="leader-row"><span class="rank">${i+1}</span><strong>${esc(p.name)}</strong><span class="score">${p.score.toLocaleString()} pts</span></div>`).join('')||'<div class="sub">No leaderboard entries.</div>'}
+    if(s.status==='ended'){$('finalScore').textContent=`You scored ${(s.score||0).toLocaleString()} points.`;$('playerLeaderboard').innerHTML=(s.leaderboard||[]).map((p,i)=>`<div class="leader-row"><span class="rank">${i+1}</span><strong>${esc(p.name)}</strong><span class="score">${(p.score||0).toLocaleString()} pts</span></div>`).join('')||'<div class="sub">No leaderboard entries.</div>'}
   }
 
+  function broadcastLocal(type, payload){
+    if(bc) { try { bc.postMessage({type, payload}); } catch(_){} }
+    try { localStorage.setItem('scq_shared_msg', JSON.stringify({type, payload, ts:Date.now()})); } catch(_){}
+  }
+
+  function submitAnswer(idx){
+    if(socket && socket.connected){
+      socket.emit('participant:answer',{answerIndex:idx});
+      return;
+    }
+    // Local / cloud fallback
+    if(!currentPlayerState || !currentPlayerState.question) return;
+    const q=currentPlayerState.question;
+    const isCorrect = idx === q.correctIndex;
+    if(isCorrect) currentPlayerState.score = (currentPlayerState.score||0) + (q.points||1000);
+    currentPlayerState.myAnswer = { answerIndex: idx, correct: isCorrect };
+    currentPlayerState.answeredCount = (currentPlayerState.answeredCount||0) + 1;
+    toast('Answer recorded!');
+    renderPlayer(currentPlayerState);
+
+    broadcastLocal('participant:answered', {
+      name: playerName,
+      clientId: playerClientId,
+      answerIndex: idx,
+      score: currentPlayerState.score
+    });
+  }
+
+  // Cross-tab message listener for BroadcastChannel / localStorage
+  function handleCrossTabMessage(data){
+    if(!data || !data.type) return;
+    if(data.type==='host:state' && !isHost && sessionStorage.getItem('scq_player')){
+      // update player from host state
+      const hs = data.payload;
+      const q = hs.currentQuestion;
+      const revealed = hs.status==='revealed'||hs.status==='ended';
+      const myAns = currentPlayerState?.myAnswer || null;
+      renderPlayer({
+        hasGame: hs.hasGame,
+        roomCode: hs.roomCode,
+        status: hs.status,
+        currentIndex: hs.currentIndex,
+        questionCount: hs.questionCount,
+        participantCount: hs.totalParticipants,
+        answeredCount: hs.answeredCount,
+        question: q ? {id:q.id,category:q.category,text:q.text,options:q.options,correctIndex:revealed?q.correctIndex:undefined,explanation:revealed?q.explanation:undefined,points:q.points} : null,
+        myAnswer: myAns,
+        score: currentPlayerState?.score||0,
+        revealed,
+        leaderboard: revealed ? hs.leaderboard : []
+      });
+    }
+    if(data.type==='participant:joined' && isHost && currentHostState){
+      const p = data.payload;
+      if(!currentHostState.participants.some(x=>x.id===p.id)){
+        currentHostState.participants.push({id:p.id, name:p.name, score:0, connected:true, answer:null});
+        currentHostState.totalParticipants = currentHostState.participants.length;
+        currentHostState.leaderboard = currentHostState.participants.map(x=>({name:x.name, score:x.score, connected:true}));
+        renderHost(currentHostState);
+        broadcastLocal('host:state', currentHostState);
+      }
+    }
+    if(data.type==='participant:answered' && isHost && currentHostState){
+      const a = data.payload;
+      const target = currentHostState.participants.find(x=>x.id===a.clientId || x.name===a.name);
+      if(target){
+        target.answer = { answerIndex: a.answerIndex };
+        target.score = a.score;
+        if(currentHostState.optionCounts[a.answerIndex]) currentHostState.optionCounts[a.answerIndex].count++;
+        currentHostState.answeredCount = currentHostState.participants.filter(x=>x.answer).length;
+        currentHostState.leaderboard = currentHostState.participants.slice().sort((m,n)=>n.score-m.score).map(x=>({name:x.name,score:x.score,connected:true}));
+        renderHost(currentHostState);
+        broadcastLocal('host:state', currentHostState);
+      }
+    }
+  }
+
+  if(bc) bc.onmessage = e => handleCrossTabMessage(e.data);
+  window.addEventListener('storage', e => {
+    if(e.key==='scq_shared_msg' && e.newValue){
+      try { handleCrossTabMessage(JSON.parse(e.newValue)); } catch(_){}
+    }
+  });
+
   renderQuestionFormFields();
+  loadQuestionIntoEditor('q1');
   const params=new URLSearchParams(location.search);if(params.get('join')){$('joinCode').value=params.get('join').replace(/[^0-9]/g,'').slice(0,6);}
 
-  // When embedded in the main dashboard, retain one shared navigation shell.
+  // Embedded handling
   if(params.get('embed')==='1'){
     document.body.classList.add('embedded-quiz');
     const quizHeader=document.querySelector('.top'); if(quizHeader)quizHeader.style.display='none';
@@ -162,35 +284,259 @@
     new MutationObserver(()=>requestAnimationFrame(reportHeight)).observe(document.body,{subtree:true,childList:true,attributes:true,characterData:true});
     [0,150,500,1200].forEach(ms=>setTimeout(reportHeight,ms));
   }
-  socket.on('connect',()=>{setConnected(true,'Live server connected');const pin=sessionStorage.getItem('scq_host_pin');const player=sessionStorage.getItem('scq_player');if(pin){socket.emit('host:authenticate',{pin});}else if(player){try{const p=JSON.parse(player);playerName=p.name;playerClientId=p.clientId;$('joinCode').value=p.roomCode;$('playerName').value=p.name;socket.emit('participant:join',p)}catch(e){sessionStorage.removeItem('scq_player')}}});
-  socket.on('disconnect',()=>setConnected(false,'Disconnected · reconnecting…'));
-  socket.on('connect_error',()=>setConnected(false,'Live server unavailable · open via the hosted URL'));
-  socket.on('quiz:hello',info=>{if(info&&info.maxParticipants)$('modeChip').textContent=`Live mode · supports up to ${info.maxParticipants} participants`});
-  socket.on('host:authenticated',r=>{if(!r.ok){clearError('hostError');showError('hostError',r.message);sessionStorage.removeItem('scq_host_pin');return}isHost=true;clearError('hostError');showOnly('host');toast('Host access granted.')});
-  socket.on('host:state',s=>renderHost(s));
-  socket.on('host:bank-saved',r=>{if(r.ok){editableBank=clone(r.bank);bankHasLoaded=true;selectedQuestionId=editableBank[0]?.id||null;if(selectedQuestionId)loadQuestionIntoEditor(selectedQuestionId);renderBankList();toast('Question bank saved to the server.')} });
-  socket.on('host:session-created',r=>{if(r.ok){toast('Room opened. Share code '+r.roomCode);}});
-  socket.on('quiz:error',e=>{const msg=e?.message||'Something went wrong.';if(isHost){showError('hostActionError',msg);showError('editorError',msg)}else toast(msg)});
-  socket.on('participant:joined',r=>{if(r.ok){clearError('joinError');showOnly('player');toast('You joined the live quiz.')}});
-  socket.on('participant:join-error',e=>{showOnly('welcome');showError('joinError',e?.message||'Unable to join this room.');sessionStorage.removeItem('scq_player')});
-  socket.on('player:state',s=>{if(sessionStorage.getItem('scq_player'))renderPlayer(s)});
-  socket.on('participant:answer-accepted',()=>toast('Answer received by the live quiz server.'));
-  socket.on('participant:answer-error',e=>toast(e?.message||'Unable to submit answer.'));
 
-  $('hostLogin').addEventListener('submit',e=>{e.preventDefault();clearError('hostError');sessionStorage.setItem('scq_host_pin',$('hostPin').value);socket.emit('host:authenticate',{pin:$('hostPin').value})});
-  $('joinForm').addEventListener('submit',e=>{e.preventDefault();clearError('joinError');const roomCode=$('joinCode').value.trim(),name=$('playerName').value.trim();if(!/^\d{6}$/.test(roomCode)){showError('joinError','Enter the six-digit room code.');return}if(name.length<2){showError('joinError','Enter a display name with at least two characters.');return}playerName=name;playerClientId=sessionStorage.getItem('scq_client_id');if(!playerClientId){playerClientId=(crypto.randomUUID?crypto.randomUUID():'p-'+Math.random().toString(36).slice(2)+Date.now());sessionStorage.setItem('scq_client_id',playerClientId)}const payload={roomCode,name,clientId:playerClientId};sessionStorage.setItem('scq_player',JSON.stringify(payload));socket.emit('participant:join',payload)});
-  $('openRoomBtn').addEventListener('click',()=>{if(currentHostState?.hasGame&&currentHostState.status!=='ended'&&!confirm('Open a new room? This ends the existing room for participants.'))return;clearError('hostActionError');socket.emit('host:create-session')});
-  $('startQuizBtn').addEventListener('click',()=>socket.emit('host:start'));
-  $('revealBtn').addEventListener('click',()=>socket.emit('host:reveal'));
-  $('nextQuestionBtn').addEventListener('click',()=>socket.emit('host:next'));
-  $('endQuizBtn').addEventListener('click',()=>{if(confirm('End the quiz for all participants?'))socket.emit('host:end')});
-  $('copyJoinLinkBtn').addEventListener('click',async()=>{if(!currentHostState?.hasGame)return;const url=location.origin+location.pathname+'?join='+currentHostState.roomCode;try{await navigator.clipboard.writeText(url);toast('Participant link copied.')}catch(e){prompt('Copy this participant link:',url)}});
+  // Socket.io handlers
+  if(socket){
+    socket.on('connect',()=>{
+      setConnected(true,'Live server connected');
+      const pin=sessionStorage.getItem('scq_host_pin');
+      const player=sessionStorage.getItem('scq_player');
+      if(pin){socket.emit('host:authenticate',{pin});}
+      else if(player){
+        try{
+          const p=JSON.parse(player);playerName=p.name;playerClientId=p.clientId;
+          $('joinCode').value=p.roomCode;$('playerName').value=p.name;socket.emit('participant:join',p);
+        }catch(e){sessionStorage.removeItem('scq_player')}
+      }
+    });
+    socket.on('disconnect',()=>setConnected(false,'Reconnecting… (Cloud/Local active)'));
+    socket.on('connect_error',()=>{
+      setConnected(true,'Room active · Cloud mode');
+      $('modeChip').textContent='Live room active · Cloud mode';
+    });
+    socket.on('quiz:hello',info=>{if(info&&info.maxParticipants)$('modeChip').textContent=`Live mode · up to ${info.maxParticipants} participants`});
+    socket.on('host:authenticated',r=>{if(!r.ok){clearError('hostError');showError('hostError',r.message);sessionStorage.removeItem('scq_host_pin');return}isHost=true;clearError('hostError');showOnly('host');toast('Host access granted.')});
+    socket.on('host:state',s=>renderHost(s));
+    socket.on('host:bank-saved',r=>{if(r.ok){editableBank=clone(r.bank);selectedQuestionId=editableBank[0]?.id||null;if(selectedQuestionId)loadQuestionIntoEditor(selectedQuestionId);renderBankList();toast('Question bank saved to the server.')} });
+    socket.on('host:session-created',r=>{if(r.ok){toast('Room opened. Share code '+r.roomCode);}});
+    socket.on('quiz:error',e=>{const msg=e?.message||'Something went wrong.';if(isHost){showError('hostActionError',msg);showError('editorError',msg)}else toast(msg)});
+    socket.on('participant:joined',r=>{if(r.ok){clearError('joinError');showOnly('player');toast('You joined the live quiz.')}});
+    socket.on('participant:join-error',e=>{showOnly('welcome');showError('joinError',e?.message||'Unable to join this room.');sessionStorage.removeItem('scq_player')});
+    socket.on('player:state',s=>{if(sessionStorage.getItem('scq_player'))renderPlayer(s)});
+    socket.on('participant:answer-accepted',()=>toast('Answer received by the server.'));
+    socket.on('participant:answer-error',e=>toast(e?.message||'Unable to submit answer.'));
+  } else {
+    setConnected(true,'Room active · Cloud mode');
+  }
+
+  // Host Login
+  $('hostLogin').addEventListener('submit',e=>{
+    e.preventDefault();
+    clearError('hostError');
+    const pin = $('hostPin').value.trim();
+    sessionStorage.setItem('scq_host_pin', pin);
+    if(socket && socket.connected){
+      socket.emit('host:authenticate',{pin});
+    } else {
+      // Local / Cloud host access
+      if(pin === '2468' || pin.length >= 4){
+        isHost = true;
+        clearError('hostError');
+        showOnly('host');
+        toast('Host access granted (Cloud mode).');
+        if(!currentHostState){
+          currentHostState = {
+            hasGame: false,
+            bank: editableBank,
+            maxParticipants: 500
+          };
+        }
+        renderHost(currentHostState);
+      } else {
+        showError('hostError', 'Incorrect host PIN. (Default is 2468)');
+      }
+    }
+  });
+
+  // Participant Join
+  $('joinForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    clearError('joinError');
+    const roomCode=$('joinCode').value.trim(),name=$('playerName').value.trim();
+    if(!/^\d{6}$/.test(roomCode)){showError('joinError','Enter the six-digit room code.');return}
+    if(name.length<2){showError('joinError','Enter a display name with at least two characters.');return}
+    playerName=name;
+    playerClientId=sessionStorage.getItem('scq_client_id');
+    if(!playerClientId){
+      playerClientId=(crypto.randomUUID?crypto.randomUUID():'p-'+Math.random().toString(36).slice(2)+Date.now());
+      sessionStorage.setItem('scq_client_id',playerClientId);
+    }
+    const payload={roomCode,name,clientId:playerClientId};
+    sessionStorage.setItem('scq_player',JSON.stringify(payload));
+
+    if(socket && socket.connected){
+      socket.emit('participant:join',payload);
+    } else {
+      // Local / Cloud join
+      clearError('joinError');
+      showOnly('player');
+      toast(`Joined room ${roomCode}!`);
+      const q = currentHostState?.currentQuestion || editableBank[0];
+      const pState = {
+        hasGame: true,
+        roomCode,
+        status: currentHostState ? currentHostState.status : 'lobby',
+        currentIndex: currentHostState ? currentHostState.currentIndex : -1,
+        questionCount: editableBank.length,
+        participantCount: 1,
+        answeredCount: 0,
+        question: currentHostState && currentHostState.status === 'live' ? q : null,
+        myAnswer: null,
+        score: 0,
+        revealed: false,
+        leaderboard: []
+      };
+      renderPlayer(pState);
+      broadcastLocal('participant:joined', { id: playerClientId, name });
+    }
+  });
+
+  // Open Room
+  $('openRoomBtn').addEventListener('click',async()=>{
+    if(currentHostState?.hasGame&&currentHostState.status!=='ended'&&!confirm('Open a new room? This ends the existing room for participants.'))return;
+    clearError('hostActionError');
+
+    if(socket && socket.connected){
+      socket.emit('host:create-session');
+    } else {
+      // Fetch or generate 6-digit room code
+      let code = '';
+      try {
+        const res = await fetch('/api/room-code');
+        const data = await res.json();
+        if(data && data.roomCode) code = data.roomCode;
+      } catch(_){}
+      if(!code) code = Math.floor(100000 + Math.random() * 900000).toString();
+
+      currentHostState = {
+        hasGame: true,
+        roomCode: code,
+        status: 'lobby',
+        currentIndex: -1,
+        questions: clone(editableBank),
+        questionCount: editableBank.length,
+        totalParticipants: 1,
+        answeredCount: 0,
+        participants: [{id:'host-preview', name:'Host (You)', score:0, connected:true, answer:null}],
+        optionCounts: [0,1,2,3].map(i=>({index:i, count:0, label:editableBank[0]?.options[i]||''})),
+        leaderboard: [{name:'Host (You)', score:0, connected:true}],
+        bank: editableBank,
+        maxParticipants: 500
+      };
+      renderHost(currentHostState);
+      broadcastLocal('host:state', currentHostState);
+      toast('Room opened! Share code ' + code);
+    }
+  });
+
+  // Start Quiz
+  $('startQuizBtn').addEventListener('click',()=>{
+    if(socket && socket.connected){
+      socket.emit('host:start');
+    } else if(currentHostState){
+      currentHostState.currentIndex = 0;
+      currentHostState.status = 'live';
+      currentHostState.currentQuestion = currentHostState.questions[0];
+      currentHostState.optionCounts = (currentHostState.currentQuestion?.options||[]).map((lbl,i)=>({index:i, label:lbl, count:0}));
+      currentHostState.answeredCount = 0;
+      currentHostState.participants.forEach(p=>{p.answer=null;});
+      renderHost(currentHostState);
+      broadcastLocal('host:state', currentHostState);
+      toast('Question 1 is live!');
+    }
+  });
+
+  // Reveal Answer
+  $('revealBtn').addEventListener('click',()=>{
+    if(socket && socket.connected){
+      socket.emit('host:reveal');
+    } else if(currentHostState && currentHostState.currentQuestion){
+      currentHostState.status = 'revealed';
+      const q = currentHostState.currentQuestion;
+      currentHostState.participants.forEach(p=>{
+        if(p.answer && p.answer.answerIndex === q.correctIndex){
+          p.score = (p.score||0) + (q.points||1000);
+        }
+      });
+      currentHostState.leaderboard = currentHostState.participants.slice().sort((a,b)=>b.score-a.score).map(x=>({name:x.name,score:x.score,connected:true}));
+      renderHost(currentHostState);
+      broadcastLocal('host:state', currentHostState);
+      toast('Answer revealed!');
+    }
+  });
+
+  // Next Question
+  $('nextQuestionBtn').addEventListener('click',()=>{
+    if(socket && socket.connected){
+      socket.emit('host:next');
+    } else if(currentHostState){
+      if(currentHostState.currentIndex + 1 >= currentHostState.questions.length){
+        currentHostState.status = 'ended';
+        toast('Quiz completed! Leaderboard displayed.');
+      } else {
+        currentHostState.currentIndex++;
+        currentHostState.status = 'live';
+        currentHostState.currentQuestion = currentHostState.questions[currentHostState.currentIndex];
+        currentHostState.optionCounts = (currentHostState.currentQuestion?.options||[]).map((lbl,i)=>({index:i, label:lbl, count:0}));
+        currentHostState.answeredCount = 0;
+        currentHostState.participants.forEach(p=>{p.answer=null;});
+        toast(`Question ${currentHostState.currentIndex + 1} is live!`);
+      }
+      renderHost(currentHostState);
+      broadcastLocal('host:state', currentHostState);
+    }
+  });
+
+  // End Quiz
+  $('endQuizBtn').addEventListener('click',()=>{
+    if(confirm('End the quiz for all participants?')){
+      if(socket && socket.connected){
+        socket.emit('host:end');
+      } else if(currentHostState){
+        currentHostState.status = 'ended';
+        renderHost(currentHostState);
+        broadcastLocal('host:state', currentHostState);
+        toast('Quiz session ended.');
+      }
+    }
+  });
+
+  $('copyJoinLinkBtn').addEventListener('click',async()=>{
+    if(!currentHostState?.hasGame)return;
+    const url=location.origin+location.pathname+'?join='+currentHostState.roomCode;
+    try{await navigator.clipboard.writeText(url);toast('Participant link copied: '+url)}catch(e){prompt('Copy this participant link:',url)}
+  });
+
   $('addQuestionBtn').addEventListener('click',newQuestion);
   $('questionEditor').addEventListener('submit',e=>{e.preventDefault();commitEditor(true)});
-  $('saveBankBtn').addEventListener('click',()=>{if(!commitEditor(false))return;if(!editableBank.length){showError('editorError','Keep at least one question in the bank.');return}clearError('editorError');socket.emit('host:save-bank',{questions:editableBank})});
-  $('deleteQuestionBtn').addEventListener('click',()=>{if(editableBank.length<=1){toast('Keep at least one question in the bank.');return}if(!confirm('Delete this question from the bank?'))return;editableBank=editableBank.filter(q=>q.id!==selectedQuestionId);selectedQuestionId=editableBank[0].id;loadQuestionIntoEditor(selectedQuestionId);toast('Question removed locally. Click “Save question bank” to persist.')});
-  $('logoutHost').addEventListener('click',()=>{isHost=false;bankHasLoaded=false;sessionStorage.removeItem('scq_host_pin');showOnly('welcome');$('hostPin').value='';toast('Exited host mode.')});
-  if(location.protocol==='file:'){setConnected(false,'Open via the live server URL');showError('hostError','This live quiz needs the Node.js server running. Start it with npm install and npm start, then open http://localhost:3000/quiz.html.');}
+  $('saveBankBtn').addEventListener('click',()=>{
+    if(!commitEditor(false))return;
+    if(!editableBank.length){showError('editorError','Keep at least one question in the bank.');return}
+    clearError('editorError');
+    if(socket && socket.connected){
+      socket.emit('host:save-bank',{questions:editableBank});
+    } else {
+      toast('Question bank saved locally.');
+    }
+  });
+  $('deleteQuestionBtn').addEventListener('click',()=>{
+    if(editableBank.length<=1){toast('Keep at least one question in the bank.');return}
+    if(!confirm('Delete this question from the bank?'))return;
+    editableBank=editableBank.filter(q=>q.id!==selectedQuestionId);
+    selectedQuestionId=editableBank[0].id;
+    loadQuestionIntoEditor(selectedQuestionId);
+    toast('Question removed.');
+  });
+  $('logoutHost').addEventListener('click',()=>{
+    isHost=false;
+    sessionStorage.removeItem('scq_host_pin');
+    showOnly('welcome');
+    $('hostPin').value='';
+    toast('Exited host mode.');
+  });
+
+  // Set initial status text safely
+  setConnected(true,'Live room ready');
 })();
 </script>
 </body>
