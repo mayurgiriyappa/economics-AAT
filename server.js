@@ -124,30 +124,63 @@ app.use(['/data','/server.js','/package.json','/package-lock.json','/.env.exampl
 app.use(express.static(__dirname, { extensions:['html'], dotfiles:'ignore' }));
 app.use(express.static(process.cwd(), { extensions:['html'], dotfiles:'ignore' }));
 
-function sendHtml(res, fileName) {
-  const possiblePaths = [
-    path.join(__dirname, fileName),
-    path.join(process.cwd(), fileName),
+// Pre-load and cache HTML files.
+// Explicit string literals ensure @vercel/nft traces and bundles both files in serverless.
+let cachedIndexHtml = '';
+let cachedQuizHtml = '';
+
+function getHtmlContent(fileName) {
+  if (fileName === 'index.html' && cachedIndexHtml) return cachedIndexHtml;
+  if (fileName === 'quiz.html' && cachedQuizHtml) return cachedQuizHtml;
+
+  const paths = [
+    path.join(__dirname, fileName === 'index.html' ? 'index.html' : 'quiz.html'),
+    path.join(process.cwd(), fileName === 'index.html' ? 'index.html' : 'quiz.html'),
     path.resolve(fileName)
   ];
-  for (const p of possiblePaths) {
+
+  for (const p of paths) {
     try {
-      if (fs.existsSync(p)) return res.sendFile(p);
+      if (fs.existsSync(p)) {
+        const data = fs.readFileSync(p, 'utf8');
+        if (data) {
+          if (fileName === 'index.html') cachedIndexHtml = data;
+          else cachedQuizHtml = data;
+          return data;
+        }
+      }
     } catch (_) {}
   }
-  for (const p of possiblePaths) {
-    try {
-      const content = fs.readFileSync(p, 'utf8');
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      return res.send(content);
-    } catch (_) {}
-  }
-  res.status(404).send(`Cannot find ${fileName}`);
+  return null;
 }
 
-app.get('/', (req, res) => sendHtml(res, 'index.html'));
-app.get('/index.html', (req, res) => sendHtml(res, 'index.html'));
-app.get('/quiz.html', (req, res) => sendHtml(res, 'quiz.html'));
+app.get('/', (req, res) => {
+  const html = getHtmlContent('index.html');
+  if (html) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(html);
+  }
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/index.html', (req, res) => {
+  const html = getHtmlContent('index.html');
+  if (html) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(html);
+  }
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/quiz.html', (req, res) => {
+  const html = getHtmlContent('quiz.html');
+  if (html) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(html);
+  }
+  res.sendFile(path.join(__dirname, 'quiz.html'));
+});
+
 app.get('/quiz', (req, res) => res.redirect('/quiz.html'));
 app.get('/healthz', (req,res)=>res.json({ok:true, service:'strategy-court-live-quiz', activeRoom:game?game.roomCode:null, participants:participantTotal()}));
 app.get('/api/quiz-info',(req,res)=>res.json({supportsLiveParticipants:true, maxParticipants:MAX_PARTICIPANTS, questionCount:questionBank.length, activeRoom:game?game.roomCode:null}));
