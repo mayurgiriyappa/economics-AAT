@@ -129,33 +129,38 @@ app.use(express.static(process.cwd(), { extensions:['html'], dotfiles:'ignore' }
 let cachedIndexHtml = '';
 let cachedQuizHtml = '';
 
-function getHtmlContent(fileName) {
-  if (fileName === 'index.html' && cachedIndexHtml) return cachedIndexHtml;
-  if (fileName === 'quiz.html' && cachedQuizHtml) return cachedQuizHtml;
-
-  const paths = [
-    path.join(__dirname, fileName === 'index.html' ? 'index.html' : 'quiz.html'),
-    path.join(process.cwd(), fileName === 'index.html' ? 'index.html' : 'quiz.html'),
-    path.resolve(fileName)
-  ];
-
-  for (const p of paths) {
-    try {
-      if (fs.existsSync(p)) {
-        const data = fs.readFileSync(p, 'utf8');
-        if (data) {
-          if (fileName === 'index.html') cachedIndexHtml = data;
-          else cachedQuizHtml = data;
-          return data;
-        }
-      }
-    } catch (_) {}
-  }
-  return null;
+try {
+  cachedIndexHtml = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+} catch (_) {
+  try { cachedIndexHtml = fs.readFileSync(path.join(process.cwd(), 'index.html'), 'utf8'); } catch (_) {}
 }
 
-app.get('/', (req, res) => {
-  const html = getHtmlContent('index.html');
+try {
+  cachedQuizHtml = fs.readFileSync(path.join(__dirname, 'quiz.html'), 'utf8');
+} catch (_) {
+  try { cachedQuizHtml = fs.readFileSync(path.join(process.cwd(), 'quiz.html'), 'utf8'); } catch (_) {}
+}
+
+function getIndexHtml() {
+  if (cachedIndexHtml) return cachedIndexHtml;
+  try { cachedIndexHtml = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8'); } catch (_) {}
+  if (!cachedIndexHtml) {
+    try { cachedIndexHtml = fs.readFileSync(path.join(process.cwd(), 'index.html'), 'utf8'); } catch (_) {}
+  }
+  return cachedIndexHtml;
+}
+
+function getQuizHtml() {
+  if (cachedQuizHtml) return cachedQuizHtml;
+  try { cachedQuizHtml = fs.readFileSync(path.join(__dirname, 'quiz.html'), 'utf8'); } catch (_) {}
+  if (!cachedQuizHtml) {
+    try { cachedQuizHtml = fs.readFileSync(path.join(process.cwd(), 'quiz.html'), 'utf8'); } catch (_) {}
+  }
+  return cachedQuizHtml;
+}
+
+app.get(['/', '/index.html'], (req, res) => {
+  const html = getIndexHtml();
   if (html) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.send(html);
@@ -163,25 +168,14 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.get('/index.html', (req, res) => {
-  const html = getHtmlContent('index.html');
-  if (html) {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    return res.send(html);
-  }
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.get('/quiz.html', (req, res) => {
-  const html = getHtmlContent('quiz.html');
+app.get(['/quiz.html', '/quiz'], (req, res) => {
+  const html = getQuizHtml();
   if (html) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.send(html);
   }
   res.sendFile(path.join(__dirname, 'quiz.html'));
 });
-
-app.get('/quiz', (req, res) => res.redirect('/quiz.html'));
 app.get('/healthz', (req,res)=>res.json({ok:true, service:'strategy-court-live-quiz', activeRoom:game?game.roomCode:null, participants:participantTotal()}));
 app.get('/api/quiz-info',(req,res)=>res.json({supportsLiveParticipants:true, maxParticipants:MAX_PARTICIPANTS, questionCount:questionBank.length, activeRoom:game?game.roomCode:null}));
 app.get('/api/room-code', (req,res)=>res.json({ok:true, roomCode: game ? game.roomCode : roomCode()}));
