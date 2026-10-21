@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#102a23">
+<title>Live Strategy Quiz | Make in India Strategy Court</title>
+<style>
+:root{--bg:#f3f6f3;--panel:#fff;--ink:#183027;--muted:#718077;--line:#e1e9e2;--green:#1b6b4b;--green2:#32966a;--mint:#e5f5eb;--dark:#102a23;--amber:#b97919;--red:#b84f43;--blue:#5478b7;--shadow:0 12px 34px rgba(18,48,34,.06);--r:18px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.48}.top{background:var(--dark);color:#fff;padding:16px max(20px,calc((100% - 1320px)/2));display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:#b5e1c4;color:#103c2b;font-weight:900;font-size:18px}.brand strong{display:block;font-size:14px;letter-spacing:.01em}.brand span{display:block;font-size:11px;color:#aec5b8;margin-top:2px}.topright{display:flex;align-items:center;gap:12px;font-size:11px;color:#c5d7ce}.led{width:8px;height:8px;border-radius:50%;display:inline-block;background:#d0a14f;margin-right:7px}.led.on{background:#52d18c;box-shadow:0 0 0 4px rgba(82,209,140,.12)}main{max-width:1320px;padding:30px 22px 60px;margin:auto}.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:10px;font-weight:850;color:var(--green);margin-bottom:6px}.hero{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:24px}.hero h1{font-size:clamp(25px,3vw,34px);letter-spacing:-.05em;line-height:1.1;margin:0 0 11px}.hero p{margin:0;color:var(--muted);max-width:760px}.chip{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:6px 10px;background:#eff5f0;border:1px solid #dce9df;color:#3b5948;font-size:10px;font-weight:750;white-space:nowrap}.chip.live{background:#e0f6e9;color:#17633e;border-color:#bce9cd}.chip.warn{background:#fff5df;color:#835913;border-color:#f1dfad}.grid{display:grid;gap:16px}.role-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);min-width:0}.cardpad{padding:23px}.cardhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}.card h2,.card h3{margin:0;font-size:16px;letter-spacing:-.025em}.sub{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.55}.iconbox{height:41px;width:41px;border-radius:12px;background:var(--mint);color:var(--green);display:grid;place-items:center;font-size:18px;flex-shrink:0}.field{display:grid;gap:6px;margin:13px 0}.field label{font-size:11px;font-weight:750;color:#445a4c}.field input,.field textarea,.field select{border:1px solid #dce5de;border-radius:10px;padding:11px 12px;width:100%;color:var(--ink);background:#fff;outline:none}.field textarea{resize:vertical;min-height:76px}.field input:focus,.field textarea:focus,.field select:focus{border-color:#63ad83;box-shadow:0 0 0 3px #32966a1a}.btn{padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);font-weight:750;font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:7px}.btn:hover{transform:translateY(-1px)}.primary{background:var(--green);border-color:var(--green);color:#fff}.soft{background:#eff8f2;border-color:#d7ecdf;color:#225e42}.danger{background:#fff6f5;border-color:#efd3cf;color:#a13a30}.btnrow{display:flex;gap:8px;flex-wrap:wrap}.full{width:100%}.error{display:none;background:#fff0ee;border:1px solid #f1d1cb;color:#9d3b30;padding:10px 12px;border-radius:10px;font-size:11px;margin-top:12px}.error.show{display:block}.note{background:#fffae9;border:1px solid #eee0b9;border-radius:12px;padding:12px 14px;font-size:11px;color:#765d27;line-height:1.6}.muted{color:var(--muted)}.hidden{display:none!important}.host-layout{grid-template-columns:minmax(300px,.9fr) minmax(0,1.3fr);align-items:start}.host-layout .wide{grid-column:1/-1}.bank-list{display:grid;gap:7px;margin-top:14px;max-height:550px;overflow:auto}.bank-item{border:1px solid var(--line);background:#fff;border-radius:10px;text-align:left;padding:11px 12px;display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:9px;align-items:center;color:var(--ink)}.bank-item.active{border-color:#70bd91;background:#f0faf3}.bank-item .num{width:29px;height:29px;border-radius:9px;background:#edf4ef;display:grid;place-items:center;color:var(--green);font-size:11px;font-weight:850}.bank-item strong{font-size:11px;line-height:1.4;display:block}.bank-item small{font-size:9px;color:var(--muted);display:block;margin-top:3px}.bank-item .tick{font-size:10px;color:var(--green);font-weight:800}.editor-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.field .hint{font-size:9px;color:var(--muted)}.current-top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.roomcode{font-size:26px;letter-spacing:.12em;font-weight:900;background:#f0f7f2;color:var(--green);border:1px dashed #a8d4b8;border-radius:12px;padding:9px 14px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:17px 0}.stat{background:#f7faf7;border:1px solid #eaf0ea;padding:13px;border-radius:12px}.stat span{font-size:10px;color:var(--muted);display:block}.stat strong{font-size:22px;display:block;letter-spacing:-.04em;margin-top:4px}.questionlive{padding:22px;border-radius:15px;background:linear-gradient(135deg,#143b2d,#1b6b4b);color:white;margin:15px 0}.questionlive .meta{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#b9ddc9;font-weight:800}.questionlive h2{font-size:clamp(19px,2.3vw,27px);line-height:1.28;margin:12px 0 0;color:white}.optionbar-list{display:grid;gap:12px;margin-top:14px}.optionbar{display:grid;grid-template-columns:minmax(120px,1fr) minmax(90px,1.8fr) 70px;gap:10px;align-items:center}.optionbar .label{font-size:11px;overflow-wrap:anywhere}.track{height:10px;background:#edf2ee;border-radius:30px;overflow:hidden}.track span{height:100%;display:block;background:#56a87a;border-radius:30px;transition:width .2s}.optionbar.correct .track span{background:#24935f}.optionbar .count{text-align:right;font-size:10px;font-weight:850}.response-table{display:grid;gap:7px;margin-top:14px;max-height:340px;overflow:auto}.response-row{display:grid;grid-template-columns:minmax(100px,1fr) minmax(120px,1.3fr) 75px;gap:10px;align-items:center;padding:10px 12px;background:#f8faf8;border:1px solid #edf1ed;border-radius:10px;font-size:10px}.response-row strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.response-row .answer{color:#596a60;overflow-wrap:anywhere}.statusdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#c7d0c9;margin-right:5px}.statusdot.online{background:#3bb76d}.player-shell{max-width:800px;margin:0 auto}.player-question{font-size:clamp(21px,3vw,30px);letter-spacing:-.035em;line-height:1.28;margin:12px 0 20px}.player-options{display:grid;gap:10px}.answer-choice{display:flex;gap:12px;align-items:center;text-align:left;padding:15px 16px;border:1px solid var(--line);border-radius:13px;background:#fff;width:100%;color:var(--ink);font-weight:650;transition:.15s}.answer-choice:hover:not(:disabled){border-color:#6bb787;background:#f4fbf6}.answer-choice .letter{height:31px;width:31px;display:grid;place-items:center;border-radius:9px;background:#edf4ef;color:#24583e;font-size:11px;font-weight:900;flex-shrink:0}.answer-choice.selected{border-color:#309763;background:#eaf8ef}.answer-choice.right{border-color:#5aba80;background:#eaf8ef}.answer-choice.wrong{border-color:#e6b0a9;background:#fff2f0}.answer-choice:disabled{opacity:1}.player-status{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:15px}.feedback{border:1px solid #c4e5ce;background:#f0fbf3;border-radius:12px;padding:15px;margin-top:14px;font-size:12px;line-height:1.65}.feedback.wrong{border-color:#efcec8;background:#fff4f2}.leader-list{display:grid;gap:7px;margin-top:12px}.leader-row{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px}.leader-row .rank{height:26px;width:26px;border-radius:8px;background:#edf5ef;display:grid;place-items:center;font-size:10px;font-weight:850}.leader-row strong{font-size:11px}.leader-row .score{font-size:11px;font-weight:850;color:var(--green)}.footer{font-size:10px;color:#8a968e;text-align:center;margin:28px 0 0}.toast{position:fixed;right:18px;bottom:18px;z-index:99;background:#163a2c;color:#fff;box-shadow:var(--shadow);border-radius:11px;padding:12px 16px;max-width:min(420px,calc(100vw - 36px));font-size:12px;display:none}.toast.show{display:block}.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:880px){.host-layout{grid-template-columns:1fr}.host-layout .wide{grid-column:auto}.hero{display:block}.hero>.chip{margin-top:13px;display:inline-flex}.role-grid{grid-template-columns:1fr}.top{padding:13px 16px}.topright .cap{display:none}}@media(max-width:540px){main{padding:22px 12px 42px}.top{align-items:flex-start}.brand{gap:9px}.logo{width:37px;height:37px}.topright{flex-wrap:wrap;justify-content:flex-end}.cardpad{padding:16px}.editor-options{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.stat{padding:10px}.stat strong{font-size:18px}.optionbar{grid-template-columns:minmax(100px,1fr) 1.2fr 57px;gap:7px}.response-row{grid-template-columns:minmax(78px,.7fr) minmax(90px,1.2fr) 65px;padding:9px;gap:6px}.roomcode{font-size:21px}.btn{padding:9px 11px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand"><div class="logo">SC</div><div><strong>Strategy Court · Live Quiz</strong><span>DSCE Biotechnology · Engineering Economics & Management</span></div></div><div class="topright"><span><i class="led" id="connectionLed"></i><span id="connectionText">Connecting to live server…</span></span><span class="cap">Realtime classroom mode · 40+ participants</span><a href="index.html" style="color:#d4e5dc;text-decoration:none;border:1px solid #436354;border-radius:9px;padding:7px 10px;font-weight:700">← Dashboard</a></div></header>
+<main>
+  <div class="hero"><div><div class="eyebrow">Assessment 12 · Interactive courtroom</div><h1>Make in India Strategy Quiz</h1><p>Host a live quiz, let classmates join with a room code, watch answers arrive in real time, then reveal the correct answer and explanation.</p></div><span class="chip" id="modeChip">10 sample questions included</span></div>
+
+  <section id="welcome" class="grid role-grid">
+    <article class="card cardpad"><div class="cardhead"><div><div class="eyebrow">For the instructor / host</div><h2>Host the quiz</h2><p class="sub">Edit questions, open a room, project the live answer chart, and reveal results.</p></div><div class="iconbox">♜</div></div>
+      <form id="hostLogin"><div class="field"><label for="hostPin">Host PIN</label><input id="hostPin" type="password" placeholder="Enter host PIN" autocomplete="current-password" required></div><button class="btn primary full" type="submit">Enter host control panel →</button><div class="sub">Local development PIN: <strong>2468</strong>. Change it before deploying publicly.</div><div class="error" id="hostError"></div></form>
+    </article>
+    <article class="card cardpad"><div class="cardhead"><div><div class="eyebrow">For classmates / participants</div><h2>Join a quiz</h2><p class="sub">Enter the room code shared by the host and choose a display name.</p></div><div class="iconbox">◉</div></div>
+      <form id="joinForm"><div class="field"><label for="joinCode">Room code</label><input id="joinCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="Six digit room code" required></div><div class="field"><label for="playerName">Your display name</label><input id="playerName" maxlength="28" placeholder="e.g. Mayur" required minlength="2"></div><button class="btn primary full" type="submit">Join live quiz →</button><div class="sub">Your response is sent to the host instantly. You can answer each question once per participant session.</div><div class="error" id="joinError"></div></form>
+    </article>
+  </section>
+
+  <section id="hostApp" class="hidden">
+    <div class="card cardpad" style="margin-bottom:16px"><div class="current-top"><div><div class="eyebrow">Host control panel</div><h2 id="hostPanelTitle">Quiz setup</h2><p id="hostPanelSub" class="sub">Review or edit the sample questions before opening a session.</p></div><div class="btnrow"><button class="btn" id="logoutHost">Exit host mode</button><button class="btn primary" id="openRoomBtn">＋ Open live room</button></div></div><div class="error" id="hostActionError"></div><div class="note" style="margin-top:14px">Question edits are saved on the server and will be available to the next quiz. During a live or revealed question, the question bank is locked so the active quiz remains consistent.</div></div>
+    <div class="grid host-layout">
+      <article class="card cardpad"><div class="cardhead"><div><div class="eyebrow">Question bank</div><h2>Edit your questions</h2><p class="sub">10 editable starter questions. Change the wording, options, correct answer and explanation. Up to 50 questions per quiz.</p></div><div class="iconbox">✎</div></div>
+        <div class="btnrow"><button class="btn soft" id="addQuestionBtn">＋ Add question</button><button class="btn" id="saveBankBtn">Save question bank</button></div>
+        <div id="bankList" class="bank-list"></div>
+      </article>
+      <article class="card cardpad"><div class="cardhead"><div><div class="eyebrow">Question editor</div><h2 id="editorTitle">Question 1</h2><p class="sub">Four choices per question. The correct answer is kept hidden from participants until the host reveals it.</p></div><div class="iconbox">✎</div></div>
+        <form id="questionEditor">
+          <div class="field"><label for="qCategory">Category</label><select id="qCategory"><option>Strategy</option><option>Economics</option><option>Manufacturing</option><option>Tax & landed cost</option><option>Quality</option><option>Supply chain</option><option>Decision analysis</option><option>Evidence</option><option>General</option></select></div>
+          <div class="field"><label for="qText">Question text</label><textarea id="qText" maxlength="1000" required placeholder="Type the question…"></textarea></div>
+          <div class="editor-options" id="editorOptions"></div>
+          <div class="field"><label for="qCorrect">Correct answer</label><select id="qCorrect"><option value="0">Option A</option><option value="1">Option B</option><option value="2">Option C</option><option value="3">Option D</option></select><span class="hint">Correct answers are hidden from participants until reveal.</span></div>
+          <div class="field"><label for="qExplanation">Answer explanation</label><textarea id="qExplanation" maxlength="1800" placeholder="Explain why this answer is correct…"></textarea></div>
+          <div class="field"><label for="qPoints">Points for correct answer</label><input id="qPoints" type="number" min="100" max="5000" step="100" value="1000" required></div>
+          <div class="btnrow"><button type="submit" class="btn primary">Apply edits to bank</button><button type="button" class="btn danger" id="deleteQuestionBtn">Delete question</button></div>
+        </form>
+        <div class="error" id="editorError"></div>
+      </article>
+      <article class="card cardpad wide" id="liveHostPanel"><div class="current-top"><div><div class="eyebrow">Live room</div><h2 id="roomTitle">No live room open</h2><p class="sub" id="roomSub">Save your question bank, then open a room to invite participants.</p></div><div style="text-align:right"><div class="roomcode" id="roomCodeDisplay">------</div><div class="sub">Share this code with participants</div></div></div>
+        <div class="btnrow" style="margin-top:14px"><button class="btn" id="copyJoinLinkBtn">Copy participant link</button><button class="btn soft" id="startQuizBtn" disabled>Start quiz</button><button class="btn soft" id="revealBtn" disabled>Reveal answer</button><button class="btn soft" id="nextQuestionBtn" disabled>Next question →</button><button class="btn danger" id="endQuizBtn" disabled>End session</button></div>
+        <div id="hostLiveSummary" class="hidden">
+          <div class="stats"><div class="stat"><span>Joined participants</span><strong id="participantCount">0</strong></div><div class="stat"><span>Answered current question</span><strong id="answeredCount">0</strong></div><div class="stat"><span>Answer rate</span><strong id="answerRate">0%</strong></div></div>
+          <div class="questionlive"><div class="meta" id="liveQuestionMeta">QUESTION 1 · ECONOMICS</div><h2 id="liveQuestionText">Question text appears here.</h2></div>
+          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:18px">
+            <div><h3>Live answer distribution</h3><p class="sub">Counts and ratios update as participants submit answers.</p><div id="hostOptionChart" class="optionbar-list"></div></div>
+            <div><h3>Participant responses</h3><p class="sub">Host view shows each participant's submitted answer live.</p><div id="hostResponses" class="response-table"></div></div>
+          </div>
+          <div id="hostExplanation" class="feedback hidden"></div>
+          <div style="margin-top:20px"><h3>Scoreboard</h3><div id="hostLeaderboard" class="leader-list"></div></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="playerApp" class="hidden player-shell">
+    <article class="card cardpad"><div class="player-status"><div><div class="eyebrow">Participant view</div><h2 id="playerGreeting">You are in the quiz</h2><p class="sub" id="playerRoomMeta">Waiting for the host.</p></div><span class="chip live" id="playerProgress">Waiting</span></div>
+      <div id="playerWaiting" style="padding:36px 10px;text-align:center"><div class="iconbox" style="margin:0 auto 14px;font-size:25px">◷</div><h2 id="waitingTitle">Waiting for the host to start</h2><p class="sub" id="waitingCopy">Keep this page open. The question will appear here as soon as the host starts.</p></div>
+      <div id="playerQuestionArea" class="hidden"><div class="eyebrow" id="playerQuestionMeta">Question 1</div><div class="player-question" id="playerQuestionText"></div><div id="playerOptions" class="player-options"></div><div id="playerAnswerNotice" class="sub" style="margin-top:12px"></div><div id="playerFeedback" class="feedback hidden"></div></div>
+      <div id="playerEnd" class="hidden"><div class="iconbox" style="margin:0 auto 14px;font-size:25px">✓</div><h2 style="text-align:center">Quiz complete</h2><p class="sub" style="text-align:center" id="finalScore"></p><h3 style="margin-top:23px">Leaderboard</h3><div id="playerLeaderboard" class="leader-list"></div></div>
+    </article>
+    <div class="sub" style="text-align:center;margin-top:12px">Your answer is sent to the host live. Correct answers and explanations appear after the host reveals them.</div>
+  </section>
+  <p class="footer">Strategy Court · DSCE Biotechnology · Live quiz room · Starter questions are editable and intended for classroom demonstration.</p>
+</main>
+<div id="toast" class="toast"></div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(()=>{
+  const $=id=>document.getElementById(id);
+  const socket=io();
+  let editableBank=[], selectedQuestionId=null, bankHasLoaded=false, isHost=false, playerName='', playerClientId='', currentPlayerState=null, currentHostState=null;
+  const letters=['A','B','C','D'];
+  function esc(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function toast(m){$('toast').textContent=m;$('toast').classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>$('toast').classList.remove('show'),3300)}
+  function showError(id,msg){const e=$(id);e.textContent=msg;e.classList.add('show')}
+  function clearError(id){const e=$(id);e.textContent='';e.classList.remove('show')}
+  function setConnected(yes,msg){$('connectionLed').classList.toggle('on',yes);$('connectionText').textContent=msg|| (yes?'Live server connected':'Connecting…')}
+  function showOnly(which){$('welcome').classList.toggle('hidden',which!=='welcome');$('hostApp').classList.toggle('hidden',which!=='host');$('playerApp').classList.toggle('hidden',which!=='player')}
+  function clone(v){return JSON.parse(JSON.stringify(v))}
+  function getEditorQuestion(){
+    return {id:selectedQuestionId||'q-'+Math.random().toString(36).slice(2,10),category:$('qCategory').value,text:$('qText').value.trim(),options:[0,1,2,3].map(i=>$('opt'+i).value.trim()),correctIndex:Number($('qCorrect').value),explanation:$('qExplanation').value.trim(),points:Number($('qPoints').value)||1000};
+  }
+  function commitEditor(showMsg=false){
+    if(!bankHasLoaded) return false;
+    const q=getEditorQuestion();
+    if(!q.text){showError('editorError','Add question text before applying these edits.');return false}
+    if(q.options.some(x=>!x)){showError('editorError','Complete all four answer choices.');return false}
+    if(new Set(q.options.map(x=>x.toLowerCase())).size!==4){showError('editorError','Answer choices must be different from each other.');return false}
+    if(q.points<100||q.points>5000){showError('editorError','Points must be between 100 and 5,000.');return false}
+    clearError('editorError');
+    const index=editableBank.findIndex(x=>x.id===selectedQuestionId);
+    if(index>=0) editableBank[index]=q; else {editableBank.push(q);selectedQuestionId=q.id;}
+    renderBankList();if(showMsg)toast('Edits applied locally. Click “Save question bank” to store them on the server.');return true;
+  }
+  function renderBankList(){
+    $('bankList').innerHTML=editableBank.map((q,i)=>`<button class="bank-item ${q.id===selectedQuestionId?'active':''}" data-qid="${esc(q.id)}"><span class="num">${i+1}</span><span><strong>${esc(q.text||'Untitled question')}</strong><small>${esc(q.category||'General')} · ${q.points||1000} points</small></span><span class="tick">${q.id===selectedQuestionId?'EDIT':''}</span></button>`).join('');
+    $('bankList').querySelectorAll('[data-qid]').forEach(b=>b.addEventListener('click',()=>{if(!commitEditor(false))return;loadQuestionIntoEditor(b.dataset.qid)}));
+    $('modeChip').textContent=`${editableBank.length} editable question${editableBank.length===1?'':'s'}`;
+  }
+  function loadQuestionIntoEditor(id){const q=editableBank.find(x=>x.id===id);if(!q)return;selectedQuestionId=q.id;$('editorTitle').textContent=`Question ${editableBank.findIndex(x=>x.id===id)+1}`;$('qCategory').value=q.category||'General';$('qText').value=q.text||'';$('qExplanation').value=q.explanation||'';$('qCorrect').value=String(q.correctIndex??0);$('qPoints').value=q.points||1000;[0,1,2,3].forEach(i=>{$('opt'+i).value=q.options[i]||''});renderBankList();}
+  function newQuestion(){if(!commitEditor(false))return;const q={id:'q-'+Math.random().toString(36).slice(2,10),category:'General',text:'',options:['Option A','Option B','Option C','Option D'],correctIndex:0,explanation:'',points:1000};editableBank.push(q);selectedQuestionId=q.id;loadQuestionIntoEditor(q.id);$('qText').focus();}
+  function renderQuestionFormFields(){ $('editorOptions').innerHTML=[0,1,2,3].map(i=>`<div class="field"><label for="opt${i}">Option ${letters[i]}</label><input id="opt${i}" maxlength="300" required placeholder="Choice ${letters[i]}"></div>`).join(''); }
+  function renderHost(s){
+    currentHostState=s; if(!isHost)return;showOnly('host');
+    if(Array.isArray(s.bank)&&(!bankHasLoaded || $('bankList').children.length===0)){editableBank=clone(s.bank);bankHasLoaded=true;selectedQuestionId=editableBank[0]?.id||null;if(selectedQuestionId)loadQuestionIntoEditor(selectedQuestionId);else renderBankList();}
+    const active=!!s.hasGame;
+    $('hostPanelTitle').textContent=active?'Live session control':'Quiz setup';
+    $('hostPanelSub').textContent=active?'Room and responses update live as classmates join and answer.':'Review or edit the sample questions before opening a session.';
+    $('openRoomBtn').textContent=active?'↻ Open a new room':'＋ Open live room';
+    $('roomCodeDisplay').textContent=active?s.roomCode:'------';
+    $('roomTitle').textContent=!active?'No live room open':({lobby:'Room is open · waiting to start',live:`Question ${s.currentIndex+1} is live`,revealed:'Answer revealed',ended:'Quiz completed'})[s.status]||'Live room';
+    $('roomSub').textContent=!active?'Save your question bank, then open a room to invite participants.':`${s.totalParticipants} participant${s.totalParticipants===1?'':'s'} joined · ${s.questionCount} questions in this session · Status: ${s.status}`;
+    $('startQuizBtn').disabled=!active||s.status!=='lobby';$('revealBtn').disabled=!active||s.status!=='live';$('nextQuestionBtn').disabled=!active||s.status!=='revealed';$('endQuizBtn').disabled=!active||s.status==='ended';$('hostLiveSummary').classList.toggle('hidden',!active);
+    $('copyJoinLinkBtn').disabled=!active;
+    const editingLocked=active&&['live','revealed'].includes(s.status);
+    ['addQuestionBtn','saveBankBtn','deleteQuestionBtn'].forEach(id=>$(id).disabled=editingLocked);
+    $('questionEditor').querySelectorAll('input,textarea,select,button[type="submit"]').forEach(el=>el.disabled=editingLocked);
+    if(active){
+      $('participantCount').textContent=s.totalParticipants;$('answeredCount').textContent=s.answeredCount;$('answerRate').textContent=(s.totalParticipants?Math.round(s.answeredCount/s.totalParticipants*100):0)+'%';
+      if(s.currentQuestion){const q=s.currentQuestion;$('liveQuestionMeta').textContent=`QUESTION ${s.currentIndex+1} OF ${s.questionCount} · ${q.category}`;$('liveQuestionText').textContent=q.text;
+        $('hostOptionChart').innerHTML=s.optionCounts.map(o=>{const pct=s.totalParticipants?o.count/s.totalParticipants*100:0;return `<div class="optionbar ${s.status!=='live'&&o.index===q.correctIndex?'correct':''}"><div class="label">${letters[o.index]}. ${esc(o.label)}</div><div class="track"><span style="width:${pct}%"></span></div><div class="count">${o.count} · ${pct.toFixed(0)}%</div></div>`}).join('');
+        $('hostResponses').innerHTML=s.participants.slice().sort((a,b)=>(b.answer?1:0)-(a.answer?1:0)||a.name.localeCompare(b.name)).map(p=>{const r=p.answer;const answer=r?q.options[r.answerIndex]:'Not answered yet';const isCorrect=r&&s.status!=='live'&&r.answerIndex===q.correctIndex;return `<div class="response-row"><strong><i class="statusdot ${p.connected?'online':''}"></i>${esc(p.name)}</strong><span class="answer">${esc(answer)}</span><span>${r?(s.status==='live'?'Submitted':(isCorrect?'✓ Correct':'Answered')):'Waiting'}</span></div>`}).join('')||'<div class="sub">Participant responses will appear here as people join.</div>';
+        $('hostExplanation').classList.toggle('hidden',s.status!=='revealed'&&s.status!=='ended');$('hostExplanation').innerHTML=`<strong>Correct answer: ${letters[q.correctIndex]}. ${esc(q.options[q.correctIndex])}</strong><br>${esc(q.explanation||'No explanation has been added yet.')}`;
+      }
+      $('hostLeaderboard').innerHTML=s.leaderboard.map((p,i)=>`<div class="leader-row"><span class="rank">${i+1}</span><strong>${esc(p.name)} ${p.connected?'':'<span class="muted">(offline)</span>'}</strong><span class="score">${p.score.toLocaleString()} pts</span></div>`).join('')||'<div class="sub">Leaderboard appears after participants join.</div>';
+    }
+  }
+  function renderPlayer(s){
+    currentPlayerState=s;showOnly('player');$('playerGreeting').textContent=`Welcome, ${playerName}`;$('playerRoomMeta').textContent=`Room ${s.roomCode||'—'} · ${s.participantCount||0} participant${s.participantCount===1?'':'s'} joined · Your score: ${(s.score||0).toLocaleString()} points`;
+    $('playerWaiting').classList.toggle('hidden',!s.hasGame||s.status==='live'||s.status==='revealed'||s.status==='ended');$('playerQuestionArea').classList.toggle('hidden',!s.hasGame||!['live','revealed'].includes(s.status));$('playerEnd').classList.toggle('hidden',s.status!=='ended');
+    $('playerProgress').textContent=s.status==='lobby'?'Waiting':s.status==='ended'?'Completed':`Question ${Math.max(s.currentIndex+1,1)} of ${s.questionCount}`;
+    if(s.status==='lobby'){$('waitingTitle').textContent='You are in the room';$('waitingCopy').textContent='Wait here. The host will start the quiz shortly.'}
+    if(s.status==='live'||s.status==='revealed'){
+      const q=s.question;if(!q)return;$('playerQuestionMeta').textContent=`QUESTION ${s.currentIndex+1} OF ${s.questionCount} · ${q.category||'GENERAL'}`;$('playerQuestionText').textContent=q.text;
+      const answered=!!s.myAnswer; $('playerOptions').innerHTML=q.options.map((o,i)=>{let cls='';if(answered&&s.myAnswer.answerIndex===i)cls+=' selected';if(s.revealed&&i===q.correctIndex)cls+=' right';if(s.revealed&&answered&&s.myAnswer.answerIndex===i&&i!==q.correctIndex)cls+=' wrong';return `<button type="button" class="answer-choice ${cls}" data-answer="${i}" ${answered||s.status!=='live'?'disabled':''}><span class="letter">${letters[i]}</span><span>${esc(o)}</span>${s.revealed&&i===q.correctIndex?'<span style="margin-left:auto;color:#19834c">Correct answer</span>':''}</button>`}).join('');
+      $('playerOptions').querySelectorAll('[data-answer]').forEach(b=>b.addEventListener('click',()=>{socket.emit('participant:answer',{answerIndex:Number(b.dataset.answer)});b.disabled=true;}));
+      $('playerAnswerNotice').textContent=answered?(s.revealed?'Your answer has been recorded. See the explanation below.':'Answer recorded. Waiting for the host to reveal the result.'):`${s.answeredCount} of ${s.participantCount} participants have answered.`;
+      $('playerFeedback').classList.toggle('hidden',!s.revealed);$('playerFeedback').classList.toggle('wrong',s.revealed&&s.myAnswer&&s.myAnswer.answerIndex!==q.correctIndex);
+      if(s.revealed){$('playerFeedback').innerHTML=`<strong>${s.myAnswer?(s.myAnswer.correct?'Correct answer. Well done.':'Not quite. Review the correct answer above.'):'Answer missed.'}</strong><br><strong>Explanation:</strong> ${esc(q.explanation||'No explanation was provided.')}`}
+    }
+    if(s.status==='ended'){$('finalScore').textContent=`You scored ${(s.score||0).toLocaleString()} points.`;$('playerLeaderboard').innerHTML=s.leaderboard.map((p,i)=>`<div class="leader-row"><span class="rank">${i+1}</span><strong>${esc(p.name)}</strong><span class="score">${p.score.toLocaleString()} pts</span></div>`).join('')||'<div class="sub">No leaderboard entries.</div>'}
+  }
+
+  renderQuestionFormFields();
+  const params=new URLSearchParams(location.search);if(params.get('join')){$('joinCode').value=params.get('join').replace(/[^0-9]/g,'').slice(0,6);}
+
+  // When embedded in the main dashboard, retain one shared navigation shell.
+  if(params.get('embed')==='1'){
+    document.body.classList.add('embedded-quiz');
+    const quizHeader=document.querySelector('.top'); if(quizHeader)quizHeader.style.display='none';
+    const hero=document.querySelector('.hero'); if(hero)hero.style.display='none';
+    const footer=document.querySelector('.footer'); if(footer)footer.style.display='none';
+    const quizMain=document.querySelector('main'); if(quizMain){quizMain.style.maxWidth='none';quizMain.style.margin='0';quizMain.style.padding='12px 0 22px';}
+    const reportHeight=()=>{try{window.parent.postMessage({type:'strategy-quiz-height',height:Math.max(document.documentElement.scrollHeight,document.body.scrollHeight)},location.origin)}catch(e){}};
+    window.addEventListener('message',event=>{if(event.origin===location.origin&&event.source===window.parent&&event.data&&event.data.type==='strategy-quiz-request-height')reportHeight()});
+    window.addEventListener('resize',reportHeight);
+    if('ResizeObserver' in window){const heightObserver=new ResizeObserver(reportHeight);heightObserver.observe(document.body)}
+    new MutationObserver(()=>requestAnimationFrame(reportHeight)).observe(document.body,{subtree:true,childList:true,attributes:true,characterData:true});
+    [0,150,500,1200].forEach(ms=>setTimeout(reportHeight,ms));
+  }
+  socket.on('connect',()=>{setConnected(true,'Live server connected');const pin=sessionStorage.getItem('scq_host_pin');const player=sessionStorage.getItem('scq_player');if(pin){socket.emit('host:authenticate',{pin});}else if(player){try{const p=JSON.parse(player);playerName=p.name;playerClientId=p.clientId;$('joinCode').value=p.roomCode;$('playerName').value=p.name;socket.emit('participant:join',p)}catch(e){sessionStorage.removeItem('scq_player')}}});
+  socket.on('disconnect',()=>setConnected(false,'Disconnected · reconnecting…'));
+  socket.on('connect_error',()=>setConnected(false,'Live server unavailable · open via the hosted URL'));
+  socket.on('quiz:hello',info=>{if(info&&info.maxParticipants)$('modeChip').textContent=`Live mode · supports up to ${info.maxParticipants} participants`});
+  socket.on('host:authenticated',r=>{if(!r.ok){clearError('hostError');showError('hostError',r.message);sessionStorage.removeItem('scq_host_pin');return}isHost=true;clearError('hostError');showOnly('host');toast('Host access granted.')});
+  socket.on('host:state',s=>renderHost(s));
+  socket.on('host:bank-saved',r=>{if(r.ok){editableBank=clone(r.bank);bankHasLoaded=true;selectedQuestionId=editableBank[0]?.id||null;if(selectedQuestionId)loadQuestionIntoEditor(selectedQuestionId);renderBankList();toast('Question bank saved to the server.')} });
+  socket.on('host:session-created',r=>{if(r.ok){toast('Room opened. Share code '+r.roomCode);}});
+  socket.on('quiz:error',e=>{const msg=e?.message||'Something went wrong.';if(isHost){showError('hostActionError',msg);showError('editorError',msg)}else toast(msg)});
+  socket.on('participant:joined',r=>{if(r.ok){clearError('joinError');showOnly('player');toast('You joined the live quiz.')}});
+  socket.on('participant:join-error',e=>{showOnly('welcome');showError('joinError',e?.message||'Unable to join this room.');sessionStorage.removeItem('scq_player')});
+  socket.on('player:state',s=>{if(sessionStorage.getItem('scq_player'))renderPlayer(s)});
+  socket.on('participant:answer-accepted',()=>toast('Answer received by the live quiz server.'));
+  socket.on('participant:answer-error',e=>toast(e?.message||'Unable to submit answer.'));
+
+  $('hostLogin').addEventListener('submit',e=>{e.preventDefault();clearError('hostError');sessionStorage.setItem('scq_host_pin',$('hostPin').value);socket.emit('host:authenticate',{pin:$('hostPin').value})});
+  $('joinForm').addEventListener('submit',e=>{e.preventDefault();clearError('joinError');const roomCode=$('joinCode').value.trim(),name=$('playerName').value.trim();if(!/^\d{6}$/.test(roomCode)){showError('joinError','Enter the six-digit room code.');return}if(name.length<2){showError('joinError','Enter a display name with at least two characters.');return}playerName=name;playerClientId=sessionStorage.getItem('scq_client_id');if(!playerClientId){playerClientId=(crypto.randomUUID?crypto.randomUUID():'p-'+Math.random().toString(36).slice(2)+Date.now());sessionStorage.setItem('scq_client_id',playerClientId)}const payload={roomCode,name,clientId:playerClientId};sessionStorage.setItem('scq_player',JSON.stringify(payload));socket.emit('participant:join',payload)});
+  $('openRoomBtn').addEventListener('click',()=>{if(currentHostState?.hasGame&&currentHostState.status!=='ended'&&!confirm('Open a new room? This ends the existing room for participants.'))return;clearError('hostActionError');socket.emit('host:create-session')});
+  $('startQuizBtn').addEventListener('click',()=>socket.emit('host:start'));
+  $('revealBtn').addEventListener('click',()=>socket.emit('host:reveal'));
+  $('nextQuestionBtn').addEventListener('click',()=>socket.emit('host:next'));
+  $('endQuizBtn').addEventListener('click',()=>{if(confirm('End the quiz for all participants?'))socket.emit('host:end')});
+  $('copyJoinLinkBtn').addEventListener('click',async()=>{if(!currentHostState?.hasGame)return;const url=location.origin+location.pathname+'?join='+currentHostState.roomCode;try{await navigator.clipboard.writeText(url);toast('Participant link copied.')}catch(e){prompt('Copy this participant link:',url)}});
+  $('addQuestionBtn').addEventListener('click',newQuestion);
+  $('questionEditor').addEventListener('submit',e=>{e.preventDefault();commitEditor(true)});
+  $('saveBankBtn').addEventListener('click',()=>{if(!commitEditor(false))return;if(!editableBank.length){showError('editorError','Keep at least one question in the bank.');return}clearError('editorError');socket.emit('host:save-bank',{questions:editableBank})});
+  $('deleteQuestionBtn').addEventListener('click',()=>{if(editableBank.length<=1){toast('Keep at least one question in the bank.');return}if(!confirm('Delete this question from the bank?'))return;editableBank=editableBank.filter(q=>q.id!==selectedQuestionId);selectedQuestionId=editableBank[0].id;loadQuestionIntoEditor(selectedQuestionId);toast('Question removed locally. Click “Save question bank” to persist.')});
+  $('logoutHost').addEventListener('click',()=>{isHost=false;bankHasLoaded=false;sessionStorage.removeItem('scq_host_pin');showOnly('welcome');$('hostPin').value='';toast('Exited host mode.')});
+  if(location.protocol==='file:'){setConnected(false,'Open via the live server URL');showError('hostError','This live quiz needs the Node.js server running. Start it with npm install and npm start, then open http://localhost:3000/quiz.html.');}
+})();
+</script>
+</body>
+</html>

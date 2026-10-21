@@ -1,0 +1,142 @@
+[
+  {
+    "id": "q1",
+    "category": "Strategy",
+    "text": "The domestic consumable is not yet qualified for critical biopharmaceutical use. What is the most defensible immediate strategy?",
+    "options": [
+      "Stop importing immediately",
+      "Use phased localization while retaining a qualified supply source",
+      "Choose the cheapest supplier without testing",
+      "Assume local supply is automatically equivalent"
+    ],
+    "correctIndex": 1,
+    "explanation": "A phased approach preserves continuity while local manufacturing, comparability, validation and supplier qualification evidence is generated.",
+    "points": 1000
+  },
+  {
+    "id": "q2",
+    "category": "Economics",
+    "text": "The imported unit price is US$420 and the assumed exchange rate is ₹87 per US dollar. What is the product purchase cost before freight and import charges?",
+    "options": [
+      "₹36,540",
+      "₹38,340",
+      "₹420",
+      "₹40,200"
+    ],
+    "correctIndex": 0,
+    "explanation": "US$420 × ₹87/US$ = ₹36,540. Freight and applicable non-recoverable charges must be added separately.",
+    "points": 1000
+  },
+  {
+    "id": "q3",
+    "category": "Economics",
+    "text": "The rupee depreciates against the US dollar, while the supplier keeps the USD price unchanged. What happens to the INR product purchase cost?",
+    "options": [
+      "It decreases",
+      "It stays exactly the same",
+      "It increases",
+      "It becomes zero"
+    ],
+    "correctIndex": 2,
+    "explanation": "A higher INR-per-USD rate increases the INR cost of an unchanged foreign-currency invoice.",
+    "points": 1000
+  },
+  {
+    "id": "q4",
+    "category": "Manufacturing",
+    "text": "A process has 92% usable yield. To deliver 5,000 usable units, approximately how many units must be attempted?",
+    "options": [
+      "4,600",
+      "5,000",
+      "5,435",
+      "5,920"
+    ],
+    "correctIndex": 2,
+    "explanation": "Required attempts = usable output ÷ yield = 5,000 ÷ 0.92 ≈ 5,435 attempts.",
+    "points": 1000
+  },
+  {
+    "id": "q5",
+    "category": "Economics",
+    "text": "Which cost is most clearly an initial localization investment rather than a recurring per-unit cost?",
+    "options": [
+      "Routine packaging for each unit",
+      "Raw material consumed per batch",
+      "Tooling and equipment setup",
+      "Freight paid on each import"
+    ],
+    "correctIndex": 2,
+    "explanation": "Tooling and equipment setup is typically an upfront capital investment; the model should keep it separate from recurring unit costs.",
+    "points": 1000
+  },
+  {
+    "id": "q6",
+    "category": "Tax & landed cost",
+    "text": "When calculating economic import cost, how should recoverable input GST generally be treated?",
+    "options": [
+      "Always add it as a permanent cost",
+      "Exclude it from cost to the extent it is recoverable, while tracking cash-flow timing separately",
+      "Ignore every tax and charge",
+      "Count it twice to be conservative"
+    ],
+    "correctIndex": 1,
+    "explanation": "Recoverable input tax is generally not a permanent economic cost to the extent credit can be claimed. Confirm transaction-specific eligibility and cash-flow impacts.",
+    "points": 1000
+  },
+  {
+    "id": "q7",
+    "category": "Quality",
+    "text": "Before replacing a qualified imported chromatography consumable with a locally manufactured alternative, what should be demonstrated?",
+    "options": [
+      "Only a lower list price",
+      "Only a supplier marketing statement",
+      "Specification fit, performance comparability, appropriate validation and approved change control",
+      "Only that the product is manufactured in India"
+    ],
+    "correctIndex": 2,
+    "explanation": "A sourcing decision must preserve product quality and process performance through documented qualification, testing, validation as applicable, and change control.",
+    "points": 1000
+  },
+  {
+    "id": "q8",
+    "category": "Supply chain",
+    "text": "What is the strongest direct benefit of dual sourcing when both suppliers are qualified?",
+    "options": [
+      "It guarantees no disruptions",
+      "It can reduce dependence on one source, although cost and comparability must be managed",
+      "It always halves the unit cost",
+      "It removes the need for quality assurance"
+    ],
+    "correctIndex": 1,
+    "explanation": "Qualified dual sourcing can improve resilience, but benefits depend on capacity, inventory, supplier independence, qualification and transition costs.",
+    "points": 1000
+  },
+  {
+    "id": "q9",
+    "category": "Decision analysis",
+    "text": "What does a break-even demand estimate identify in an import-versus-local model?",
+    "options": [
+      "The demand level at which modeled costs are equal under stated assumptions",
+      "The number of employees needed for every factory",
+      "A government-guaranteed sales quantity",
+      "The product’s regulatory approval date"
+    ],
+    "correctIndex": 0,
+    "explanation": "Break-even demand identifies the modeled volume at which the cost of the alternatives is equal. Fixed costs, yields, capacity and cost definitions must be consistent.",
+    "points": 1000
+  },
+  {
+    "id": "q10",
+    "category": "Evidence",
+    "text": "Which is the most reliable basis for claiming that a specific Indian incentive applies to the proposed consumable?",
+    "options": [
+      "A social media post about Make in India",
+      "A generic blog about manufacturing",
+      "Current official scheme guidelines matched to the product, applicant and eligibility conditions",
+      "A competitor’s unverified estimate"
+    ],
+    "correctIndex": 2,
+    "explanation": "Use current official scheme guidelines and verify the exact applicant, product, investment and eligibility requirements. Do not infer eligibility from general policy branding.",
+    "points": 1000
+  }
+]
