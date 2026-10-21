@@ -127,12 +127,19 @@ app.use(express.static(process.cwd(), { extensions:['html'], dotfiles:'ignore' }
 // Pre-load and cache HTML files.
 // Explicit string literals ensure @vercel/nft traces and bundles both files in serverless.
 let cachedIndexHtml = '';
+let cachedDashboardHtml = '';
 let cachedQuizHtml = '';
 
 try {
   cachedIndexHtml = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 } catch (_) {
   try { cachedIndexHtml = fs.readFileSync(path.join(process.cwd(), 'index.html'), 'utf8'); } catch (_) {}
+}
+
+try {
+  cachedDashboardHtml = fs.readFileSync(path.join(__dirname, 'dashboard.html'), 'utf8');
+} catch (_) {
+  try { cachedDashboardHtml = fs.readFileSync(path.join(process.cwd(), 'dashboard.html'), 'utf8'); } catch (_) {}
 }
 
 try {
@@ -148,6 +155,15 @@ function getIndexHtml() {
     try { cachedIndexHtml = fs.readFileSync(path.join(process.cwd(), 'index.html'), 'utf8'); } catch (_) {}
   }
   return cachedIndexHtml;
+}
+
+function getDashboardHtml() {
+  if (cachedDashboardHtml) return cachedDashboardHtml;
+  try { cachedDashboardHtml = fs.readFileSync(path.join(__dirname, 'dashboard.html'), 'utf8'); } catch (_) {}
+  if (!cachedDashboardHtml) {
+    try { cachedDashboardHtml = fs.readFileSync(path.join(process.cwd(), 'dashboard.html'), 'utf8'); } catch (_) {}
+  }
+  return cachedDashboardHtml;
 }
 
 function getQuizHtml() {
@@ -166,6 +182,15 @@ app.get(['/', '/index.html'], (req, res) => {
     return res.send(html);
   }
   res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get(['/dashboard', '/dashboard.html'], (req, res) => {
+  const html = getDashboardHtml();
+  if (html) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(html);
+  }
+  res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
 app.get(['/quiz.html', '/quiz'], (req, res) => {
