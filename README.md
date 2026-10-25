@@ -48,9 +48,10 @@ Never publish the host PIN. The application exposes the participant UI and does 
 
 ## Existing dashboard
 
-- `index.html`: the main dashboard with financial sliders and an embedded quiz view in the same sidebar/navigation shell.
-- `quiz.html`: host, participant and live scoreboard interface, also usable standalone.
+- `index.html`: BioPopcorn biopharma landing page and strategic overview.
+- `dashboard.html`: Make in India Strategy Court decision dashboard with financial sensitivity models and embedded quiz view.
+- `quiz.html`: host, participant, and live scoreboard interface, also usable standalone.
 - `server.js`: Express static server and Socket.IO live event handler.
-- `data/quiz-questions.json`: server-side editable bank; do not publish this file directly, because it stores correct answers.
+- `data/quiz-questions.json`: server-side editable question bank.
 
 The financial assumptions and the 10 quiz questions are starter examples. Verify all research claims and replace illustrative numbers before using them as factual evidence.
