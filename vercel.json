@@ -1,16 +1,9 @@
 {
   "version": 2,
-  "functions": {
-    "server.js": {
-      "includeFiles": [
-        "index.html",
-        "dashboard.html",
-        "quiz.html",
-        "data/**"
-      ]
-    }
-  },
+  "cleanUrls": true,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/server.js" }
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/quiz", "destination": "/quiz.html" },
+    { "source": "/api/(.*)", "destination": "/api/index.js" }
   ]
 }
