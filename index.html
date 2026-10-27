@@ -69,6 +69,16 @@
 .bio-card-title{font-size:15px;font-weight:800;color:#fff;margin:0 0 8px;letter-spacing:-.01em}
 .bio-card-text{font-size:12px;line-height:1.6;color:#bacdc1;margin:0}
 
+.bio-carousel-wrap{position:relative;display:flex;align-items:center;gap:0}
+.bio-carousel-track{display:flex;gap:15px;overflow-x:auto;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;padding:4px 0;flex:1}
+.bio-carousel-track::-webkit-scrollbar{display:none}
+.bio-carousel-track .bio-card{min-width:220px;flex:0 0 calc(25% - 12px)}
+@media(max-width:1150px){.bio-carousel-track .bio-card{flex:0 0 calc(50% - 8px);min-width:200px}}
+@media(max-width:640px){.bio-carousel-track .bio-card{flex:0 0 85%;min-width:180px}}
+.bio-carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border-radius:50%;border:1px solid #3a3428;background:rgba(28,27,21,.85);color:#c0d4c7;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(6px);transition:background .2s,border-color .2s,color .2s}
+.bio-carousel-arrow:hover{background:rgba(58,52,40,.95);border-color:#5a5040;color:#fff}
+.bio-carousel-left{left:-6px}
+.bio-carousel-right{right:-6px}
 
 /* === CREAM & GREEN THEME (ZERO BLACK, ZERO ORANGE) === */
 :root {
@@ -760,6 +770,40 @@ body {
         <h3 class="bio-card-title">45% Market Share</h3>
         <p class="bio-card-text">In terms of product, columns hold the highest (around 45%) share of the current market. Prepacked columns are widely used in Liquid Chromatography (LC).</p>
       </div>
+    </div>
+  </div>
+
+  <!-- Section 2: What local manufacture requires -->
+  <div class="bio-consumable-section" id="local-manufacture-section">
+    <div class="bio-section-header">
+      <h2 class="bio-section-title">What local manufacture requires</h2>
+      <p class="bio-section-subtitle">Localization is not just a price decision. Domestic production needs investment before it saves anything.</p>
+    </div>
+    <div class="bio-carousel-wrap">
+      <button class="bio-carousel-arrow bio-carousel-left" id="mfgCarouselLeft" aria-label="Scroll left">‹</button>
+      <div class="bio-carousel-track" id="mfgCarouselTrack">
+        <div class="bio-card">
+          <div class="bio-card-icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg></div>
+          <h3 class="bio-card-title">Packing tooling</h3>
+          <p class="bio-card-text">Column hardware, slurry-packing and assembly equipment.</p>
+        </div>
+        <div class="bio-card">
+          <div class="bio-card-icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg></div>
+          <h3 class="bio-card-title">Validation</h3>
+          <p class="bio-card-text">Proving packed-bed performance, such as efficiency and symmetry, in our process.</p>
+        </div>
+        <div class="bio-card">
+          <div class="bio-card-icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg></div>
+          <h3 class="bio-card-title">Supplier qualification</h3>
+          <p class="bio-card-text">Auditing and approving resin, hardware, frit and sanitary-component suppliers.</p>
+        </div>
+        <div class="bio-card">
+          <div class="bio-card-icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+          <h3 class="bio-card-title">Quality systems</h3>
+          <p class="bio-card-text">Lot traceability, release testing and documentation for every packed column.</p>
+        </div>
+      </div>
+      <button class="bio-carousel-arrow bio-carousel-right" id="mfgCarouselRight" aria-label="Scroll right">›</button>
     </div>
   </div>
 
@@ -1731,6 +1775,16 @@ window.addEventListener('message', event => {
       frame.style.height = Math.max(900, Math.min(h + 16, 12000)) + 'px';
     }
   }
+});
+
+// Carousel scroll controls for What local manufacture requires
+document.getElementById('mfgCarouselLeft')?.addEventListener('click', () => {
+  const track = document.getElementById('mfgCarouselTrack');
+  if (track) track.scrollBy({ left: -260, behavior: 'smooth' });
+});
+document.getElementById('mfgCarouselRight')?.addEventListener('click', () => {
+  const track = document.getElementById('mfgCarouselTrack');
+  if (track) track.scrollBy({ left: 260, behavior: 'smooth' });
 });
 
 updateDashboard();renderEvidence();renderModel();renderScenarios();renderVotes();renderAdmin();
