@@ -1,4 +1,11 @@
 'use strict';
+process.on('uncaughtException', (err) => {
+  console.error('[Process Error Guard] Uncaught Exception:', err.message, err.stack);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[Process Error Guard] Unhandled Rejection:', reason);
+});
+
 const express = require('express');
 const http = require('http');
 const path = require('path');
@@ -459,10 +466,10 @@ app.post('/api/jury/vote', express.json(), (req, res) => {
   try {
     const { clientId, name, optionIndex, reason } = req.body || {};
     if (!clientId) return res.status(400).json({ ok: false, message: 'Missing clientId' });
-    const qIdx = jurySession.currentQuestionIndex;
-    let p = jurySession.participants[clientId];
+    const qIdx = juryGame.currentQuestionIndex;
+    let p = juryGame.participants[clientId];
     if (!p) {
-      p = jurySession.participants[clientId] = {
+      p = juryGame.participants[clientId] = {
         id: clientId,
         name: cleanText(name, 40) || 'Juror',
         connected: true,
@@ -474,7 +481,7 @@ app.post('/api/jury/vote', express.json(), (req, res) => {
       reason: cleanText(reason, 500),
       at: new Date().toISOString()
     };
-    broadcastJuryState();
+    broadcastJury();
     res.json({ ok: true, state: getJuryState(clientId) });
   } catch (err) {
     res.status(500).json({ ok: false, message: err.message });
@@ -724,7 +731,7 @@ io.on('connection', socket=>{
     hostSockets.delete(socket.id);
     juryHostSockets.delete(socket.id);
     if (socket.data?.juryClientId && juryGame && juryGame.participants[socket.data.juryClientId]) { juryGame.participants[socket.data.juryClientId].connected = false; broadcastJury(); }
-    if (socket.data?.juryClientId && jurySession.participants[socket.data.juryClientId]) { jurySession.participants[socket.data.juryClientId].connected = false; broadcastJuryState(); }
+    
     if(socket.data && socket.data.role==='player' && game && socket.data.roomCode===game.roomCode){const p=game.participants[socket.data.playerId];if(p)p.connected=false;broadcastState();}
   });
 });
