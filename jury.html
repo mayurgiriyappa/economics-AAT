@@ -1,665 +1,271 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="google-site-verification" content="7vruUA3_Dzx-QMUYaSiNOYyl8Hwy-CgekyDROTxg-4Q" />
-<title>BioPopcorn | Live Jury Poll Session</title>
-<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==">
+<meta name="theme-color" content="#f7f6f0" />
+<title>Live Jury Voting | BioPopcorn Strategy Court</title>
 <style>
-:root {
-  --bg: #f8f6f0;
-  --panel: #ffffff;
-  --line: #e3dec3;
-  --text: #17382b;
-  --muted: #5a7367;
-  --green: #143a2c;
-  --green-hover: #1b4d3a;
-  --accent: #1f6b49;
-  --lead-bar: linear-gradient(90deg, #143a2c, #2f9468);
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background-color: var(--bg);
-  color: var(--text);
-  font-family: var(--font);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 18px 14px 40px;
-}
-.header {
-  width: 100%;
-  max-width: 580px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--line);
-}
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.brand-badge {
-  background: var(--green);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 5px 9px;
-  border-radius: 6px;
-  letter-spacing: 0.5px;
-}
-.brand-title {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--green);
-}
-.brand-sub {
-  font-size: 11px;
-  color: var(--muted);
-}
-.session-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--accent);
-  background: #e8f5ee;
-  padding: 4px 10px;
-  border-radius: 12px;
-  border: 1px solid #c2e2ce;
-}
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #28a745;
-  display: inline-block;
-  animation: pulse 1.8s infinite;
-}
-@keyframes pulse {
-  0% { opacity: 0.4; }
-  50% { opacity: 1; }
-  100% { opacity: 0.4; }
-}
-.card {
-  width: 100%;
-  max-width: 580px;
-  background: var(--panel);
-  border: 1.5px solid var(--line);
-  border-radius: 14px;
-  padding: 22px;
-  box-shadow: 0 4px 14px rgba(20,58,44,0.04);
-  margin-bottom: 14px;
-}
-.join-view, .poll-view, .result-view {
-  display: none;
-}
-.join-view.active, .poll-view.active, .result-view.active {
-  display: block;
-}
-h2 {
-  font-size: 19px;
-  font-weight: 800;
-  color: var(--green);
-  margin-bottom: 6px;
-}
-p.sub {
-  font-size: 12.5px;
-  color: var(--muted);
-  line-height: 1.45;
-  margin-bottom: 18px;
-}
-.field {
-  margin-bottom: 16px;
-}
-label {
-  display: block;
-  font-size: 11.5px;
-  font-weight: 750;
-  color: var(--muted);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-input, textarea {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1.5px solid var(--line);
-  border-radius: 9px;
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--text);
-  background: #fff;
-  transition: border-color .15s;
-}
-input:focus, textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 13px 18px;
-  font-size: 14px;
-  font-weight: 750;
-  border-radius: 9px;
-  border: none;
-  cursor: pointer;
-  transition: all .15s ease;
-  background: var(--green);
-  color: #fff;
-}
-.btn:hover {
-  background: var(--green-hover);
-}
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-.btn-soft {
-  background: #eef4f0;
-  color: var(--green);
-  border: 1px solid var(--line);
-}
-.btn-soft:hover {
-  background: #e2ede5;
-}
-/* Question info header */
-.q-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-.q-chip {
-  background: #e8f5ee;
-  color: var(--accent);
-  border: 1px solid #c2e2ce;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 3px 9px;
-  border-radius: 6px;
-}
-.q-progress {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--muted);
-}
-.q-text {
-  font-size: 16px;
-  font-weight: 750;
-  color: var(--green);
-  line-height: 1.4;
-  margin-bottom: 18px;
-}
-/* Options list */
-.options-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 18px;
-}
-.opt-label {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 13px 15px;
-  border: 1.5px solid var(--line);
-  border-radius: 11px;
-  background: #fff;
-  cursor: pointer;
-  transition: all .15s ease;
-}
-.opt-label:hover {
-  border-color: var(--accent);
-  background: #f6fbf8;
-}
-.opt-label:has(input:checked) {
-  border-color: var(--accent);
-  background: #e8f5ee;
-}
-.opt-label input[type=radio] {
-  width: 17px;
-  height: 17px;
-  accent-color: var(--accent);
-}
-.opt-letter {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  background: #eef3ef;
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--green);
-  flex-shrink: 0;
-}
-.opt-label:has(input:checked) .opt-letter {
-  background: var(--green);
-  color: #fff;
-}
-.opt-text {
-  font-size: 13.5px;
-  font-weight: 600;
-  line-height: 1.35;
-  color: var(--text);
-}
-/* Waiting state */
-.waiting-box {
-  background: #fdfefd;
-  border: 1.5px dashed #c0d8cb;
-  border-radius: 12px;
-  padding: 22px 18px;
-  text-align: center;
-  margin-top: 14px;
-}
-.waiting-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3.5px solid #e1eee6;
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.9s linear infinite;
-  margin: 0 auto 12px;
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-/* Results presentation */
-.results-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--line);
-}
-.result-lead-banner {
-  background: #e8f5ee;
-  border: 1.5px solid #a3d4b6;
-  border-radius: 11px;
-  padding: 14px 16px;
-  margin-bottom: 20px;
-}
-.lead-label {
-  font-size: 10.5px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: var(--accent);
-  letter-spacing: 0.5px;
-}
-.lead-title {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--green);
-  margin-top: 3px;
-}
-.ratio-row {
-  margin-bottom: 16px;
-}
-.ratio-row-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-  font-size: 13px;
-  font-weight: 700;
-}
-.ratio-row-head .pct {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--accent);
-}
-.ratio-track {
-  height: 11px;
-  background: #e9eee9;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 4px;
-}
-.ratio-fill {
-  height: 100%;
-  background: #8ecaa3;
-  border-radius: 8px;
-  transition: width 0.6s cubic-bezier(.34,1.56,.64,1);
-}
-.ratio-fill.leading {
-  background: var(--lead-bar);
-}
-.ratio-sub {
-  font-size: 10px;
-  color: var(--muted);
-  text-align: right;
-}
-.juror-tag {
-  font-size: 11px;
-  color: var(--muted);
-  background: #f1f5f2;
-  padding: 3px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--line);
-}
-.toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #143a2c;
-  color: #fff;
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .25s ease;
-  z-index: 999;
-}
-.toast.show { opacity: 1; }
+:root{--bg:#f7f6f0;--panel:#fff;--ink:#172c24;--muted:#718078;--line:#e0e9e1;--green:#1b6b4b;--green2:#3b9870;--mint:#eaf5ee;--orange:#e4a03c;--red:#c45f55;--blue:#608ac0;--teal:#56a69a;--purple:#8f7ac0;--shadow:0 12px 35px rgba(23,50,35,.055);--radius:20px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled,input:disabled,textarea:disabled{cursor:not-allowed;opacity:.55}.page{max-width:1200px;margin:0 auto;padding:0 28px 48px}.topbar{display:flex;justify-content:space-between;align-items:center;padding:20px 0 18px;border-bottom:1px solid var(--line);gap:14px}.brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:inherit}.brand-mark{height:40px;width:40px;display:grid;place-items:center;background:var(--green);color:#fff;border-radius:13px;font-weight:900;font-size:19px}.brand-name{font-weight:850;font-size:14px;letter-spacing:-.02em}.brand-sub{color:var(--muted);font-size:10px;margin-top:3px;letter-spacing:.13em;text-transform:uppercase}.toplinks{display:flex;align-items:center;gap:9px}.toplinks a,.toplinks button{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:9px 12px;font-size:11px;text-decoration:none;font-weight:700}.toplinks a:hover,.toplinks button:hover{border-color:#9ac9aa;color:var(--green)}.hero{padding:35px 0 26px}.eyebrow{font-size:10px;font-weight:850;letter-spacing:.15em;text-transform:uppercase;color:var(--green);margin-bottom:12px}.hero h1{font-size:clamp(28px,4vw,45px);line-height:1.08;letter-spacing:-.055em;margin:0;max-width:820px}.hero h1 span{color:var(--green)}.hero p{color:var(--muted);max-width:760px;font-size:14px;line-height:1.7;margin:14px 0 0}.pill{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:100px;background:var(--mint);color:var(--green);font-size:10px;font-weight:800}.dot{width:7px;height:7px;border-radius:100%;background:var(--green2)}.tabs{display:flex;gap:8px;padding:6px;border:1px solid var(--line);background:#eeefe8;border-radius:14px;width:max-content;max-width:100%;margin:8px 0 17px}.tab{border:0;background:transparent;color:#617068;font-weight:800;font-size:11px;padding:11px 15px;border-radius:9px}.tab.active{background:#fff;color:var(--green);box-shadow:0 2px 8px rgba(20,50,33,.06)}.layout{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(280px,.96fr);gap:17px;align-items:start}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:23px;min-width:0}.card + .card{margin-top:15px}.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}.card h2{font-size:16px;letter-spacing:-.025em;margin:0}.card h3{font-size:13px;margin:0}.sub{font-size:11px;color:var(--muted);line-height:1.55;margin:7px 0 0}.field{display:grid;gap:7px;margin-bottom:15px}.field label{font-size:11px;font-weight:800;color:#43594d}.field input,.field textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:11px;padding:12px 13px;outline:none;color:var(--ink);min-width:0}.field input:focus,.field textarea:focus{border-color:#71b18c;box-shadow:0 0 0 3px rgba(59,152,112,.1)}.field textarea{min-height:94px;resize:vertical;line-height:1.5}.field input.code{font-size:20px;letter-spacing:.22em;text-align:center;font-weight:850}.btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:11px 14px;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:transform .15s,box-shadow .15s;text-decoration:none}.btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(20,45,32,.07)}.btn.primary{background:var(--green);color:#fff;border-color:var(--green)}.btn.primary:hover{background:#15573e}.btn.soft{background:var(--mint);border-color:#d7eadf;color:var(--green)}.btn.danger{color:#9e3e35;background:#fff8f7;border-color:#f0d6d1}.btn.block{width:100%}.btnrow{display:flex;flex-wrap:wrap;gap:9px}.notice{border:1px solid #dbeae0;background:#f4faf5;color:#41624f;border-radius:11px;padding:11px 13px;font-size:11px;line-height:1.5;margin-top:12px}.notice.error{border-color:#f0d2cd;background:#fff7f6;color:#8e3931}.notice.hidden{display:none}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:17px}.stat{border:1px solid var(--line);border-radius:13px;padding:13px;background:#fbfcfa}.stat strong{display:block;font-size:22px;letter-spacing:-.05em}.stat span{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;margin-top:5px}.codebox{display:flex;align-items:center;justify-content:space-between;gap:13px;background:#f3f8f4;border:1px dashed #b7d7c0;border-radius:14px;padding:15px;margin-bottom:17px}.code-label{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.room-code{font-size:29px;font-weight:900;letter-spacing:.18em;color:var(--green);margin-top:2px}.progress{height:8px;background:#edf1ed;border-radius:10px;overflow:hidden;margin:11px 0 7px}.progress span{display:block;height:100%;background:var(--green2);border-radius:10px;transition:width .2s}.progress-copy{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:10px}.question-box{background:#fbfcfa;border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:15px}.question-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:11px}.q-chip{background:var(--mint);color:var(--green);border-radius:8px;padding:7px 9px;font-size:10px;font-weight:900;white-space:nowrap}.question-text{font-size:17px;font-weight:800;letter-spacing:-.025em;line-height:1.38}.option-list{display:grid;gap:9px;margin:15px 0}.option{display:flex;align-items:flex-start;gap:11px;padding:13px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;transition:.15s}.option:hover{border-color:#8fc4a0;background:#fbfefb}.option.selected{border-color:var(--green);background:#f0f8f2;box-shadow:0 0 0 2px rgba(27,107,75,.06)}.option input{margin:2px 0 0;accent-color:var(--green)}.option strong{font-size:12px;line-height:1.45;display:block}.option small{display:block;color:var(--muted);font-size:10px;line-height:1.45;margin-top:3px}.vote-status{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:13px;margin-top:14px}.vote-status strong{color:var(--ink)}.pie-wrap{display:grid;grid-template-columns:160px minmax(0,1fr);gap:19px;align-items:center;margin:17px 0}.pie{width:160px;height:160px;border-radius:100%;background:conic-gradient(#dfe8e1 0 100%);position:relative;flex-shrink:0}.pie:after{content:"";position:absolute;inset:43px;border-radius:50%;background:#fff;border:1px solid #edf1ed}.pie-center{position:absolute;z-index:1;inset:0;display:grid;place-content:center;text-align:center}.pie-center strong{font-size:25px;letter-spacing:-.06em}.pie-center span{font-size:9px;color:var(--muted);margin-top:2px}.legend{display:grid;gap:12px;min-width:0}.legend-row{display:grid;grid-template-columns:9px minmax(0,1fr) auto;gap:8px;align-items:start}.legend-dot{width:9px;height:9px;border-radius:3px;margin-top:3px}.legend-label{font-size:10px;color:#526258;line-height:1.4;overflow-wrap:anywhere}.legend-val{font-size:10px;font-weight:900;white-space:nowrap}.empty-chart{padding:16px;background:#f8faf8;border-radius:12px;color:var(--muted);font-size:11px;line-height:1.6}.answer-list{display:grid;gap:10px;margin-top:13px}.answer-card{padding:13px;border:1px solid var(--line);border-radius:12px;background:#fff}.answer-head{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-bottom:7px}.answer-name{font-size:11px;font-weight:850}.answer-option{font-size:9px;font-weight:850;background:var(--mint);color:var(--green);padding:5px 7px;border-radius:7px}.answer-reason{font-size:11px;line-height:1.55;color:#617168;white-space:pre-wrap;overflow-wrap:anywhere}.answer-meta{font-size:9px;color:#8a978f;margin-top:6px}.editor-question{border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:11px}.editor-question summary{font-size:11px;font-weight:850;cursor:pointer;display:flex;justify-content:space-between;gap:10px}.editor-question .editor-fields{padding-top:13px}.editor-question input{font-size:11px;padding:10px}.editor-question label{font-size:10px}.editor-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.room-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.host-actions{display:flex;flex-wrap:wrap;gap:9px;margin:15px 0}.question-results{border-top:1px solid var(--line);padding-top:15px;margin-top:18px}.question-results h3{margin-bottom:9px}.results-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.result-mini{border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}.result-mini .pie-wrap{grid-template-columns:104px minmax(0,1fr);gap:11px}.result-mini .pie{width:104px;height:104px}.result-mini .pie:after{inset:28px}.result-mini .pie-center strong{font-size:18px}.result-mini .legend{gap:8px}.result-mini .legend-label,.result-mini .legend-val{font-size:9px}.result-mini h3{font-size:11px;line-height:1.45;margin-bottom:6px}.section-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:900;color:var(--muted);margin:18px 0 9px}.hidden{display:none!important}.footer{padding:20px 0 0;border-top:1px solid var(--line);margin-top:25px;color:#87928b;font-size:10px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#17382a;color:#fff;border-radius:11px;padding:12px 16px;box-shadow:0 12px 30px rgba(0,0,0,.18);font-size:11px;z-index:20;max-width:calc(100vw - 32px);display:none}.toast.show{display:block;animation:rise .2s ease}@keyframes rise{from{opacity:0;transform:translate(-50%,5px)}to{opacity:1;transform:translate(-50%,0)}}
+body.embed .topbar,body.embed .hero,body.embed .tabs,body.embed .footer{display:none}body.embed .page{padding:16px 0 24px}body.embed .card{box-shadow:none}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.results-grid{grid-template-columns:1fr}.hero{padding-top:25px}.card{padding:19px}}
+@media(max-width:560px){.page{padding:0 14px 28px}.topbar{padding:13px 0}.brand-mark{width:35px;height:35px}.toplinks a{font-size:10px;padding:8px}.toplinks a:nth-child(1){display:none}.hero{padding:24px 0 18px}.hero p{font-size:12px}.tabs{width:100%}.tab{flex:1;padding:10px 8px}.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.stat{padding:10px}.stat strong{font-size:19px}.pie-wrap{grid-template-columns:120px minmax(0,1fr);gap:12px}.pie{width:120px;height:120px}.pie:after{inset:32px}.pie-center strong{font-size:21px}.editor-options{grid-template-columns:1fr}.codebox{align-items:flex-start}.room-code{font-size:25px}.question-text{font-size:15px}.btnrow .btn{flex:1}.result-mini .pie-wrap{grid-template-columns:86px minmax(0,1fr)}.result-mini .pie{width:86px;height:86px}.result-mini .pie:after{inset:23px}.result-mini .pie-center strong{font-size:15px}}
 </style>
-<script src="/socket.io/socket.io.js"></script>
+<script src="/jury-config.js"></script>
+<script>
+window.__jurySocketPromise = new Promise((resolve, reject) => {
+  const base = String(window.JURY_SOCKET_URL || location.origin).replace(/\/+$/, '');
+  const clientScript = document.createElement('script');
+  clientScript.src = base + '/socket.io/socket.io.js';
+  clientScript.onload = resolve;
+  clientScript.onerror = () => reject(new Error('Could not load the live jury connection client.'));
+  document.head.appendChild(clientScript);
+});
+</script>
 </head>
 <body>
-
-<header class="header">
-  <div class="brand">
-    <span class="brand-badge">POLL</span>
-    <div>
-      <div class="brand-title">Courtroom &amp; Jury</div>
-      <div class="brand-sub">Make in India · Live Deliberation</div>
+<div class="page">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="BioPopcorn Strategy Court dashboard"><span class="brand-mark">B</span><span><span class="brand-name">BioPopcorn Strategy Court</span><span class="brand-sub">Live jury voting</span></span></a>
+    <div class="toplinks"><a href="/">Back to dashboard ↗</a><button id="hostShortcut" type="button">Host panel · PIN</button></div>
+  </header>
+  <section class="hero">
+    <div class="eyebrow">Biopharma · Bengaluru, India</div>
+    <h1>Six voices. <span>One evidence-led verdict.</span></h1>
+    <p>Join the jury to vote on BioPopcorn’s import-versus-local manufacturing decision. The host can review written reasoning, showcase live vote ratios, and present the final distribution.</p>
+  </section>
+  <div class="tabs" role="tablist" aria-label="Jury access mode"><button class="tab active" id="tabJoin" data-tab="join" type="button">Join as juror</button><button class="tab" id="tabHost" data-tab="host" type="button">Host dashboard</button></div>
+  <div id="joinPanel">
+    <div class="layout">
+      <section class="card" id="joinCard">
+        <div class="card-head"><div><h2>Enter the jury room</h2><p class="sub">Use the six-digit room code shared by the presenter. A maximum of six jurors can join.</p></div><span class="pill"><span class="dot"></span> PARTICIPANT</span></div>
+        <form id="joinForm">
+          <div class="field"><label for="roomCodeInput">Jury room code</label><input class="code" id="roomCodeInput" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" pattern="[0-9]{6}" required /></div>
+          <div class="field"><label for="jurorNameInput">Your name / juror ID</label><input id="jurorNameInput" autocomplete="name" maxlength="35" placeholder="e.g. Juror 01" required /></div>
+          <button class="btn primary block" type="submit">Join jury room →</button>
+        </form>
+        <div class="notice hidden" id="joinNotice" role="status"></div>
+        <p class="sub" style="margin-top:16px">After joining, keep this page open until the host closes the jury. Your vote is attached to your browser session so a refresh can reconnect you.</p>
+      </section>
+      <aside class="card"><div class="card-head"><div><h2>How voting works</h2><p class="sub">One room, five questions, three options per question.</p></div></div><div class="section-label">01 · Choose</div><p class="sub">Read each conclusion, select the option that best matches your judgment, and add a short rationale if useful.</p><div class="section-label">02 · Review</div><p class="sub">The host can see submitted choices and written reasoning while the aggregate chart remains hidden from participants.</p><div class="section-label">03 · Decide</div><p class="sub">When the host showcases results, everyone sees the live pie chart with counts and percentages.</p><div class="notice">This is a classroom deliberation tool, not a secret ballot. The host can see each juror’s submitted choice and rationale.</div></aside>
+    </div>
+    <div id="participantPanel" class="hidden">
+      <section class="card" style="margin-top:16px">
+        <div class="card-head"><div><h2 id="participantHeading">Jury vote</h2><p class="sub" id="participantSub">Your votes update live.</p></div><span class="pill"><span class="dot"></span> CONNECTED</span></div>
+        <div class="stats"><div class="stat"><strong id="pJoined">0 / 6</strong><span>Jurors joined</span></div><div class="stat"><strong id="pVoted">0 / 0</strong><span>Votes submitted</span></div><div class="stat"><strong id="pQuestion">Q0 / 5</strong><span>Question</span></div></div>
+        <div id="participantQuestionArea"></div>
+        <div id="participantResultsArea" class="hidden"></div>
+        <div id="participantFinalArea" class="hidden"></div>
+        <div class="vote-status"><span><strong>Jury status</strong> <span id="participantStatusText">Waiting for host</span></span><span id="participantNameLabel"></span></div>
+        <div class="notice hidden" id="voteNotice" role="status"></div>
+      </section>
     </div>
   </div>
-  <div class="session-status" id="sessionStatus">
-    <span class="status-dot"></span>
-    <span id="statusLabel">Connecting…</span>
+  <div id="hostPanel" class="hidden">
+    <section class="card" id="hostLoginCard">
+      <div class="card-head"><div><h2>Host access</h2><p class="sub">Enter the private host PIN to control the room, review individual reasoning, and showcase results.</p></div><span class="pill">ADMIN</span></div>
+      <form id="hostLoginForm"><div class="field"><label for="hostPinInput">Host PIN</label><input id="hostPinInput" type="password" inputmode="numeric" autocomplete="current-password" placeholder="Enter host PIN" required maxlength="100" /></div><button class="btn primary" type="submit">Unlock host dashboard →</button></form>
+      <div class="notice hidden" id="hostLoginNotice" role="status"></div>
+    </section>
+    <div id="hostDashboard" class="hidden">
+      <section class="card" style="margin-top:16px">
+        <div class="card-head"><div><h2>Host control room</h2><p class="sub">Manage the five questions, monitor up to six jurors, and reveal ratios when you are ready.</p></div><span class="pill"><span class="dot"></span> PIN AUTHENTICATED</span></div>
+        <div id="hostRoomArea"></div>
+      </section>
+      <section class="card" style="margin-top:16px">
+        <div class="card-head"><div><h2>Edit the jury questions</h2><p class="sub">Exactly five questions are available, each with three answer options. Save before opening a new room.</p></div><span class="pill">5 QUESTIONS</span></div>
+        <div class="notice">Question edits are stored on the server. If a jury room is currently open, finish it before editing the question bank.</div>
+        <div id="questionEditors"></div>
+        <div class="btnrow" style="margin-top:17px"><button class="btn primary" id="saveQuestionBank" type="button">Save question set</button><button class="btn" id="openJuryRoom" type="button">Open jury room →</button></div>
+        <div class="notice hidden" id="hostActionNotice" role="status"></div>
+      </section>
+      <section class="card" style="margin-top:16px">
+        <div class="card-head"><div><h2>Current vote distribution</h2><p class="sub">Pie chart ratios use submitted votes for the active question as the denominator.</p></div><span class="pill" id="liveStatusPill">NO ROOM</span></div>
+        <div id="hostLiveChart"><div class="empty-chart">Open a jury room and start voting to see the live distribution.</div></div>
+        <div class="section-label">Juror answers and written reasoning</div><div id="hostResponses" class="answer-list"><div class="empty-chart">Submitted answers appear here once a juror votes.</div></div>
+      </section>
+      <section class="card hidden" id="allResultsCard" style="margin-top:16px">
+        <div class="card-head"><div><h2>Final jury result</h2><p class="sub">All five questions, shown as vote ratios and percentages.</p></div><div class="btnrow"><button class="btn" id="exportJuryCsv" type="button">Export detailed CSV ↓</button><span class="pill">FINAL RESULTS</span></div></div><div id="allResultsGrid" class="results-grid"></div><div id="allResponseDetails"></div>
+      </section>
+    </div>
   </div>
-</header>
-
-<!-- VIEW 1: JOIN FORM -->
-<div class="card join-view active" id="joinView">
-  <h2>Join Live Jury Session</h2>
-  <p class="sub">Deliberate on 5 strategy questions in real time. Results are showcased live by the host at the end of each question.</p>
-  
-  <form id="joinForm">
-    <div class="field">
-      <label for="roomInput">Private Room Code</label>
-      <input id="roomInput" placeholder="e.g. JURY-123456" required autocomplete="off" />
-    </div>
-    <div class="field">
-      <label for="nameInput">Your Name / Juror ID</label>
-      <input id="nameInput" placeholder="e.g. Dr. Ramesh / Juror 04" required maxlength="40" autocomplete="name" />
-    </div>
-    <button type="submit" class="btn" id="joinBtn">Enter Jury Chamber →</button>
-  </form>
+  <footer class="footer"><span>BioPopcorn · Strategy Court</span><span>Votes and room state are held in server memory until the server restarts.</span></footer>
 </div>
-
-<!-- VIEW 2: ACTIVE POLL BALLOT -->
-<div class="card poll-view" id="pollView">
-  <div class="q-meta">
-    <span class="q-chip" id="qCategory">Economics</span>
-    <span class="q-progress" id="qProgress">Question 1 of 5</span>
-  </div>
-  
-  <div class="q-text" id="qText">Loading question…</div>
-
-  <form id="voteForm">
-    <div class="options-list" id="optionsContainer"></div>
-
-    <div class="field">
-      <label for="reasonInput">Reasoning &amp; Evidence (Optional)</label>
-      <textarea id="reasonInput" rows="2" placeholder="Note your key consideration or risk..."></textarea>
-    </div>
-
-    <button type="submit" class="btn" id="submitVoteBtn">Submit Jury Vote →</button>
-  </form>
-
-  <div class="waiting-box" id="waitingBox" style="display:none">
-    <div class="waiting-spinner"></div>
-    <div style="font-size:14px;font-weight:800;color:var(--green);margin-bottom:4px">✓ Vote Recorded!</div>
-    <div style="font-size:12px;color:var(--muted)" id="waitingMsg">Waiting for the host to showcase results for this question…</div>
-    <div style="margin-top:10px" id="jurorVotesCountBadge" class="juror-tag">1 vote recorded so far</div>
-  </div>
-</div>
-
-<!-- VIEW 3: LIVE RESULTS SHOWCASE -->
-<div class="card result-view" id="resultView">
-  <div class="results-header">
-    <div>
-      <div style="font-size:11px;font-weight:800;color:var(--accent)" id="resCategory">Category</div>
-      <div style="font-size:15px;font-weight:800;color:var(--green)" id="resQNum">Question 1 Results</div>
-    </div>
-    <span class="juror-tag" id="resTotalVotes">0 votes</span>
-  </div>
-
-  <div class="result-lead-banner">
-    <div class="lead-label">Live Leading Verdict</div>
-    <div class="lead-title" id="leadOptionTitle">—</div>
-  </div>
-
-  <div id="ratioBarsContainer"></div>
-
-  <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);text-align:center">
-    <span style="font-size:11.5px;color:var(--muted)">Waiting for host to advance to the next question…</span>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-let socket = null;
-let clientId = localStorage.getItem('juryClientId') || ('juror_' + Math.random().toString(36).substring(2, 10));
-localStorage.setItem('juryClientId', clientId);
-
-let jurorName = localStorage.getItem('jurorName') || '';
-let currentRoom = '';
-let currentJuryState = null;
-let hasVotedCurrentQ = false;
-
-// URL params: auto-fill room code if present
-const urlParams = new URLSearchParams(window.location.search);
-const paramRoom = urlParams.get('room');
-if (paramRoom) {
-  document.getElementById('roomInput').value = paramRoom.trim().toUpperCase();
+window.__jurySocketPromise.then(() => {
+(() => {
+'use strict';
+const SOCKET_BASE = String(window.JURY_SOCKET_URL || location.origin).replace(/\/+$/, '');
+const socket = io(SOCKET_BASE);
+const JURY_MAX = 6;
+const COLORS = ['#1b6b4b','#e4a03c','#608ac0'];
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+if (params.get('embed') === '1') document.body.classList.add('embed');
+let activeTab = 'join';
+let hostPin = '';
+let hostAuthed = false;
+let hostState = {hasRoom:false,bank:[],maxJurors:6};
+let participantState = {hasRoom:false};
+let joinedInfo = null;
+let draftBank = [];
+let questionEditorInitialized = false;
+let serverBankSignature = ''; 
+let toastTimer;
+const clientId = getClientId();
+function getClientId(){let id=localStorage.getItem('biopopcornJuryClientId');if(!id){id=(crypto.randomUUID?crypto.randomUUID():('jury-'+Date.now()+'-'+Math.random().toString(36).slice(2)));localStorage.setItem('biopopcornJuryClientId',id)}return id}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(message){const t=$('toast');t.textContent=message;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3400)}
+function postHeight(){if(params.get('embed')==='1')window.parent.postMessage({type:'jury:resize',height:Math.max(document.body.scrollHeight,900)},'*')}
+function showNotice(id,message,isError=false){const el=$(id);if(!el)return;el.textContent=message;el.classList.remove('hidden','error');if(isError)el.classList.add('error');postHeight()}
+function hideNotice(id){const el=$(id);if(el)el.classList.add('hidden')}
+function selectTab(tab){activeTab=tab;document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));$('joinPanel').classList.toggle('hidden',tab!=='join');$('hostPanel').classList.toggle('hidden',tab!=='host');if(tab==='host'&&hostAuthed){$('hostLoginCard').classList.add('hidden');$('hostDashboard').classList.remove('hidden')}postHeight()}
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>selectTab(b.dataset.tab)));
+$('hostShortcut').addEventListener('click',()=>selectTab('host'));
+function normalizeDraft(bank){return (bank||[]).slice(0,5).map((q,i)=>({id:q.id||'j'+(i+1),text:q.text||'',options:(q.options||[]).slice(0,3).map(x=>String(x||''))}))}
+function pieHTML(counts,total,small=false){
+  const norm=(counts||[]).map((c,i)=>({label:c.label,count:Number(c.count)||0,percent:total?(Number(c.count)||0)/total*100:0,color:COLORS[i%COLORS.length]}));
+  let cursor=0;const stops=norm.map(n=>{const start=cursor;cursor+=n.percent;return n.color + ' ' + start + '% ' + cursor + '%'}).join(', ');
+  const background=total&&cursor>0?('conic-gradient(' + stops + ')'):'#e5ebe6';
+  return '<div class="pie-wrap"><div class="pie" style="background:' + background + '"><div class="pie-center"><strong>' + total + '</strong><span>votes cast</span></div></div><div class="legend">' + norm.map(n=>'<div class="legend-row"><span class="legend-dot" style="background:' + n.color + '"></span><span class="legend-label">' + esc(n.label) + '</span><span class="legend-val">' + n.count + ' · ' + n.percent.toFixed(1) + '%</span></div>').join('') + '</div></div>';
 }
-if (jurorName) {
-  document.getElementById('nameInput').value = jurorName;
+function renderQuestionEditors(force=false){
+  if(!force && questionEditorInitialized)return;
+  const area=$('questionEditors');
+  area.innerHTML=draftBank.map((q,i)=>'<details class="editor-question" ' + (i===0?'open':'') + '><summary><span>Question ' + (i+1) + '</span><span style="color:#829187;font-weight:700">Edit text + 3 options</span></summary><div class="editor-fields"><div class="field"><label for="juryQ' + i + '">Question text</label><input id="juryQ' + i + '" data-q-index="' + i + '" data-q-field="text" maxlength="500" value="' + esc(q.text) + '" /></div><div class="editor-options">' + q.options.map((o,j)=>'<div class="field"><label for="juryQ' + i + 'O' + j + '">Option ' + (j+1) + '</label><input id="juryQ' + i + 'O' + j + '" data-q-index="' + i + '" data-option-index="' + j + '" maxlength="180" value="' + esc(o) + '" /></div>').join('') + '</div></div></details>').join('');
+  area.querySelectorAll('input').forEach(input=>input.addEventListener('input',()=>{
+    const i=Number(input.dataset.qIndex);
+    if(input.dataset.qField==='text')draftBank[i].text=input.value;
+    else draftBank[i].options[Number(input.dataset.optionIndex)]=input.value;
+    questionEditorInitialized=true;
+  }));
+  questionEditorInitialized=true;postHeight();
 }
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2400);
-}
-
-function switchView(viewName) {
-  document.getElementById('joinView').classList.toggle('active', viewName === 'join');
-  document.getElementById('pollView').classList.toggle('active', viewName === 'poll');
-  document.getElementById('resultView').classList.toggle('active', viewName === 'result');
-}
-
-function initSocket() {
-  if (typeof io === 'undefined') {
-    document.getElementById('statusLabel').textContent = 'Offline Mode';
+function renderHostRoom(){
+  const area=$('hostRoomArea');
+  if(!hostState.hasRoom){
+    area.innerHTML='<div class="empty-chart">No active jury room. Edit and save the five questions below, then open a room to generate a code for jurors.</div><div class="btnrow" style="margin-top:14px"><button class="btn primary" id="createRoomTop" type="button">Open jury room →</button></div>';
+    $('createRoomTop').addEventListener('click',createRoom);$('liveStatusPill').textContent='NO ROOM';$('openJuryRoom').disabled=false;$('saveQuestionBank').disabled=false;$('hostLiveChart').innerHTML='<div class="empty-chart">Open a room, start voting, and votes will appear here live.</div>';$('hostResponses').innerHTML='<div class="empty-chart">No votes received yet.</div>';$('allResultsCard').classList.add('hidden');
     return;
   }
-  socket = io();
-
-  socket.on('connect', () => {
-    document.getElementById('statusLabel').textContent = 'Connected';
-    if (currentRoom && jurorName) {
-      socket.emit('jury:join', { clientId, name: jurorName, roomCode: currentRoom });
+  const status=hostState.status;
+  const q=hostState.currentQuestion;
+  const voted=hostState.votedCount||0;
+  const total=hostState.participantCount||0;
+  const connected=hostState.connectedCount||0;
+  let controls='';
+  if(status==='lobby')controls='<button class="btn primary" id="startJury" type="button">Start voting →</button><button class="btn" id="copyJuryLink" type="button">Copy participant link</button><button class="btn" id="copyRoomCode" type="button">Copy room code</button>';
+  else if(status==='live')controls='<button class="btn primary" id="toggleResults" type="button">' + (hostState.resultsVisible?'Results showcased':'Showcase live results') + '</button>' + (hostState.resultsVisible?'<button class="btn" id="hideResults" type="button">Hide from jurors</button>':'') + '<button class="btn" id="advanceJury" type="button">' + (hostState.currentIndex>=4?'Close jury & final results':'Next question →') + '</button><button class="btn" id="copyJuryLink" type="button">Copy participant link</button>';
+  else controls='<button class="btn primary" id="createRoomAgain" type="button">Open new jury room →</button><button class="btn" id="copyFinalResults" type="button">Copy final result summary</button>';
+  area.innerHTML='<div class="room-banner"><div><span class="pill"><span class="dot"></span>' + esc(status.toUpperCase()) + '</span><p class="sub" style="margin-top:8px">' + (status==='lobby'?'Share the room code, then start when jurors have joined.':status==='live'?'Votes update live. Showcase aggregates when ready.':'The jury has ended; final ratios are available below.') + '</p></div>' + (hostState.roomCode?'<div class="codebox" style="margin:0;min-width:215px"><div><div class="code-label">Room code</div><div class="room-code">' + esc(hostState.roomCode) + '</div></div><button class="btn" id="copyRoomCode2" type="button">Copy</button></div>':'') + '</div>'
+  + '<div class="stats"><div class="stat"><strong>' + connected + ' / ' + JURY_MAX + '</strong><span>Connected / max 6</span></div><div class="stat"><strong>' + voted + ' / ' + total + '</strong><span>Current votes</span></div><div class="stat"><strong>' + (q?hostState.currentIndex+1:0) + ' / 5</strong><span>Question</span></div></div>'
+  + (q?'<div class="question-box"><div class="question-top"><span class="eyebrow" style="margin:0">Active question</span><span class="q-chip">Q' + (hostState.currentIndex+1) + ' of 5</span></div><div class="question-text">' + esc(q.text) + '</div><div class="progress"><span style="width:' + (total?voted/total*100:0) + '%"></span></div><div class="progress-copy"><span>' + voted + ' of ' + total + ' jurors have voted</span><span>' + (total?Math.round(voted/total*100):0) + '% response</span></div></div>':'')
+  + '<div class="host-actions">' + controls + '</div>'
+  + '<div class="notice ' + (status==='ended'?'':'hidden') + '" id="endedNotice">Final results are visible to participants. Open a new jury room to begin another round.</div>';
+  const bind=(id,fn)=>{const b=$(id);if(b)b.addEventListener('click',fn)};
+  bind('startJury',()=>socket.emit('jury:host:start'));
+  bind('toggleResults',()=>socket.emit(hostState.resultsVisible?'jury:host:hide-results':'jury:host:show-results'));
+  bind('hideResults',()=>socket.emit('jury:host:hide-results'));
+  bind('advanceJury',()=>socket.emit('jury:host:next'));
+  bind('createRoomAgain',createRoom);
+  bind('copyJuryLink',copyParticipantLink);
+  bind('copyRoomCode',()=>copyText(hostState.roomCode));bind('copyRoomCode2',()=>copyText(hostState.roomCode));
+  bind('copyFinalResults',copyFinalSummary);
+  $('openJuryRoom').disabled=hostState.hasRoom&&hostState.status!=='ended';
+  $('saveQuestionBank').disabled=hostState.hasRoom&&hostState.status!=='ended';
+}
+function renderHostChart(){
+  if(!hostState.hasRoom||hostState.status==='lobby'||!hostState.currentQuestion){$('hostLiveChart').innerHTML='<div class="empty-chart">Start voting to activate the live chart. Results are ratios of submitted votes, not the maximum room capacity.</div>'; $('hostResponses').innerHTML='<div class="empty-chart">Individual choices and written reasoning appear here after votes are submitted.</div>';return}
+  const counts=hostState.optionCounts||[];const total=counts.reduce((s,c)=>s+c.count,0);
+  $('hostLiveChart').innerHTML='<div class="question-box"><div class="question-top"><strong style="font-size:11px">Question ' + (hostState.currentIndex+1) + ' · vote split</strong><span class="q-chip">' + total + ' vote' + (total===1?'':'s') + '</span></div>' + pieHTML(counts,total) + '<p class="sub">Denominator: ' + total + ' submitted vote' + (total===1?'':'s') + ' for this question. ' + (hostState.resultsVisible?'The chart is visible to participants.':'The chart is host-only until you showcase results.') + '</p></div>';
+  const jurors=(hostState.participants||[]).sort((a,b)=>a.name.localeCompare(b.name));
+  $('hostResponses').innerHTML=jurors.length?jurors.map(p=>'<article class="answer-card"><div class="answer-head"><span class="answer-name">' + esc(p.name) + '</span>' + (p.vote?'<span class="answer-option">' + esc(p.vote.option) + '</span>':'<span class="answer-option" style="background:#f5f0e4;color:#8a6b2d">Awaiting vote</span>') + '<span class="pill" style="margin-left:auto">' + (p.connected?'Connected':'Offline') + '</span></div><div class="answer-reason">' + (p.vote?(p.vote.reason?esc(p.vote.reason):'<em>No written reasoning provided.</em>'):'This juror has not submitted an answer for the current question yet.') + '</div>' + (p.vote?'<div class="answer-meta">Submitted ' + new Date(p.vote.submittedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</div>':'') + '</article>').join(''):'<div class="empty-chart">No jurors have joined. Share the room code to invite up to six participants.</div>';
+}
+function renderFinalResults(results,responses=[]){
+  const grid=$('allResultsGrid');if(!results||!results.length){grid.innerHTML='';$('allResponseDetails').innerHTML='';return}
+  grid.innerHTML=results.map((r,i)=>'<article class="result-mini"><h3>Q' + (i+1) + '. ' + esc(r.text) + '</h3><p class="sub">' + r.totalVotes + ' of ' + r.totalJurors + ' jurors voted</p>' + pieHTML(r.options,r.totalVotes,true) + '<p class="sub"><strong>Leading option:</strong> ' + esc(leader(r.options)) + '</p></article>').join('');
+  $('allResponseDetails').innerHTML='<div class="section-label">Detailed answers and written reasoning</div>' + (responses||[]).map((q,i)=>'<details class="editor-question"><summary><span>Question ' + (i+1) + ' · ' + esc(q.text) + '</span><span style="color:#829187">' + q.responses.length + ' response' + (q.responses.length===1?'':'s') + '</span></summary><div class="editor-fields answer-list">' + (q.responses.length?q.responses.map(r=>'<article class="answer-card"><div class="answer-head"><span class="answer-name">' + esc(r.name) + '</span><span class="answer-option">' + esc(r.option) + '</span></div><div class="answer-reason">' + (r.reason?esc(r.reason):'<em>No written reasoning provided.</em>') + '</div><div class="answer-meta">' + new Date(r.submittedAt).toLocaleString() + '</div></article>').join(''):'<div class="empty-chart">No votes were submitted for this question.</div>') + '</div></details>').join('');
+  const exportButton=$('exportJuryCsv');if(exportButton)exportButton.onclick=exportDetailedCSV;
+}
+function exportDetailedCSV(){
+  const rows=[['Question','Juror','Selected option','Written reasoning','Submitted at','Option votes','Option percentage','Total submitted votes','Jurors joined']];
+  (hostState.allResponses||[]).forEach((q,qi)=>{
+    const result=(hostState.allResults||[])[qi]||{options:[],totalVotes:0,totalJurors:0};
+    q.responses.forEach(r=>{const op=result.options.find(x=>x.label===r.option)||{count:0,percent:0};rows.push([q.text,r.name,r.option,r.reason,r.submittedAt,op.count,op.percent,result.totalVotes,result.totalJurors])});
+  });
+  if(rows.length===1){toast('There are no submitted votes to export yet.');return}
+  const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='biopopcorn-jury-results.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('Detailed jury results exported.');
+}
+function leader(options){if(!options||!options.length||!options.some(o=>o.count>0))return 'No votes';const max=Math.max(...options.map(o=>o.count));const wins=options.filter(o=>o.count===max).map(o=>o.label);return wins.length>1?'Tie: '+wins.join(' / '):wins[0]}
+function renderHost(data,forceEditor=false){
+  hostState=data;
+  if(Array.isArray(data.bank)){
+    const incomingSignature=JSON.stringify(normalizeDraft(data.bank));
+    if(!questionEditorInitialized||forceEditor||incomingSignature!==serverBankSignature){
+      serverBankSignature=incomingSignature; draftBank=normalizeDraft(data.bank); renderQuestionEditors(true);
     }
-  });
-
-  socket.on('disconnect', () => {
-    document.getElementById('statusLabel').textContent = 'Reconnecting…';
-  });
-
-  socket.on('jury:joined', (data) => {
-    currentRoom = data.roomCode;
-    document.getElementById('statusLabel').textContent = 'Room: ' + data.roomCode;
-  });
-
-  socket.on('jury:state', (state) => {
-    currentJuryState = state;
-    renderState(state);
-  });
-
-  socket.on('jury:vote-accepted', () => {
-    hasVotedCurrentQ = true;
-    showToast('Your vote was recorded live!');
-    document.getElementById('waitingBox').style.display = 'block';
-    document.getElementById('submitVoteBtn').style.display = 'none';
-    document.querySelectorAll('input[name="juryOpt"]').forEach(r => r.disabled = true);
-  });
-
-  socket.on('jury:error', (err) => {
-    showToast(err.message || 'Error occurred');
-  });
+  }
+  $('hostLoginCard').classList.toggle('hidden',hostAuthed);$('hostDashboard').classList.toggle('hidden',!hostAuthed);
+  if(!hostAuthed)return;
+  document.querySelectorAll('#questionEditors input').forEach(input=>{input.disabled=!!(data.hasRoom&&data.status!=='ended')});
+  renderHostRoom();renderHostChart();
+  if(data.status==='ended'&&data.allResults){$('allResultsCard').classList.remove('hidden');renderFinalResults(data.allResults,data.allResponses||[])}else $('allResultsCard').classList.add('hidden');
+  postHeight();
 }
-
-function renderState(state) {
-  if (!state || !state.currentQuestion) return;
-
-  const q = state.currentQuestion;
-  const qIdx = state.currentQuestionIndex;
-
-  hasVotedCurrentQ = !!(state.myVote);
-
-  if (state.showResult) {
-    switchView('result');
-    renderResultView(state);
-    return;
+function renderParticipantResultChart(results){return '<div class="card" style="padding:16px;border-color:#d7e8dc"><div class="card-head"><div><h3>Live jury distribution</h3><p class="sub">Shown by the host. Percentages are based on submitted votes.</p></div><span class="pill">SHOWCASE</span></div>' + pieHTML(results.options,results.totalVotes) + '<p class="sub">Leading option: <strong>' + esc(leader(results.options)) + '</strong></p></div>'}
+function renderParticipant(data){
+  participantState=data; $('joinCard').classList.add('hidden');$('participantPanel').classList.remove('hidden');$('pJoined').textContent=(data.connectedCount||data.participantCount||0) + ' / 6';$('pVoted').textContent=(data.votedCount||0) + ' / ' + (data.participantCount||0);$('pQuestion').textContent='Q' + (data.currentIndex>=0?data.currentIndex+1:0) + ' / 5';$('participantNameLabel').textContent=joinedInfo?joinedInfo.name:'';
+  $('participantQuestionArea').classList.remove('hidden');$('participantResultsArea').classList.add('hidden');$('participantFinalArea').classList.add('hidden');
+  if(data.status==='ended'){
+    $('participantHeading').textContent='Final jury verdict';$('participantSub').textContent='The host has closed the session. Review how all five questions were voted.';$('participantQuestionArea').innerHTML='<div class="empty-chart">Voting is closed. Final ratios are shown below.</div>';$('participantFinalArea').classList.remove('hidden');$('participantFinalArea').innerHTML='<div class="results-grid">' + (data.allResults||[]).map((r,i)=>'<article class="result-mini"><h3>Q' + (i+1) + '. ' + esc(r.text) + '</h3><p class="sub">' + r.totalVotes + ' of ' + r.totalJurors + ' jurors voted</p>' + pieHTML(r.options,r.totalVotes,true) + '<p class="sub"><strong>Leading option:</strong> ' + esc(leader(r.options)) + '</p></article>').join('') + '</div>';$('participantStatusText').textContent='Jury complete';postHeight();return;
   }
-
-  switchView('poll');
-  document.getElementById('qCategory').textContent = q.category || 'Strategy';
-  document.getElementById('qProgress').textContent = 'Question ' + (qIdx + 1) + ' of ' + (state.questionCount || 5);
-  document.getElementById('qText').textContent = q.question;
-
-  const container = document.getElementById('optionsContainer');
-  container.innerHTML = q.options.map((opt, i) => {
-    const isChecked = state.myVote && state.myVote.optionIndex === i ? 'checked' : '';
-    const isDisabled = hasVotedCurrentQ ? 'disabled' : '';
-    return '<label class="opt-label">'
-      + '<input type="radio" name="juryOpt" value="' + i + '" ' + isChecked + ' ' + isDisabled + ' />'
-      + '<span class="opt-letter">' + String.fromCharCode(65 + i) + '</span>'
-      + '<span class="opt-text">' + opt + '</span>'
-      + '</label>';
-  }).join('');
-
-  if (hasVotedCurrentQ) {
-    document.getElementById('waitingBox').style.display = 'block';
-    document.getElementById('submitVoteBtn').style.display = 'none';
-    document.getElementById('reasonInput').disabled = true;
-    document.getElementById('jurorVotesCountBadge').textContent = state.totalVotes + ' vote' + (state.totalVotes !== 1 ? 's' : '') + ' recorded';
-  } else {
-    document.getElementById('waitingBox').style.display = 'none';
-    document.getElementById('submitVoteBtn').style.display = 'block';
-    document.getElementById('reasonInput').disabled = false;
-    document.getElementById('reasonInput').value = '';
-  }
+  if(data.status==='lobby'||!data.question){$('participantHeading').textContent='You are in the jury room';$('participantSub').textContent='The host will start question 1 when everyone is ready.';$('participantQuestionArea').innerHTML='<div class="empty-chart">You are connected. Please wait for the presenter to start the jury.</div>';$('participantStatusText').textContent='Waiting for host';postHeight();return}
+  const q=data.question;const existing=data.myVote;const editable=!data.resultsVisible;
+  $('participantHeading').textContent='Question ' + (data.currentIndex+1);$('participantSub').textContent='Choose the conclusion you support. There are five questions in this jury.';
+  $('participantQuestionArea').innerHTML='<div class="question-box"><div class="question-top"><span class="eyebrow" style="margin:0">Strategy Court</span><span class="q-chip">Q' + (data.currentIndex+1) + ' of 5</span></div><div class="question-text">' + esc(q.text) + '</div></div>'
+    + '<form id="participantVoteForm"><div class="section-label">Select one preferred conclusion</div><div class="option-list">' + q.options.map((opt,i)=>'<label class="option ' + ((existing&&existing.optionIndex===i)?'selected':'') + '"><input type="radio" name="juryOption" value="' + i + '" ' + ((existing&&existing.optionIndex===i)?'checked':'') + ' ' + (editable?'':'disabled') + ' required /><span><strong>' + esc(opt) + '</strong><small>Option ' + (i+1) + '</small></span></label>').join('') + '</div><div class="field"><label for="participantReason">Written reasoning / evidence (optional)</label><textarea id="participantReason" maxlength="1000" placeholder="Briefly explain the main cost, quality, evidence or risk factor behind your choice…" ' + (editable?'':'disabled') + '>' + (existing?esc(existing.reason):'') + '</textarea></div><button class="btn primary block" type="submit" ' + (editable?'':'disabled') + '>' + (existing?'Update my vote':'Cast jury vote →') + '</button></form>'
+    + '<div class="progress"><span style="width:' + (data.participantCount?(data.votedCount/data.participantCount*100):0) + '%"></span></div><div class="progress-copy"><span>Connected jurors: ' + (data.connectedCount||0) + ' · ' + (data.participantCount||0) + ' joined</span><span>' + (data.votedCount||0) + ' of ' + (data.participantCount||0) + ' voted</span></div>';
+  document.querySelectorAll('#participantVoteForm .option').forEach(label=>{const radio=label.querySelector('input');radio.addEventListener('change',()=>{document.querySelectorAll('#participantVoteForm .option').forEach(x=>x.classList.remove('selected'));if(radio.checked)label.classList.add('selected')})});
+  $('participantVoteForm').addEventListener('submit',e=>{e.preventDefault();const optionIndex=Number(new FormData(e.currentTarget).get('juryOption'));if(!Number.isInteger(optionIndex)){showNotice('voteNotice','Select one option before submitting.',true);return}socket.emit('jury:participant:vote',{optionIndex,reason:$('participantReason').value})});
+  if(data.resultsVisible&&data.results){$('participantResultsArea').classList.remove('hidden');$('participantResultsArea').innerHTML=renderParticipantResultChart(data.results)}
+  $('participantStatusText').textContent=data.resultsVisible?'Results showcased':existing?'Vote recorded · editable until results are shown':'Vote not yet submitted';
+  postHeight();
 }
-
-function renderResultView(state) {
-  const q = state.currentQuestion;
-  const qIdx = state.currentQuestionIndex;
-  
-  document.getElementById('resCategory').textContent = q.category;
-  document.getElementById('resQNum').textContent = 'Question ' + (qIdx + 1) + ' Live Verdict';
-  document.getElementById('resTotalVotes').textContent = state.totalVotes + ' vote' + (state.totalVotes !== 1 ? 's' : '') + ' cast';
-
-  if (state.leadingOption && state.totalVotes > 0) {
-    document.getElementById('leadOptionTitle').textContent = String.fromCharCode(65 + state.leadingOption.index) + '. ' + state.leadingOption.label + ' (' + state.leadingOption.pct + '%)';
-  } else {
-    document.getElementById('leadOptionTitle').textContent = 'No votes recorded for this question yet';
-  }
-
-  const container = document.getElementById('ratioBarsContainer');
-  container.innerHTML = state.optionCounts.map((opt, i) => {
-    const isLead = state.leadingOption && state.leadingOption.index === i && state.totalVotes > 0;
-    return '<div class="ratio-row">'
-      + '<div class="ratio-row-head">'
-      +   '<span><strong>' + String.fromCharCode(65 + i) + '.</strong> ' + opt.label + '</span>'
-      +   '<span class="pct">' + opt.pct + '%</span>'
-      + '</div>'
-      + '<div class="ratio-track">'
-      +   '<div class="ratio-fill ' + (isLead ? 'leading' : '') + '" style="width:' + opt.pct + '%"></div>'
-      + '</div>'
-      + '<div class="ratio-sub">' + opt.count + ' vote' + (opt.count !== 1 ? 's' : '') + '</div>'
-      + '</div>';
-  }).join('');
-}
-
-document.getElementById('joinForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const room = document.getElementById('roomInput').value.trim().toUpperCase();
-  const name = document.getElementById('nameInput').value.trim();
-  if (!room || !name) {
-    showToast('Please enter both room code and your name');
-    return;
-  }
-  jurorName = name;
-  currentRoom = room;
-  localStorage.setItem('jurorName', name);
-
-  if (socket && socket.connected) {
-    socket.emit('jury:join', { clientId, name, roomCode: room });
-  } else {
-    fetch('/api/jury/state?clientId=' + encodeURIComponent(clientId))
-      .then(r => r.json())
-      .then(state => {
-        currentJuryState = state;
-        renderState(state);
-      })
-      .catch(() => showToast('Could not connect to jury backend.'));
-  }
+function createRoom(){hideNotice('hostActionNotice');if(serverBankSignature && JSON.stringify(normalizeDraft(draftBank))!==serverBankSignature){showNotice('hostActionNotice','You have unsaved edits. Save the question set before opening the room.',true);return}socket.emit('jury:host:create-room',{},result=>{if(result&&result.ok)toast('Jury room opened. Share the code with up to six jurors.');else if(result&&result.message)showNotice('hostActionNotice',result.message,true)})}
+function copyText(text){if(!text)return;const result= navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(String(text)):Promise.reject();result.then(()=>toast('Copied to clipboard.')).catch(()=>{const el=document.createElement('textarea');el.value=String(text);document.body.appendChild(el);el.select();document.execCommand('copy');el.remove();toast('Copied to clipboard.')})}
+function copyParticipantLink(){const url=new URL('/jury.html',location.origin);copyText(url.toString()+(hostState.roomCode?'?room='+encodeURIComponent(hostState.roomCode):''))}
+function copyFinalSummary(){const lines=(hostState.allResults||[]).map((r,i)=>'Q' + (i+1) + ': ' + r.text + '\n' + r.options.map(o=>'- ' + o.label + ': ' + o.count + ' (' + o.percent + '%)').join('\n') + '\nLeading option: ' + leader(r.options)).join('\n\n');copyText(lines||'No final results available.')}
+$('joinForm').addEventListener('submit',e=>{e.preventDefault();hideNotice('joinNotice');const code=$('roomCodeInput').value.trim();const name=$('jurorNameInput').value.trim();if(!/^\d{6}$/.test(code)){showNotice('joinNotice','Enter the six-digit room code from your host.',true);return}joinedInfo={roomCode:code,name};localStorage.setItem('biopopcornJuryJoin',JSON.stringify(joinedInfo));socket.emit('jury:participant:join',{roomCode:code,name,clientId})});
+$('hostLoginForm').addEventListener('submit',e=>{e.preventDefault();hostPin=$('hostPinInput').value.trim();socket.emit('jury:host:authenticate',{pin:hostPin})});
+$('saveQuestionBank').addEventListener('click',()=>{hideNotice('hostActionNotice');socket.emit('jury:host:save-bank',{questions:draftBank})});
+$('openJuryRoom').addEventListener('click',createRoom);
+socket.on('connect',()=>{
+  if(hostPin)socket.emit('jury:host:authenticate',{pin:hostPin});
+  const saved=localStorage.getItem('biopopcornJuryJoin');if(saved&&!hostPin){try{joinedInfo=JSON.parse(saved);if(joinedInfo&&joinedInfo.roomCode&&joinedInfo.name)socket.emit('jury:participant:join',{roomCode:joinedInfo.roomCode,name:joinedInfo.name,clientId})}catch(_){}}
+  postHeight();
 });
+socket.on('jury:host:authenticated',d=>{if(!d.ok){hostAuthed=false;hostPin='';$('hostLoginCard').classList.remove('hidden');$('hostDashboard').classList.add('hidden');showNotice('hostLoginNotice',d.message||'Host authentication failed.',true);return}hostAuthed=true;hideNotice('hostLoginNotice');$('hostLoginCard').classList.add('hidden');$('hostDashboard').classList.remove('hidden');selectTab('host');socket.emit('jury:host:request-state');toast('Host access granted.')});
+socket.on('jury:host:state',data=>{if(!hostAuthed)return;renderHost(data)});
+socket.on('jury:bank-saved',data=>{draftBank=normalizeDraft(data.bank);serverBankSignature=JSON.stringify(draftBank);questionEditorInitialized=false;renderQuestionEditors(true);showNotice('hostActionNotice','Question set saved on the server.');toast('Five questions saved.')});
+socket.on('jury:room-created',data=>{if(data.ok){toast('Jury room ' + data.roomCode + ' is ready.');hideNotice('hostActionNotice')}});
 
-document.getElementById('voteForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const selected = document.querySelector('input[name="juryOpt"]:checked');
-  if (!selected) {
-    showToast('Please select one of the 3 options');
-    return;
-  }
-  const optionIndex = parseInt(selected.value, 10);
-  const reason = document.getElementById('reasonInput').value.trim();
-
-  if (socket && socket.connected) {
-    socket.emit('jury:vote', { clientId, name: jurorName, optionIndex, reason });
-  } else {
-    fetch('/api/jury/vote', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientId, name: jurorName, optionIndex, reason })
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.ok) {
-        showToast('Vote submitted!');
-        hasVotedCurrentQ = true;
-        renderState(data.state);
-      }
-    })
-    .catch(() => showToast('Failed to submit vote.'));
-  }
-});
-
-initSocket();
+socket.on('jury:participant:joined',data=>{if(data.ok){joinedInfo={...joinedInfo,name:data.name};$('joinCard').classList.add('hidden');$('participantPanel').classList.remove('hidden');hideNotice('joinNotice');toast('You joined the jury room.')}});
+socket.on('jury:participant:join-error',data=>{showNotice('joinNotice',data.message||'Unable to join the jury.',true)});
+socket.on('jury:participant:state',renderParticipant);
+socket.on('jury:participant:vote-accepted',()=>{hideNotice('voteNotice');toast('Your vote was recorded.');});
+socket.on('jury:participant:vote-error',data=>{showNotice('voteNotice',data.message||'Unable to submit your vote.',true)});
+socket.on('jury:error',data=>{showNotice('hostActionNotice',data.message||'The host action could not be completed.',true);toast(data.message||'Host action failed.')});
+socket.on('disconnect',()=>{if(activeTab==='host')showNotice('hostActionNotice','Connection lost. Reconnecting to the jury server…',true);else showNotice('voteNotice','Connection lost. Reconnecting to the jury server…',true)});
+const qp=params.get('room');if(qp)$('roomCodeInput').value=qp;
+selectTab(params.get('mode')==='host'?'host':'join');
+if(params.get('mode')==='host')setTimeout(()=>$('hostPinInput').focus(),100);
+const observer=new ResizeObserver(postHeight);observer.observe(document.body);
+})();
+}).catch(() => { const notice=document.getElementById('joinNotice'); if(notice){notice.textContent='Live jury connection is unavailable. Check that the Node.js jury server is running and that jury-config.js points to it.';notice.classList.remove('hidden');notice.classList.add('error');} });
 </script>
 </body>
 </html>
