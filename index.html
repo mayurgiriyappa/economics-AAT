@@ -27,6 +27,20 @@
 .btn-hero-primary:hover{background:#f8b353;transform:translateY(-2px);box-shadow:0 6px 26px rgba(242,163,58,.35)}
 .btn-hero-secondary{padding:14px 26px;font-size:15px;font-weight:600;border-radius:9999px;background:transparent;color:#f4efe5;border:1px solid #3d372d;display:inline-flex;align-items:center;gap:9px;cursor:pointer;transition:all .22s cubic-bezier(0.16,1,0.3,1)}
 .btn-hero-secondary:hover{background:rgba(255,255,255,.06);border-color:#b8b0a2;transform:translateY(-2px)}
+.assumption-field{transition:border-color .2s,box-shadow .2s,background .2s}
+.assumption-field:focus-within,.assumption-field:hover{border-color:#99cfb0;box-shadow:0 6px 18px rgba(27,107,75,.08)}
+.assumption-field input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:9999px;background:#e4e9e4;outline:none;cursor:pointer;margin:10px 0 6px;border:0;box-shadow:none;transition:background .08s ease}
+.assumption-field input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:#1b6b4b;border:3px solid #fff;box-shadow:0 2px 7px rgba(0,0,0,.28);cursor:grab;transition:transform .15s ease,background .15s ease,box-shadow .15s ease}
+.assumption-field input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.22);background:#14583c;box-shadow:0 0 0 5px rgba(61,155,114,.22)}
+.assumption-field input[type=range]:active::-webkit-slider-thumb{cursor:grabbing;transform:scale(1.3);background:#14583c;box-shadow:0 0 0 7px rgba(61,155,114,.32)}
+.assumption-field input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#1b6b4b;border:3px solid #fff;box-shadow:0 2px 7px rgba(0,0,0,.28);cursor:grab;transition:transform .15s ease,background .15s ease}
+.assumption-value{transition:all .18s ease}
+.assumption-value.active{background:#1b6b4b !important;color:#fff !important;transform:scale(1.08);box-shadow:0 2px 8px rgba(27,107,75,.3)}
+.result{transition:transform .2s cubic-bezier(0.16,1,0.3,1),box-shadow .2s ease,border-color .2s ease,background-color .2s ease !important}
+.result.escalating{border-color:#3d9b72 !important;background:#edf8f2 !important;transform:translateY(-3px) scale(1.018);box-shadow:0 8px 24px rgba(61,155,114,.22) !important}
+.result .r-value{transition:color .2s ease,transform .15s ease;font-variant-numeric:tabular-nums}
+.btn-sim{background:linear-gradient(135deg,#1b6b4b 0%,#2e8b60 100%);color:#fff;border:1px solid #1b6b4b;font-weight:700;display:inline-flex;align-items:center;gap:8px;animation:simPulse 2.4s infinite}
+@keyframes simPulse{0%,100%{box-shadow:0 0 0 0 rgba(46,139,96,0)}50%{box-shadow:0 0 0 6px rgba(46,139,96,.2)}}
 .pathways-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:14px}
 .pathway-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:space-between;transition:.15s}
 .pathway-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(20,45,32,.09)}
@@ -119,7 +133,7 @@
   <div class="card panel"><div class="toolbar" style="margin-top:0"><input class="control search" id="evidenceSearch" placeholder="Search title, publisher, evidence note..."/><select class="control small" id="evidenceTypeFilter"><option value="all">All source types</option><option>Official policy</option><option>Industry report</option><option>Technical / quality</option><option>Team assumption</option><option>Peer-reviewed research</option></select></div><div id="evidenceList"></div></div>
 </section>
 <section class="section" id="view-model">
-  <div class="page-head"><div><div class="eyebrow">Engineering economics</div><h1>Import vs local model</h1><p>Change assumptions to calculate the cost of imported supply versus qualified domestic manufacture.</p></div><div class="head-actions"><button class="btn" id="resetModel">Reset assumptions</button><button class="btn btn-primary" id="saveModel">Save scenario assumptions</button></div></div>
+  <div class="page-head"><div><div class="eyebrow">Engineering economics</div><h1>Import vs local model</h1><p>Change assumptions to calculate the cost of imported supply versus qualified domestic manufacture.</p></div><div class="head-actions"><button class="btn btn-sim" id="autoSimulateBtn">⚡ Auto-Simulate Escalation</button><button class="btn" id="resetModel">Reset assumptions</button><button class="btn btn-primary" id="saveModel">Save scenario assumptions</button></div></div>
   <div class="alert-strip"><span>ⓘ</span><div><strong>Model scope:</strong> all default numbers are illustrative placeholders. Imported GST is excluded from economic cost under the assumption that eligible input tax credit is recoverable. Confirm actual HSN classification, applicable customs notifications, GST eligibility and vendor quotations for the real product before using this model for a business decision.</div></div>
   <div class="split"><div class="card panel"><h3 class="panel-title">Editable assumptions</h3><p class="panel-desc">Change a value or slider; results recalculate immediately. Costs are INR unless otherwise stated.</p><div class="field-grid" style="margin-top:20px">
     <div class="field assumption-field"><div class="assumption-head"><label for="demand">Annual demand (usable units)</label><output class="assumption-value" id="demandValue">5,000 units</output></div><input type="range" min="0" max="50000" step="100" id="demand" value="5000"/><div class="range-limits"><span>0</span><span>50,000 units</span></div><span class="hint">Forecast annual requirement after considering demand planning.</span></div>
@@ -207,9 +221,21 @@ const seedEvidence=[
 {id:'E-08',title:'Foreign-exchange reference data',publisher:'Reserve Bank of India',type:'Official policy',url:'https://www.rbi.org.in/',note:'Use the relevant RBI published data series and date for documented exchange-rate assumptions; this dashboard’s INR/USD input is illustrative.',linked:false}
 ];
 function dt(days){const d=new Date();d.setDate(d.getDate()-days);return d.toISOString()}
-function makeInitial(){return {questions:seedQuestions.map((q,i)=>({id:'Q-2026-'+String(i+1).padStart(3,'0'),title:q[0],description:q[1],category:q[2],priority:q[3],status:q[4],submitter:q[5],createdAt:dt((i*3)%24+1),updatedAt:dt((i*2)%14),answer:q[6],evidence:(Array.isArray(q[7])?q[7]:(String(q[7]||'').trim()==='[]'?[]:String(q[7]).replace(/[\[\]']/g,'').split(',').map(x=>x.trim()).filter(Boolean))),history:[{status:q[4],reason:'Seeded illustrative workflow record',at:dt((i*2)%14)}],demo:true})),evidence:seedEvidence.map(e=>({...e,createdAt:dt(2)})),votes:[{id:'V-001',name:'Jury A',round:'Before debate',strategy:'Continue importing',reason:'Existing validated supply is safer until the exact domestic product has comparable performance evidence.',at:dt(2),demo:true},{id:'V-002',name:'Jury B',round:'Before debate',strategy:'Phased localization',reason:'Start domestic development, but do not replace the current supplier before the quality gate is passed.',at:dt(1),demo:true},{id:'V-003',name:'Jury C',round:'After cross-examination',strategy:'Dual sourcing',reason:'A second qualified supplier could reduce concentration risk if the cost premium and quality comparability are justified.',at:dt(0),demo:true}],activity:[{text:'Demo workspace initialized with illustrative questions and evidence.',at:dt(0),icon:'✦'}],model:{demand:5000,importUsd:420,fx:87,freight:1800,duty:7.5,localCost:37000,yield:92,tooling:4500000,validation:4000000,qualification:1000000,qualityOpex:2000000,horizon:5,discount:10},verdict:{qualityGate:'not-tested',supplierGate:'unknown',notes:''}}}
+function makeInitial(){return {questions:seedQuestions.map((q,i)=>({id:'Q-2026-'+String(i+1).padStart(3,'0'),title:q[0],description:q[1],category:q[2],priority:q[3],status:q[4],submitter:q[5],createdAt:dt((i*3)%24+1),updatedAt:dt((i*2)%14),answer:q[6],evidence:(Array.isArray(q[7])?q[7]:(String(q[7]||'').trim()==='[]'?[]:String(q[7]).replace(/[\[\]']/g,'').split(',').map(x=>x.trim()).filter(Boolean))),history:[{status:q[4],reason:'Seeded illustrative workflow record',at:dt((i*2)%14)}],demo:true})),evidence:seedEvidence.map(e=>({...e,createdAt:dt(2)})),votes:[{id:'V-001',name:'Jury A',round:'Before debate',strategy:'Continue importing',reason:'Existing validated supply is safer until the exact domestic product has comparable performance evidence.',at:dt(2),demo:true},{id:'V-002',name:'Jury B',round:'Before debate',strategy:'Phased localization',reason:'Start domestic development, but do not replace the current supplier before the quality gate is passed.',at:dt(1),demo:true},{id:'V-003',name:'Jury C',round:'After cross-examination',strategy:'Dual sourcing',reason:'A second qualified supplier could reduce concentration risk if the cost premium and quality comparability are justified.',at:dt(0),demo:true}],activity:[{text:'Demo workspace initialized with illustrative questions and evidence.',at:dt(0),icon:'✦'}],model:{demand:5000,importUsd:420,fx:87,freight:1800,duty:7.5,localCost:21000,yield:92,tooling:1800000,validation:1200000,qualification:400000,qualityOpex:500000,horizon:5,discount:10},verdict:{qualityGate:'not-tested',supplierGate:'unknown',notes:''}}}
 let state;
-try{const saved=localStorage.getItem('strategyCourtDashboardV1');state=saved?JSON.parse(saved):makeInitial();if(!state.questions||!state.evidence)state=makeInitial()}catch(e){state=makeInitial()}
+try{
+  const saved=localStorage.getItem('strategyCourtDashboardV1');
+  state=saved?JSON.parse(saved):makeInitial();
+  if(!state||typeof state!=='object') state=makeInitial();
+  if(!state.questions||!Array.isArray(state.questions)) state.questions=makeInitial().questions;
+  if(!state.evidence||!Array.isArray(state.evidence)) state.evidence=makeInitial().evidence;
+  state.model=Object.assign(makeInitial().model, state.model||{});
+  if(!state.votes||!Array.isArray(state.votes)) state.votes=makeInitial().votes;
+  if(!state.activity||!Array.isArray(state.activity)) state.activity=makeInitial().activity;
+  if(!state.verdict||typeof state.verdict!=='object') state.verdict=makeInitial().verdict;
+}catch(e){
+  state=makeInitial();
+}
 function persist(){try{localStorage.setItem('strategyCourtDashboardV1',JSON.stringify(state))}catch(e){console.warn('Could not save to localStorage',e)}}
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(v,dec=0){if(!Number.isFinite(v))return '—';let abs=Math.abs(v);if(abs>=10000000)return (v<0?'−':'')+'₹'+(abs/10000000).toFixed(2)+' Cr';if(abs>=100000)return (v<0?'−':'')+'₹'+(abs/100000).toFixed(2)+' L';return (v<0?'−':'')+'₹'+Math.round(abs).toLocaleString('en-IN')}
@@ -242,9 +268,293 @@ document.getElementById('saveAnswer').addEventListener('click',()=>{const q=stat
 document.getElementById('questionSearch').addEventListener('input',renderQuestions);document.getElementById('statusFilter').addEventListener('change',renderQuestions);document.getElementById('categoryFilter').addEventListener('change',renderQuestions);document.getElementById('trendPeriod').addEventListener('change',renderTrend);
 function renderEvidence(){const search=(document.getElementById('evidenceSearch')?.value||'').toLowerCase(),type=document.getElementById('evidenceTypeFilter')?.value||'all';const list=state.evidence.filter(e=>(type==='all'||e.type===type)&&(!search||[e.title,e.publisher,e.note,e.id].join(' ').toLowerCase().includes(search)));document.getElementById('evidenceList').innerHTML=list.map(e=>`<div class="evidence-card"><div class="source-icon">${e.type==='Official policy'?'⌘':e.type==='Technical / quality'?'✓':e.type==='Peer-reviewed research'?'≋':e.type==='Industry report'?'▥':'✎'}</div><div><div class="evidence-title">${esc(e.title)}</div><div class="evidence-meta">${esc(e.id)} · ${esc(e.publisher)} · ${esc(e.type)} · ${e.linked?'Linked to workflow':'Not yet linked'}</div><div class="evidence-note">${esc(e.note)}</div></div>${e.url?`<a class="source-link" href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">Open source ↗</a>`:'<span class="badge">No URL</span>'}</div>`).join('')||'<div class="empty">No evidence records match this filter.</div>'}
 document.getElementById('evidenceSearch').addEventListener('input',renderEvidence);document.getElementById('evidenceTypeFilter').addEventListener('change',renderEvidence);document.getElementById('openEvidenceModal').addEventListener('click',()=>{document.getElementById('evidenceForm').reset();openModal('evidenceModal')});document.getElementById('evidenceForm').addEventListener('submit',e=>{e.preventDefault();let id='E-'+String(Date.now()).slice(-6);state.evidence.unshift({id,title:document.getElementById('eTitle').value.trim(),publisher:document.getElementById('ePublisher').value.trim(),type:document.getElementById('eType').value,url:document.getElementById('eUrl').value.trim(),note:document.getElementById('eNote').value.trim(),linked:false,createdAt:new Date().toISOString()});logActivity(`${id} evidence record added.`,'◈');persist();document.getElementById('evidenceModal').classList.remove('open');updateDashboard();renderEvidence();toast('Evidence record added. Verify the source before relying on it.')});
-const modelInputs=['demand','importUsd','fx','freight','duty','localCost','yield','tooling','validation','qualification','qualityOpex','horizon','discount'];function formatAssumption(id,value){const n=Number(value)||0;const rupee=x=>'₹'+Math.round(x).toLocaleString('en-IN');if(id==='demand')return Math.round(n).toLocaleString('en-IN')+' units';if(id==='importUsd')return '$'+Math.round(n).toLocaleString('en-US');if(id==='fx')return '₹'+n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});if(id==='freight'||id==='localCost'||id==='tooling'||id==='validation'||id==='qualification'||id==='qualityOpex')return rupee(n);if(id==='duty'||id==='yield'||id==='discount')return n.toLocaleString('en-IN',{maximumFractionDigits:1})+'%';if(id==='horizon')return Math.round(n)+' year'+(Math.round(n)===1?'':'s');return String(value)}function syncModelInputs(){modelInputs.forEach(id=>{const el=document.getElementById(id);if(el)el.value=state.model[id];const out=document.getElementById(id+'Value');if(out)out.textContent=formatAssumption(id,state.model[id])})}function readModelInputs(){modelInputs.forEach(id=>{const el=document.getElementById(id);if(el)state.model[id]=Number(el.value)});state.model.yield=Math.max(50,Math.min(100,state.model.yield));persist();modelInputs.forEach(id=>{const out=document.getElementById(id+'Value');if(out)out.textContent=formatAssumption(id,state.model[id])})};function renderModel(){syncModelInputs();const m=computeModel();document.getElementById('yieldValue').textContent=state.model.yield+'%';document.getElementById('modelImportUnit').textContent=money(m.importUnit);document.getElementById('modelLocalUnit').textContent=money(m.localUnit);document.getElementById('modelImportAnnual').textContent=money(m.importAnnual);document.getElementById('modelLocalAnnual').textContent=money(m.localAnnual);document.getElementById('modelSavings').textContent=money(m.savings);document.getElementById('modelSavings').style.color=m.savings>=0?'#24794e':'#b14c42';document.getElementById('modelSavingsNote').textContent=m.savings>=0?'Local equivalent cost is lower':'Local equivalent cost is higher';document.getElementById('modelBreakEven').textContent=m.breakEven!==null&&Number.isFinite(m.breakEven)&&m.breakEven>=0?number(m.breakEven)+' units':'No positive break-even under current unit-cost gap';document.getElementById('modelPayback').textContent=m.payback!==null&&Number.isFinite(m.payback)?m.payback.toFixed(1)+' years':'No simple payback under base operating benefit';document.getElementById('modelNPV').textContent=money(m.npv);let title,text;if(m.importUnit<=m.localUnit){title='Import has the lower variable unit cost';text='At the current assumptions, local production costs more per usable unit before fixed investment. Localization would need additional strategic value, a change in yield/cost/price, or other verified benefits to justify the cost difference. This is not a quality qualification decision.'}else if(m.savings>0&&m.npv>0){title='Local economics look promising';text='The illustrative local equivalent cost is lower and modeled NPV is positive. Treat this as a screening signal only: supplier capability, comparable product performance, demand and all cost inputs still need verification.'}else if(m.delta>0){title='Unit-cost advantage; investment still matters';text='Local production has a lower estimated variable cost, but annual quality costs and initial investment reduce the benefit. Check payback, NPV, capacity and the qualification timeline.'}else{title='No automatic localization case';text='Current model assumptions do not demonstrate a clear economic case for localization. Verify costs and compare phased localization or dual sourcing before making a decision.'}document.getElementById('modelVerdict').textContent=title;document.getElementById('modelVerdictText').textContent=text;document.getElementById('costBuildUp').innerHTML=`<div class="barrow"><span class="barlabel">Import purchase (INR)</span><div class="bartrack"><div class="barfill" style="width:${m.importUnit?((m.impUsd*m.fx)/m.importUnit*100):0}%;background:#6d91c6"></div></div><span class="barcount">${money(m.impUsd*m.fx)}</span></div><div class="barrow"><span class="barlabel">Freight + insurance</span><div class="bartrack"><div class="barfill" style="width:${m.importUnit?m.freight/m.importUnit*100:0}%;background:#93b0d4"></div></div><span class="barcount">${money(m.freight)}</span></div><div class="barrow"><span class="barlabel">Import charges</span><div class="bartrack"><div class="barfill" style="width:${m.importUnit?((m.importUnit-(m.impUsd*m.fx+m.freight))/m.importUnit*100):0}%;background:#d9a24a"></div></div><span class="barcount">${money(m.importUnit-(m.impUsd*m.fx+m.freight))}</span></div><div class="barrow"><span class="barlabel">Local unit cost (yield-adjusted)</span><div class="bartrack"><div class="barfill" style="width:${Math.min(100,m.localUnit/Math.max(m.importUnit,m.localUnit,1)*100)}%;background:#3d9b72"></div></div><span class="barcount">${money(m.localUnit)}</span></div><div class="footnote">Initial localization investment: ${money(m.invest)} (${money(m.tooling)} tooling + ${money(m.validation)} development/validation + ${money(m.qualification)} qualification/transfer). Annual quality costs: ${money(m.quality)}.</div>`;updateDashboardSnapshotOnly()}
-function updateDashboardSnapshotOnly(){const m=computeModel();document.getElementById('snapImport').textContent=money(m.importUnit);document.getElementById('snapLocal').textContent=money(m.localUnit);document.getElementById('snapSavings').textContent=money(m.savings);document.getElementById('snapSavings').style.color=m.savings>=0?'#24794e':'#b14c42';document.getElementById('snapSavingsNote').textContent=m.savings>=0?'Local equivalent cost is lower in this model':'Local equivalent cost is higher in this model';document.getElementById('snapBreakEven').textContent=m.breakEven!==null&&Number.isFinite(m.breakEven)?number(m.breakEven)+' units':'Not reached'}
-modelInputs.forEach(id=>document.getElementById(id).addEventListener('input',()=>{readModelInputs();renderModel();renderScenarios()}));document.getElementById('resetModel').addEventListener('click',()=>{state.model=makeInitial().model;persist();renderModel();renderScenarios();toast('Model assumptions reset to illustrative defaults.')});document.getElementById('saveModel').addEventListener('click',()=>{readModelInputs();logActivity('Financial model assumptions saved.','∑');toast('Assumptions saved in this browser.');updateDashboard()});
+const modelInputs=['demand','importUsd','fx','freight','duty','localCost','yield','tooling','validation','qualification','qualityOpex','horizon','discount'];
+function formatAssumption(id,value){
+  const n=Number(value)||0;
+  const rupee=x=>'₹'+Math.round(x).toLocaleString('en-IN');
+  if(id==='demand')return Math.round(n).toLocaleString('en-IN')+' units';
+  if(id==='importUsd')return '$'+Math.round(n).toLocaleString('en-US');
+  if(id==='fx')return '₹'+n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if(id==='freight'||id==='localCost'||id==='tooling'||id==='validation'||id==='qualification'||id==='qualityOpex')return rupee(n);
+  if(id==='duty'||id==='yield'||id==='discount')return n.toLocaleString('en-IN',{maximumFractionDigits:1})+'%';
+  if(id==='horizon')return Math.round(n)+' year'+(Math.round(n)===1?'':'s');
+  return String(value);
+}
+
+function updateSliderFill(input){
+  if(!input || input.type !== 'range') return;
+  const min = Number(input.min) || 0;
+  const max = Number(input.max) || 100;
+  const val = Number(input.value) || 0;
+  const pct = max > min ? Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100)) : 0;
+  input.style.background = `linear-gradient(to right, #1f6b49 0%, #2f9468 ${pct}%, #e0e7e3 ${pct}%, #e0e7e3 100%)`;
+}
+
+const escalatingAnimators = {};
+function escalateNumber(elId, targetVal, formatFn, unit = '') {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (targetVal === null || !Number.isFinite(targetVal)) {
+    el.textContent = '—';
+    return;
+  }
+  const currentVal = el._currentEscalateVal !== undefined ? el._currentEscalateVal : targetVal;
+  if (escalatingAnimators[elId]) cancelAnimationFrame(escalatingAnimators[elId]);
+  
+  const card = el.closest('.result');
+  if (card) {
+    card.classList.add('escalating');
+    clearTimeout(card._escTimer);
+    card._escTimer = setTimeout(() => card.classList.remove('escalating'), 320);
+  }
+
+  const startTime = performance.now();
+  const duration = 220;
+  const startVal = currentVal;
+  const diff = targetVal - startVal;
+
+  function step(time) {
+    const elapsed = time - startTime;
+    const progress = Math.min(1, elapsed / duration);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const curr = startVal + diff * ease;
+    el._currentEscalateVal = curr;
+    el.textContent = formatFn(curr) + (unit ? ' ' + unit : '');
+    if (progress < 1) {
+      escalatingAnimators[elId] = requestAnimationFrame(step);
+    } else {
+      el._currentEscalateVal = targetVal;
+      el.textContent = formatFn(targetVal) + (unit ? ' ' + unit : '');
+      delete escalatingAnimators[elId];
+    }
+  }
+  escalatingAnimators[elId] = requestAnimationFrame(step);
+}
+
+function syncModelInputs(){
+  modelInputs.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){
+      if(state.model[id] !== undefined) el.value = state.model[id];
+      updateSliderFill(el);
+    }
+    const out = document.getElementById(id+'Value');
+    if(out && state.model[id] !== undefined) out.textContent = formatAssumption(id, state.model[id]);
+  });
+}
+
+function readModelInputs(changedId){
+  modelInputs.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){
+      state.model[id] = Number(el.value);
+      updateSliderFill(el);
+    }
+  });
+  state.model.yield = Math.max(50, Math.min(100, state.model.yield));
+  persist();
+  modelInputs.forEach(id=>{
+    const out = document.getElementById(id+'Value');
+    if(out){
+      out.textContent = formatAssumption(id, state.model[id]);
+      if(changedId && id === changedId){
+        out.classList.add('active');
+        clearTimeout(out._pulseTimer);
+        out._pulseTimer = setTimeout(() => out.classList.remove('active'), 220);
+      }
+    }
+  });
+}
+
+function renderModel(escalate = true){
+  syncModelInputs();
+  const m = computeModel();
+  const yieldOut = document.getElementById('yieldValue');
+  if(yieldOut) yieldOut.textContent = state.model.yield + '%';
+
+  if (escalate) {
+    escalateNumber('modelImportUnit', m.importUnit, money);
+    escalateNumber('modelLocalUnit', m.localUnit, money);
+    escalateNumber('modelImportAnnual', m.importAnnual, money);
+    escalateNumber('modelLocalAnnual', m.localAnnual, money);
+    escalateNumber('modelSavings', m.savings, money);
+    escalateNumber('modelNPV', m.npv, money);
+    if (m.breakEven !== null && Number.isFinite(m.breakEven) && m.breakEven >= 0) {
+      escalateNumber('modelBreakEven', m.breakEven, v => number(v), 'units');
+    } else {
+      const bEl = document.getElementById('modelBreakEven');
+      if (bEl) bEl.textContent = 'No positive break-even';
+    }
+    if (m.payback !== null && Number.isFinite(m.payback) && m.payback >= 0) {
+      escalateNumber('modelPayback', m.payback, v => v.toFixed(1), 'years');
+    } else {
+      const pEl = document.getElementById('modelPayback');
+      if (pEl) pEl.textContent = 'No simple payback';
+    }
+  } else {
+    document.getElementById('modelImportUnit').textContent = money(m.importUnit);
+    document.getElementById('modelLocalUnit').textContent = money(m.localUnit);
+    document.getElementById('modelImportAnnual').textContent = money(m.importAnnual);
+    document.getElementById('modelLocalAnnual').textContent = money(m.localAnnual);
+    document.getElementById('modelSavings').textContent = money(m.savings);
+    document.getElementById('modelBreakEven').textContent = m.breakEven!==null&&Number.isFinite(m.breakEven)&&m.breakEven>=0?number(m.breakEven)+' units':'No positive break-even under current unit-cost gap';
+    document.getElementById('modelPayback').textContent = m.payback!==null&&Number.isFinite(m.payback)?m.payback.toFixed(1)+' years':'No simple payback under base operating benefit';
+    document.getElementById('modelNPV').textContent = money(m.npv);
+  }
+
+  const savEl = document.getElementById('modelSavings');
+  if(savEl) savEl.style.color = m.savings >= 0 ? '#24794e' : '#b14c42';
+  const savNote = document.getElementById('modelSavingsNote');
+  if(savNote) savNote.textContent = m.savings >= 0 ? 'Local equivalent cost is lower' : 'Local equivalent cost is higher';
+
+  let title, text;
+  if(m.importUnit <= m.localUnit){
+    title = 'Import has the lower variable unit cost';
+    text = 'At current assumptions, local production costs more per usable unit before fixed investment. Localization would need additional strategic value, a change in yield/cost/price, or other verified benefits to justify the cost difference. This is not a quality qualification decision.';
+  } else if(m.savings > 0 && m.npv > 0){
+    title = 'Local economics look promising';
+    text = 'The illustrative local equivalent cost is lower and modeled NPV is positive. Treat this as a screening signal only: supplier capability, comparable product performance, demand and all cost inputs still need verification.';
+  } else if(m.delta > 0){
+    title = 'Unit-cost advantage; investment still matters';
+    text = 'Local production has a lower estimated variable cost, but annual quality costs and initial investment reduce the benefit. Check payback, NPV, capacity and the qualification timeline.';
+  } else {
+    title = 'No automatic localization case';
+    text = 'Current model assumptions do not demonstrate a clear economic case for localization. Verify costs and compare phased localization or dual sourcing before making a decision.';
+  }
+  const verdEl = document.getElementById('modelVerdict');
+  if(verdEl) verdEl.textContent = title;
+  const verdTxt = document.getElementById('modelVerdictText');
+  if(verdTxt) verdTxt.textContent = text;
+
+  const costBuild = document.getElementById('costBuildUp');
+  if(costBuild) {
+    costBuild.innerHTML = `<div class="barrow"><span class="barlabel">Import purchase (INR)</span><div class="bartrack"><div class="barfill" style="width:${m.importUnit?((m.impUsd*m.fx)/m.importUnit*100):0}%;background:#6d91c6"></div></div><span class="barcount">${money(m.impUsd*m.fx)}</span></div><div class="barrow"><span class="barlabel">Freight + insurance</span><div class="bartrack"><div class="barfill" style="width:${m.importUnit?m.freight/m.importUnit*100:0}%;background:#93b0d4"></div></div><span class="barcount">${money(m.freight)}</span></div><div class="barrow"><span class="barlabel">Import charges</span><div class="bartrack"><div class="barfill" style="width:${m.importUnit?((m.importUnit-(m.impUsd*m.fx+m.freight))/m.importUnit*100):0}%;background:#d9a24a"></div></div><span class="barcount">${money(m.importUnit-(m.impUsd*m.fx+m.freight))}</span></div><div class="barrow"><span class="barlabel">Local unit cost (yield-adjusted)</span><div class="bartrack"><div class="barfill" style="width:${Math.min(100,m.localUnit/Math.max(m.importUnit,m.localUnit,1)*100)}%;background:#3d9b72"></div></div><span class="barcount">${money(m.localUnit)}</span></div><div class="footnote">Initial localization investment: ${money(m.invest)} (${money(m.tooling)} tooling + ${money(m.validation)} development/validation + ${money(m.qualification)} qualification/transfer). Annual quality costs: ${money(m.quality)}.</div>`;
+  }
+  updateDashboardSnapshotOnly();
+}
+
+function updateDashboardSnapshotOnly(){
+  const m = computeModel();
+  const sImp = document.getElementById('snapImport'); if(sImp) sImp.textContent = money(m.importUnit);
+  const sLoc = document.getElementById('snapLocal'); if(sLoc) sLoc.textContent = money(m.localUnit);
+  const sSav = document.getElementById('snapSavings');
+  if(sSav){
+    sSav.textContent = money(m.savings);
+    sSav.style.color = m.savings >= 0 ? '#24794e' : '#b14c42';
+  }
+  const sNote = document.getElementById('snapSavingsNote');
+  if(sNote) sNote.textContent = m.savings >= 0 ? 'Local equivalent cost is lower in this model' : 'Local equivalent cost is higher in this model';
+  const sBe = document.getElementById('snapBreakEven');
+  if(sBe) sBe.textContent = m.breakEven !== null && Number.isFinite(m.breakEven) ? number(m.breakEven) + ' units' : 'Not reached';
+}
+
+let autoSimActive = false;
+let autoSimRaf = null;
+let autoSimStart = 0;
+
+function toggleAutoSimulate(){
+  const btn = document.getElementById('autoSimulateBtn');
+  if (autoSimActive) {
+    stopAutoSimulate();
+    toast('Simulation stopped.');
+    return;
+  }
+  autoSimActive = true;
+  if (btn) {
+    btn.textContent = '⏹ Stop Moving Sliders';
+    btn.classList.add('active-sim');
+  }
+  toast('⚡ Moving sliders & escalating cost numbers live!');
+  autoSimStart = performance.now();
+  
+  const baseDemand = 4000, maxDemand = 28000;
+  const baseUsd = 360, maxUsd = 620;
+  const baseLocal = 16000, maxLocal = 34000;
+  const baseFx = 84, maxFx = 91;
+  const baseFreight = 1200, maxFreight = 4200;
+
+  function simLoop(time) {
+    if (!autoSimActive) return;
+    const t = (time - autoSimStart) / 1000;
+    const sin1 = (Math.sin(t * 1.3) + 1) / 2;
+    const sin2 = (Math.sin(t * 1.0 + 1.2) + 1) / 2;
+    const sin3 = (Math.sin(t * 1.6 + 2.5) + 1) / 2;
+    const sin4 = (Math.sin(t * 0.9 + 0.6) + 1) / 2;
+    const sin5 = (Math.sin(t * 1.2 + 3.2) + 1) / 2;
+
+    const dVal = Math.round(baseDemand + (maxDemand - baseDemand) * sin1);
+    const usdVal = Math.round(baseUsd + (maxUsd - baseUsd) * sin2);
+    const localVal = Math.round(baseLocal + (maxLocal - baseLocal) * sin3);
+    const fxVal = Number((baseFx + (maxFx - baseFx) * sin4).toFixed(1));
+    const freightVal = Math.round(baseFreight + (maxFreight - baseFreight) * sin5);
+
+    const dEl = document.getElementById('demand');
+    if (dEl) { dEl.value = dVal; state.model.demand = dVal; updateSliderFill(dEl); }
+    const usdEl = document.getElementById('importUsd');
+    if (usdEl) { usdEl.value = usdVal; state.model.importUsd = usdVal; updateSliderFill(usdEl); }
+    const localEl = document.getElementById('localCost');
+    if (localEl) { localEl.value = localVal; state.model.localCost = localVal; updateSliderFill(localEl); }
+    const fxEl = document.getElementById('fx');
+    if (fxEl) { fxEl.value = fxVal; state.model.fx = fxVal; updateSliderFill(fxEl); }
+    const freightEl = document.getElementById('freight');
+    if (freightEl) { freightEl.value = freightVal; state.model.freight = freightVal; updateSliderFill(freightEl); }
+
+    ['demand','importUsd','localCost','fx','freight'].forEach(id => {
+      const out = document.getElementById(id + 'Value');
+      if (out) out.textContent = formatAssumption(id, state.model[id]);
+    });
+
+    renderModel(false);
+    renderScenarios();
+    autoSimRaf = requestAnimationFrame(simLoop);
+  }
+  autoSimRaf = requestAnimationFrame(simLoop);
+}
+
+function stopAutoSimulate(){
+  autoSimActive = false;
+  if (autoSimRaf) cancelAnimationFrame(autoSimRaf);
+  const btn = document.getElementById('autoSimulateBtn');
+  if (btn) {
+    btn.textContent = '⚡ Auto-Simulate Escalation';
+    btn.classList.remove('active-sim');
+  }
+  persist();
+}
+
+modelInputs.forEach(id=>{
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', () => {
+    if (autoSimActive) stopAutoSimulate();
+    readModelInputs(id);
+    renderModel(true);
+    renderScenarios();
+  });
+  el.addEventListener('change', () => {
+    updateSliderFill(el);
+  });
+});
+
+const simBtn = document.getElementById('autoSimulateBtn');
+if (simBtn) simBtn.addEventListener('click', toggleAutoSimulate);
+
+document.getElementById('resetModel').addEventListener('click', () => {
+  if (autoSimActive) stopAutoSimulate();
+  state.model = makeInitial().model;
+  persist();
+  syncModelInputs();
+  renderModel(true);
+  renderScenarios();
+  toast('Model assumptions reset to illustrative defaults.');
+});
+
+document.getElementById('saveModel').addEventListener('click', () => {
+  readModelInputs();
+  logActivity('Financial model assumptions saved.', '∑');
+  toast('Assumptions saved in this browser.');
+  updateDashboard();
+});
 function renderScenarios(){const m=computeModel(),cap=m.invest;const scenarios=[{name:'Continue importing',unit:m.importUnit,annual:m.importAnnual,capex:0,share:0,posture:'Baseline',resilience:'Low–moderate',risk:'Known supplier',color:'#6d91c6'},{name:'Immediate full localization',unit:m.localUnit,annual:m.d*m.localUnit+m.quality+cap/m.horizon,capex:cap,share:1,posture:'Capex-heavy',resilience:'Potentially higher',risk:'High until qualified',color:'#3d9b72'},{name:'Phased localization',unit:.5*m.importUnit+.5*m.localUnit,annual:m.d*(.5*m.importUnit+.5*m.localUnit)+m.quality+cap*.7/m.horizon,capex:cap*.7,share:.5,posture:'Transition cost',resilience:'Improves over time',risk:'Managed by gates',color:'#5aaba0'},{name:'Dual sourcing',unit:.5*m.importUnit+.5*m.localUnit,annual:m.d*(.5*m.importUnit+.5*m.localUnit)+m.quality+cap*1.1/m.horizon,capex:cap*1.1,share:.5,posture:'Redundancy premium',resilience:'Potentially higher',risk:'Depends on equivalence',color:'#d9a24a'}];const sorted=[...scenarios].sort((a,b)=>a.annual-b.annual),best=sorted[0];document.getElementById('bestScenarioCost').textContent=money(best.annual);document.getElementById('bestScenarioName').textContent='Lowest modeled cost: '+best.name;document.getElementById('scenarioCapex').textContent=money(cap);document.getElementById('scenarioDemand').textContent=number(m.d);const max=Math.max(1,...scenarios.map(s=>s.annual));document.getElementById('scenarioBars').innerHTML=scenarios.map(s=>`<div class="scenario-row"><div class="scenario-label">${esc(s.name)}</div><div class="scenario-bar"><span style="width:${s.annual/max*100}%;background:${s.color}"></span></div><div class="scenario-cost">${money(s.annual)}</div></div>`).join('');document.getElementById('scenarioTable').innerHTML=scenarios.map(s=>`<tr><td><strong>${esc(s.name)}</strong></td><td>${esc(s.posture)}</td><td>${esc(s.resilience)}</td><td>${esc(s.risk)}</td></tr>`).join('')}
 function renderVotes(){const round=document.getElementById('juryRoundFilter')?.value||'all',votes=state.votes.filter(v=>round==='all'||v.round===round),opts=['Continue importing','Manufacture locally','Phased localization','Dual sourcing','Defer pending evidence'],counts=opts.map(o=>({name:o,n:votes.filter(v=>v.strategy===o).length})),total=votes.length,sorted=[...counts].sort((a,b)=>b.n-a.n);document.getElementById('voteTotal').textContent=total;document.getElementById('topVote').textContent=total?sorted[0].name:'No votes yet';document.getElementById('voteChart').innerHTML=counts.map(x=>`<div class="vote-row"><span>${esc(x.name)}</span><div class="vote-track"><span style="width:${total?x.n/total*100:0}%"></span></div><span class="vote-num">${x.n} · ${pct(total?x.n/total*100:0)}</span></div>`).join('');const reasons=[...votes].sort((a,b)=>new Date(b.at)-new Date(a.at)).slice(0,8);document.getElementById('voteReasonList').innerHTML=reasons.map(v=>`<div style="padding:12px 0;border-bottom:1px solid #edf1ed"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><strong style="font-size:11px">${esc(v.name)}</strong><span class="badge">${esc(v.round)}</span><span class="pill answered">${esc(v.strategy)}</span><span style="font-size:9px;color:#89958e;margin-left:auto">${timeAgo(v.at)}</span></div><p style="font-size:11px;line-height:1.6;color:#596960;margin:7px 0 0">${esc(v.reason)}</p></div>`).join('')||'<div class="empty">No votes in this round yet.</div>';renderVerdictSummary()}
 document.getElementById('juryRoundFilter').addEventListener('change',renderVotes);document.getElementById('voteForm').addEventListener('submit',e=>{e.preventDefault();const name=document.getElementById('voterName').value.trim(),round=document.getElementById('voteRound').value,strategy=document.querySelector('input[name="strategyVote"]:checked')?.value,reason=document.getElementById('voteReason').value.trim();if(!strategy||reason.length<15){toast('Choose a strategy and provide at least 15 characters of reasoning.');return}if(state.votes.some(v=>v.round===round&&v.name.toLowerCase()===name.toLowerCase())){toast('This display name already voted in that round in this browser.');return}state.votes.push({id:'V-'+String(Date.now()),name,round,strategy,reason,at:new Date().toISOString(),demo:false});logActivity(`${name} submitted a jury vote for ${strategy} (${round}).`,'⚖');persist();document.getElementById('voteForm').reset();updateDashboard();renderVotes();toast('Vote recorded locally. It is not a secure multi-user ballot.')});
