@@ -50,6 +50,32 @@ module.exports = (req, res) => {
     return;
   }
 
+  
+  if (url.includes('/jury/state') || url.includes('/jury')) {
+    res.statusCode = 200;
+    res.end(JSON.stringify({
+      ok: true,
+      roomCode: 'JURY-928104',
+      status: 'active',
+      currentQuestionIndex: 0,
+      questionCount: 5,
+      allQuestions: [{"id":"JQ-01","category":"Economics","question":"What is the most credible reason the imported column costs more than a locally packed one?","options":["Currency risk and freight add ~20–30% above the manufacturing cost","The supplier charges a quality premium for pre-packed convenience","Import duties and GST make domestic production impossible to justify"]},{"id":"JQ-02","category":"Quality & Regulation","question":"Before switching to a locally packed column, what evidence is most critical?","options":["A lower quotation from the domestic supplier","Demonstrated bed efficiency, peak symmetry and process compatibility data","Government scheme certification confirming Make in India eligibility"]},{"id":"JQ-03","category":"Strategy","question":"Which sourcing strategy best balances cost savings and supply risk?","options":["Continue importing — existing supply is qualified and risk is known","Phased localization — develop local capability while retaining the import as backup","Full switch to local — cut costs immediately after pilot batch approval"]},{"id":"JQ-04","category":"Technical","question":"What is the biggest technical barrier to packing columns in-house?","options":["Achieving reproducible bed uniformity and pressure/flow profiles batch to batch","Sourcing the resin — most resins are imported anyway","Regulatory documentation — GMP change control is too slow for urgent supply"]},{"id":"JQ-05","category":"Decision","question":"What single piece of evidence would most change your vote today?","options":["A verified domestic supplier quotation showing >20% unit cost saving","Pilot batch data showing equivalent performance to the imported column","A confirmed PLI or government subsidy that covers tooling and validation costs"]}],
+      currentQuestion: {"id":"JQ-01","category":"Economics","question":"What is the most credible reason the imported column costs more than a locally packed one?","options":["Currency risk and freight add ~20–30% above the manufacturing cost","The supplier charges a quality premium for pre-packed convenience","Import duties and GST make domestic production impossible to justify"]},
+      showResult: false,
+      totalParticipants: 1,
+      totalVotes: 0,
+      optionCounts: [
+        { index: 0, label: 'Currency risk and freight add ~20–30% above the manufacturing cost', count: 0, pct: 0 },
+        { index: 1, label: 'The supplier charges a quality premium for pre-packed convenience', count: 0, pct: 0 },
+        { index: 2, label: 'Import duties and GST make domestic production impossible to justify', count: 0, pct: 0 }
+      ],
+      leadingOption: null,
+      recentVotes: [],
+      matrix: [{"index":0,"category":"Economics","question":"What is the most credible reason the imported column costs more than a locally packed one?","totalVotes":0,"leadingIndex":-1},{"index":1,"category":"Quality & Regulation","question":"Before switching to a locally packed column, what evidence is most critical?","totalVotes":0,"leadingIndex":-1},{"index":2,"category":"Strategy","question":"Which sourcing strategy best balances cost savings and supply risk?","totalVotes":0,"leadingIndex":-1},{"index":3,"category":"Technical","question":"What is the biggest technical barrier to packing columns in-house?","totalVotes":0,"leadingIndex":-1},{"index":4,"category":"Decision","question":"What single piece of evidence would most change your vote today?","totalVotes":0,"leadingIndex":-1}]
+    }));
+    return;
+  }
+
   if (url.includes('/questions')) {
     res.statusCode = 200;
     res.end(JSON.stringify({

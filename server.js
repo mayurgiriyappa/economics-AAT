@@ -43,6 +43,161 @@ const starterQuestions = [
   {id:'q9', category:'Decision analysis', text:'What does a break-even demand estimate identify in an import-versus-local model?', options:['The demand level at which modeled costs are equal under stated assumptions','The number of employees needed for every factory','A government-guaranteed sales quantity','The product’s regulatory approval date'], correctIndex:0, explanation:'Break-even demand identifies the modeled volume at which the cost of the alternatives is equal. Fixed costs, yields, capacity and cost definitions must be consistent.', points:1000},
   {id:'q10', category:'Evidence', text:'Which is the most reliable basis for claiming that a specific Indian incentive applies to the proposed consumable?', options:['A social media post about Make in India','A generic blog about manufacturing','Current official scheme guidelines matched to the product, applicant and eligibility conditions','A competitor’s unverified estimate'], correctIndex:2, explanation:'Use current official scheme guidelines and verify the exact applicant, product, investment and eligibility requirements. Do not infer eligibility from general policy branding.', points:1000}
 ];
+
+// ==================== JURY LIVE BACKEND ENGINE ====================
+const defaultJuryQuestions = [
+  {
+    id: 'JQ-01',
+    category: 'Economics',
+    question: 'What is the most credible reason the imported column costs more than a locally packed one?',
+    options: [
+      'Currency risk and freight add ~20–30% above the manufacturing cost',
+      'The supplier charges a quality premium for pre-packed convenience',
+      'Import duties and GST make domestic production impossible to justify'
+    ]
+  },
+  {
+    id: 'JQ-02',
+    category: 'Quality & Regulation',
+    question: 'Before switching to a locally packed column, what evidence is most critical?',
+    options: [
+      'A lower quotation from the domestic supplier',
+      'Demonstrated bed efficiency, peak symmetry and process compatibility data',
+      'Government scheme certification confirming Make in India eligibility'
+    ]
+  },
+  {
+    id: 'JQ-03',
+    category: 'Strategy',
+    question: 'Which sourcing strategy best balances cost savings and supply risk?',
+    options: [
+      'Continue importing — existing supply is qualified and risk is known',
+      'Phased localization — develop local capability while retaining the import as backup',
+      'Full switch to local — cut costs immediately after pilot batch approval'
+    ]
+  },
+  {
+    id: 'JQ-04',
+    category: 'Technical',
+    question: 'What is the biggest technical barrier to packing columns in-house?',
+    options: [
+      'Achieving reproducible bed uniformity and pressure/flow profiles batch to batch',
+      'Sourcing the resin — most resins are imported anyway',
+      'Regulatory documentation — GMP change control is too slow for urgent supply'
+    ]
+  },
+  {
+    id: 'JQ-05',
+    category: 'Decision',
+    question: 'What single piece of evidence would most change your vote today?',
+    options: [
+      'A verified domestic supplier quotation showing >20% unit cost saving',
+      'Pilot batch data showing equivalent performance to the imported column',
+      'A confirmed PLI or government subsidy that covers tooling and validation costs'
+    ]
+  }
+];
+
+let jurySession = {
+  roomCode: 'JURY-' + crypto.randomInt(100000, 999999).toString(),
+  status: 'active',
+  currentQuestionIndex: 0,
+  questions: JSON.parse(JSON.stringify(defaultJuryQuestions)),
+  showResult: false, // controls whether results are showcased live at the end of each question
+  participants: {},  // id -> { id, name, connected, votes: { [qIndex]: { optionIndex, reason, at } } }
+  createdAt: new Date().toISOString()
+};
+
+function getJuryState(clientId = null) {
+  const qIdx = jurySession.currentQuestionIndex;
+  const q = jurySession.questions[qIdx] || jurySession.questions[0];
+  const participantsList = Object.values(jurySession.participants);
+  
+  // Votes on current question
+  const votesOnQ = [];
+  const counts = q.options.map((opt, i) => ({ index: i, label: opt, count: 0 }));
+  
+  participantsList.forEach(p => {
+    if (p.votes && p.votes[qIdx] !== undefined) {
+      const v = p.votes[qIdx];
+      votesOnQ.push({
+        id: p.id,
+        name: p.name,
+        optionIndex: v.optionIndex,
+        reason: v.reason || '',
+        at: v.at
+      });
+      if (counts[v.optionIndex]) {
+        counts[v.optionIndex].count++;
+      }
+    }
+  });
+
+  const totalVotes = votesOnQ.length;
+  const optionCounts = counts.map(c => ({
+    ...c,
+    pct: totalVotes > 0 ? Number(((c.count / totalVotes) * 100).toFixed(1)) : 0
+  }));
+
+  const maxCount = Math.max(...optionCounts.map(c => c.count), 0);
+  const leading = totalVotes > 0 ? optionCounts.find(c => c.count === maxCount) : null;
+
+  // Votes across all 5 questions for matrix
+  const matrix = jurySession.questions.map((jq, idx) => {
+    let qTotal = 0;
+    const qCounts = [0, 0, 0];
+    participantsList.forEach(p => {
+      if (p.votes && p.votes[idx] !== undefined) {
+        qTotal++;
+        const oi = p.votes[idx].optionIndex;
+        if (qCounts[oi] !== undefined) qCounts[oi]++;
+      }
+    });
+    const topIdx = qTotal > 0 ? qCounts.indexOf(Math.max(...qCounts)) : -1;
+    return {
+      index: idx,
+      category: jq.category,
+      question: jq.question,
+      totalVotes: qTotal,
+      leadingIndex: topIdx
+    };
+  });
+
+  const myVote = (clientId && jurySession.participants[clientId]?.votes?.[qIdx]) || null;
+
+  return {
+    ok: true,
+    roomCode: jurySession.roomCode,
+    status: jurySession.status,
+    currentQuestionIndex: qIdx,
+    questionCount: jurySession.questions.length,
+    currentQuestion: q,
+    allQuestions: jurySession.questions,
+    showResult: jurySession.showResult,
+    totalParticipants: participantsList.length,
+    activeParticipants: participantsList.filter(p => p.connected).length,
+    participants: participantsList.map(p => ({
+      id: p.id,
+      name: p.name,
+      connected: !!p.connected,
+      hasVoted: !!(p.votes && p.votes[qIdx] !== undefined)
+    })),
+    totalVotes,
+    optionCounts,
+    leadingOption: leading ? { index: leading.index, label: leading.label, pct: leading.pct } : null,
+    recentVotes: votesOnQ.sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 15),
+    matrix,
+    myVote
+  };
+}
+
+function broadcastJuryState() {
+  for (const s of io.sockets.sockets.values()) {
+    const cId = s.data?.juryClientId || null;
+    s.emit('jury:state', getJuryState(cId));
+  }
+}
+
 let questionBank = loadQuestionBank();
 let game = null;
 const hostSockets = new Set();
@@ -166,6 +321,23 @@ function getDashboardHtml() {
   return cachedDashboardHtml;
 }
 
+
+let cachedJuryHtml = '';
+try {
+  cachedJuryHtml = fs.readFileSync(path.join(__dirname, 'jury.html'), 'utf8');
+} catch (_) {
+  try { cachedJuryHtml = fs.readFileSync(path.join(process.cwd(), 'jury.html'), 'utf8'); } catch (_) {}
+}
+
+function getJuryHtml() {
+  if (cachedJuryHtml) return cachedJuryHtml;
+  try { cachedJuryHtml = fs.readFileSync(path.join(__dirname, 'jury.html'), 'utf8'); } catch (_) {}
+  if (!cachedJuryHtml) {
+    try { cachedJuryHtml = fs.readFileSync(path.join(process.cwd(), 'jury.html'), 'utf8'); } catch (_) {}
+  }
+  return cachedJuryHtml;
+}
+
 function getQuizHtml() {
   if (cachedQuizHtml) return cachedQuizHtml;
   try { cachedQuizHtml = fs.readFileSync(path.join(__dirname, 'quiz.html'), 'utf8'); } catch (_) {}
@@ -193,6 +365,16 @@ app.get(['/dashboard', '/dashboard.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
+
+app.get(['/jury', '/jury.html'], (req, res) => {
+  const html = getJuryHtml();
+  if (html) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(html);
+  }
+  res.sendFile(path.join(__dirname, 'jury.html'));
+});
+
 app.get(['/quiz.html', '/quiz'], (req, res) => {
   const html = getQuizHtml();
   if (html) {
@@ -210,9 +392,164 @@ app.post('/api/create-room', (req,res)=>{
   }
   res.json({ok:true, roomCode:game.roomCode});
 });
+
+app.get('/api/jury/state', (req, res) => {
+  const clientId = req.query.clientId || null;
+  res.json(getJuryState(clientId));
+});
+
+app.post('/api/jury/vote', express.json(), (req, res) => {
+  try {
+    const { clientId, name, optionIndex, reason } = req.body || {};
+    if (!clientId) return res.status(400).json({ ok: false, message: 'Missing clientId' });
+    const qIdx = jurySession.currentQuestionIndex;
+    let p = jurySession.participants[clientId];
+    if (!p) {
+      p = jurySession.participants[clientId] = {
+        id: clientId,
+        name: cleanText(name, 40) || 'Juror',
+        connected: true,
+        votes: {}
+      };
+    }
+    p.votes[qIdx] = {
+      optionIndex: Number(optionIndex),
+      reason: cleanText(reason, 500),
+      at: new Date().toISOString()
+    };
+    broadcastJuryState();
+    res.json({ ok: true, state: getJuryState(clientId) });
+  } catch (err) {
+    res.status(500).json({ ok: false, message: err.message });
+  }
+});
+
 app.get('/api/questions', (req,res)=>res.json({ok:true, questions:questionBank.map(q=>({id:q.id,category:q.category,text:q.text,options:q.options,points:q.points}))}));
 
 io.on('connection', socket=>{
+
+  // ---------- JURY LIVE SOCKET EVENTS ----------
+  socket.on('jury:join', (payload = {}) => {
+    try {
+      const clientId = cleanText(payload.clientId, 80) || socket.id;
+      const name = cleanText(payload.name, 40) || 'Juror';
+      socket.data.juryClientId = clientId;
+      
+      let p = jurySession.participants[clientId];
+      if (!p) {
+        p = jurySession.participants[clientId] = {
+          id: clientId,
+          name,
+          connected: true,
+          votes: {}
+        };
+      } else {
+        p.name = name;
+        p.connected = true;
+      }
+      socket.emit('jury:joined', { ok: true, name: p.name, roomCode: jurySession.roomCode });
+      socket.emit('jury:state', getJuryState(clientId));
+      broadcastJuryState();
+    } catch (e) {
+      socket.emit('jury:error', { message: e.message });
+    }
+  });
+
+  socket.on('jury:vote', (payload = {}) => {
+    try {
+      const clientId = socket.data.juryClientId || cleanText(payload.clientId, 80);
+      if (!clientId) throw new Error('Join the jury room before voting.');
+      const qIdx = jurySession.currentQuestionIndex;
+      const optIdx = Number(payload.optionIndex);
+      const reason = cleanText(payload.reason, 600);
+
+      let p = jurySession.participants[clientId];
+      if (!p) {
+        p = jurySession.participants[clientId] = {
+          id: clientId,
+          name: cleanText(payload.name, 40) || 'Juror',
+          connected: true,
+          votes: {}
+        };
+      }
+      p.votes[qIdx] = {
+        optionIndex: optIdx,
+        reason,
+        at: new Date().toISOString()
+      };
+      socket.emit('jury:vote-accepted', { questionIndex: qIdx, optionIndex: optIdx });
+      broadcastJuryState();
+    } catch (e) {
+      socket.emit('jury:error', { message: e.message });
+    }
+  });
+
+  // Host Controls
+  socket.on('jury:host-set-question', (payload = {}) => {
+    try {
+      const idx = Number(payload.index);
+      if (idx >= 0 && idx < jurySession.questions.length) {
+        jurySession.currentQuestionIndex = idx;
+        jurySession.showResult = false; // reset reveal for new question
+        broadcastJuryState();
+      }
+    } catch (e) {
+      socket.emit('jury:error', { message: e.message });
+    }
+  });
+
+  socket.on('jury:host-showcase-result', (payload = {}) => {
+    try {
+      jurySession.showResult = payload.show !== undefined ? !!payload.show : !jurySession.showResult;
+      broadcastJuryState();
+    } catch (e) {
+      socket.emit('jury:error', { message: e.message });
+    }
+  });
+
+  socket.on('jury:host-next-question', () => {
+    try {
+      jurySession.currentQuestionIndex = (jurySession.currentQuestionIndex + 1) % jurySession.questions.length;
+      jurySession.showResult = false;
+      broadcastJuryState();
+    } catch (e) {
+      socket.emit('jury:error', { message: e.message });
+    }
+  });
+
+  socket.on('jury:host-save-questions', (payload = {}) => {
+    try {
+      if (Array.isArray(payload.questions) && payload.questions.length === 5) {
+        jurySession.questions = payload.questions;
+        broadcastJuryState();
+      }
+    } catch (e) {
+      socket.emit('jury:error', { message: e.message });
+    }
+  });
+
+  socket.on('jury:host-reset-votes', () => {
+    try {
+      Object.values(jurySession.participants).forEach(p => { p.votes = {}; });
+      jurySession.showResult = false;
+      broadcastJuryState();
+    } catch (e) {
+      socket.emit('jury:error', { message: e.message });
+    }
+  });
+
+  socket.on('jury:host-new-room', () => {
+    try {
+      jurySession.roomCode = 'JURY-' + crypto.randomInt(100000, 999999).toString();
+      jurySession.participants = {};
+      jurySession.currentQuestionIndex = 0;
+      jurySession.showResult = false;
+      broadcastJuryState();
+    } catch (e) {
+      socket.emit('jury:error', { message: e.message });
+    }
+  });
+
   socket.emit('quiz:hello',{supportsLiveParticipants:true,maxParticipants:MAX_PARTICIPANTS,questionCount:questionBank.length});
   socket.on('host:authenticate',(payload={})=>{
     const pin=String(payload.pin||'');
@@ -277,6 +614,7 @@ io.on('connection', socket=>{
   });
   socket.on('disconnect',()=>{
     hostSockets.delete(socket.id);
+    if (socket.data?.juryClientId && jurySession.participants[socket.data.juryClientId]) { jurySession.participants[socket.data.juryClientId].connected = false; broadcastJuryState(); }
     if(socket.data && socket.data.role==='player' && game && socket.data.roomCode===game.roomCode){const p=game.participants[socket.data.playerId];if(p)p.connected=false;broadcastState();}
   });
 });

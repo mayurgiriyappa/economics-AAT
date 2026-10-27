@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BioPopcorn | Live Jury Poll Session</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==">
+<style>
+:root {
+  --bg: #f8f6f0;
+  --panel: #ffffff;
+  --line: #e3dec3;
+  --text: #17382b;
+  --muted: #5a7367;
+  --green: #143a2c;
+  --green-hover: #1b4d3a;
+  --accent: #1f6b49;
+  --lead-bar: linear-gradient(90deg, #143a2c, #2f9468);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 14px 40px;
+}
+.header {
+  width: 100%;
+  max-width: 580px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-badge {
+  background: var(--green);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 9px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+.brand-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--green);
+}
+.brand-sub {
+  font-size: 11px;
+  color: var(--muted);
+}
+.session-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  background: #e8f5ee;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid #c2e2ce;
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #28a745;
+  display: inline-block;
+  animation: pulse 1.8s infinite;
+}
+@keyframes pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+.card {
+  width: 100%;
+  max-width: 580px;
+  background: var(--panel);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 4px 14px rgba(20,58,44,0.04);
+  margin-bottom: 14px;
+}
+.join-view, .poll-view, .result-view {
+  display: none;
+}
+.join-view.active, .poll-view.active, .result-view.active {
+  display: block;
+}
+h2 {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--green);
+  margin-bottom: 6px;
+}
+p.sub {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-bottom: 18px;
+}
+.field {
+  margin-bottom: 16px;
+}
+label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 750;
+  color: var(--muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+input, textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: #fff;
+  transition: border-color .15s;
+}
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 18px;
+  font-size: 14px;
+  font-weight: 750;
+  border-radius: 9px;
+  border: none;
+  cursor: pointer;
+  transition: all .15s ease;
+  background: var(--green);
+  color: #fff;
+}
+.btn:hover {
+  background: var(--green-hover);
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn-soft {
+  background: #eef4f0;
+  color: var(--green);
+  border: 1px solid var(--line);
+}
+.btn-soft:hover {
+  background: #e2ede5;
+}
+/* Question info header */
+.q-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.q-chip {
+  background: #e8f5ee;
+  color: var(--accent);
+  border: 1px solid #c2e2ce;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+.q-progress {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.q-text {
+  font-size: 16px;
+  font-weight: 750;
+  color: var(--green);
+  line-height: 1.4;
+  margin-bottom: 18px;
+}
+/* Options list */
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.opt-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  border: 1.5px solid var(--line);
+  border-radius: 11px;
+  background: #fff;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.opt-label:hover {
+  border-color: var(--accent);
+  background: #f6fbf8;
+}
+.opt-label:has(input:checked) {
+  border-color: var(--accent);
+  background: #e8f5ee;
+}
+.opt-label input[type=radio] {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--accent);
+}
+.opt-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: #eef3ef;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--green);
+  flex-shrink: 0;
+}
+.opt-label:has(input:checked) .opt-letter {
+  background: var(--green);
+  color: #fff;
+}
+.opt-text {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text);
+}
+/* Waiting state */
+.waiting-box {
+  background: #fdfefd;
+  border: 1.5px dashed #c0d8cb;
+  border-radius: 12px;
+  padding: 22px 18px;
+  text-align: center;
+  margin-top: 14px;
+}
+.waiting-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3.5px solid #e1eee6;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+/* Results presentation */
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.result-lead-banner {
+  background: #e8f5ee;
+  border: 1.5px solid #a3d4b6;
+  border-radius: 11px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.lead-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+}
+.lead-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--green);
+  margin-top: 3px;
+}
+.ratio-row {
+  margin-bottom: 16px;
+}
+.ratio-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.ratio-row-head .pct {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent);
+}
+.ratio-track {
+  height: 11px;
+  background: #e9eee9;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.ratio-fill {
+  height: 100%;
+  background: #8ecaa3;
+  border-radius: 8px;
+  transition: width 0.6s cubic-bezier(.34,1.56,.64,1);
+}
+.ratio-fill.leading {
+  background: var(--lead-bar);
+}
+.ratio-sub {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
+}
+.juror-tag {
+  font-size: 11px;
+  color: var(--muted);
+  background: #f1f5f2;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #143a2c;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+  z-index: 999;
+}
+.toast.show { opacity: 1; }
+</style>
+<script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand">
+    <span class="brand-badge">POLL</span>
+    <div>
+      <div class="brand-title">Courtroom &amp; Jury</div>
+      <div class="brand-sub">Make in India · Live Deliberation</div>
+    </div>
+  </div>
+  <div class="session-status" id="sessionStatus">
+    <span class="status-dot"></span>
+    <span id="statusLabel">Connecting…</span>
+  </div>
+</header>
+
+<!-- VIEW 1: JOIN FORM -->
+<div class="card join-view active" id="joinView">
+  <h2>Join Live Jury Session</h2>
+  <p class="sub">Deliberate on 5 strategy questions in real time. Results are showcased live by the host at the end of each question.</p>
+  
+  <form id="joinForm">
+    <div class="field">
+      <label for="roomInput">Private Room Code</label>
+      <input id="roomInput" placeholder="e.g. JURY-123456" required autocomplete="off" />
+    </div>
+    <div class="field">
+      <label for="nameInput">Your Name / Juror ID</label>
+      <input id="nameInput" placeholder="e.g. Dr. Ramesh / Juror 04" required maxlength="40" autocomplete="name" />
+    </div>
+    <button type="submit" class="btn" id="joinBtn">Enter Jury Chamber →</button>
+  </form>
+</div>
+
+<!-- VIEW 2: ACTIVE POLL BALLOT -->
+<div class="card poll-view" id="pollView">
+  <div class="q-meta">
+    <span class="q-chip" id="qCategory">Economics</span>
+    <span class="q-progress" id="qProgress">Question 1 of 5</span>
+  </div>
+  
+  <div class="q-text" id="qText">Loading question…</div>
+
+  <form id="voteForm">
+    <div class="options-list" id="optionsContainer"></div>
+
+    <div class="field">
+      <label for="reasonInput">Reasoning &amp; Evidence (Optional)</label>
+      <textarea id="reasonInput" rows="2" placeholder="Note your key consideration or risk..."></textarea>
+    </div>
+
+    <button type="submit" class="btn" id="submitVoteBtn">Submit Jury Vote →</button>
+  </form>
+
+  <div class="waiting-box" id="waitingBox" style="display:none">
+    <div class="waiting-spinner"></div>
+    <div style="font-size:14px;font-weight:800;color:var(--green);margin-bottom:4px">✓ Vote Recorded!</div>
+    <div style="font-size:12px;color:var(--muted)" id="waitingMsg">Waiting for the host to showcase results for this question…</div>
+    <div style="margin-top:10px" id="jurorVotesCountBadge" class="juror-tag">1 vote recorded so far</div>
+  </div>
+</div>
+
+<!-- VIEW 3: LIVE RESULTS SHOWCASE -->
+<div class="card result-view" id="resultView">
+  <div class="results-header">
+    <div>
+      <div style="font-size:11px;font-weight:800;color:var(--accent)" id="resCategory">Category</div>
+      <div style="font-size:15px;font-weight:800;color:var(--green)" id="resQNum">Question 1 Results</div>
+    </div>
+    <span class="juror-tag" id="resTotalVotes">0 votes</span>
+  </div>
+
+  <div class="result-lead-banner">
+    <div class="lead-label">Live Leading Verdict</div>
+    <div class="lead-title" id="leadOptionTitle">—</div>
+  </div>
+
+  <div id="ratioBarsContainer"></div>
+
+  <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);text-align:center">
+    <span style="font-size:11.5px;color:var(--muted)">Waiting for host to advance to the next question…</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let socket = null;
+let clientId = localStorage.getItem('juryClientId') || ('juror_' + Math.random().toString(36).substring(2, 10));
+localStorage.setItem('juryClientId', clientId);
+
+let jurorName = localStorage.getItem('jurorName') || '';
+let currentRoom = '';
+let currentJuryState = null;
+let hasVotedCurrentQ = false;
+
+// URL params: auto-fill room code if present
+const urlParams = new URLSearchParams(window.location.search);
+const paramRoom = urlParams.get('room');
+if (paramRoom) {
+  document.getElementById('roomInput').value = paramRoom.trim().toUpperCase();
+}
+if (jurorName) {
+  document.getElementById('nameInput').value = jurorName;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function switchView(viewName) {
+  document.getElementById('joinView').classList.toggle('active', viewName === 'join');
+  document.getElementById('pollView').classList.toggle('active', viewName === 'poll');
+  document.getElementById('resultView').classList.toggle('active', viewName === 'result');
+}
+
+function initSocket() {
+  if (typeof io === 'undefined') {
+    document.getElementById('statusLabel').textContent = 'Offline Mode';
+    return;
+  }
+  socket = io();
+
+  socket.on('connect', () => {
+    document.getElementById('statusLabel').textContent = 'Connected';
+    if (currentRoom && jurorName) {
+      socket.emit('jury:join', { clientId, name: jurorName, roomCode: currentRoom });
+    }
+  });
+
+  socket.on('disconnect', () => {
+    document.getElementById('statusLabel').textContent = 'Reconnecting…';
+  });
+
+  socket.on('jury:joined', (data) => {
+    currentRoom = data.roomCode;
+    document.getElementById('statusLabel').textContent = 'Room: ' + data.roomCode;
+  });
+
+  socket.on('jury:state', (state) => {
+    currentJuryState = state;
+    renderState(state);
+  });
+
+  socket.on('jury:vote-accepted', () => {
+    hasVotedCurrentQ = true;
+    showToast('Your vote was recorded live!');
+    document.getElementById('waitingBox').style.display = 'block';
+    document.getElementById('submitVoteBtn').style.display = 'none';
+    document.querySelectorAll('input[name="juryOpt"]').forEach(r => r.disabled = true);
+  });
+
+  socket.on('jury:error', (err) => {
+    showToast(err.message || 'Error occurred');
+  });
+}
+
+function renderState(state) {
+  if (!state || !state.currentQuestion) return;
+
+  const q = state.currentQuestion;
+  const qIdx = state.currentQuestionIndex;
+
+  hasVotedCurrentQ = !!(state.myVote);
+
+  if (state.showResult) {
+    switchView('result');
+    renderResultView(state);
+    return;
+  }
+
+  switchView('poll');
+  document.getElementById('qCategory').textContent = q.category || 'Strategy';
+  document.getElementById('qProgress').textContent = 'Question ' + (qIdx + 1) + ' of ' + (state.questionCount || 5);
+  document.getElementById('qText').textContent = q.question;
+
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = q.options.map((opt, i) => {
+    const isChecked = state.myVote && state.myVote.optionIndex === i ? 'checked' : '';
+    const isDisabled = hasVotedCurrentQ ? 'disabled' : '';
+    return '<label class="opt-label">'
+      + '<input type="radio" name="juryOpt" value="' + i + '" ' + isChecked + ' ' + isDisabled + ' />'
+      + '<span class="opt-letter">' + String.fromCharCode(65 + i) + '</span>'
+      + '<span class="opt-text">' + opt + '</span>'
+      + '</label>';
+  }).join('');
+
+  if (hasVotedCurrentQ) {
+    document.getElementById('waitingBox').style.display = 'block';
+    document.getElementById('submitVoteBtn').style.display = 'none';
+    document.getElementById('reasonInput').disabled = true;
+    document.getElementById('jurorVotesCountBadge').textContent = state.totalVotes + ' vote' + (state.totalVotes !== 1 ? 's' : '') + ' recorded';
+  } else {
+    document.getElementById('waitingBox').style.display = 'none';
+    document.getElementById('submitVoteBtn').style.display = 'block';
+    document.getElementById('reasonInput').disabled = false;
+    document.getElementById('reasonInput').value = '';
+  }
+}
+
+function renderResultView(state) {
+  const q = state.currentQuestion;
+  const qIdx = state.currentQuestionIndex;
+  
+  document.getElementById('resCategory').textContent = q.category;
+  document.getElementById('resQNum').textContent = 'Question ' + (qIdx + 1) + ' Live Verdict';
+  document.getElementById('resTotalVotes').textContent = state.totalVotes + ' vote' + (state.totalVotes !== 1 ? 's' : '') + ' cast';
+
+  if (state.leadingOption && state.totalVotes > 0) {
+    document.getElementById('leadOptionTitle').textContent = String.fromCharCode(65 + state.leadingOption.index) + '. ' + state.leadingOption.label + ' (' + state.leadingOption.pct + '%)';
+  } else {
+    document.getElementById('leadOptionTitle').textContent = 'No votes recorded for this question yet';
+  }
+
+  const container = document.getElementById('ratioBarsContainer');
+  container.innerHTML = state.optionCounts.map((opt, i) => {
+    const isLead = state.leadingOption && state.leadingOption.index === i && state.totalVotes > 0;
+    return '<div class="ratio-row">'
+      + '<div class="ratio-row-head">'
+      +   '<span><strong>' + String.fromCharCode(65 + i) + '.</strong> ' + opt.label + '</span>'
+      +   '<span class="pct">' + opt.pct + '%</span>'
+      + '</div>'
+      + '<div class="ratio-track">'
+      +   '<div class="ratio-fill ' + (isLead ? 'leading' : '') + '" style="width:' + opt.pct + '%"></div>'
+      + '</div>'
+      + '<div class="ratio-sub">' + opt.count + ' vote' + (opt.count !== 1 ? 's' : '') + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+document.getElementById('joinForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const room = document.getElementById('roomInput').value.trim().toUpperCase();
+  const name = document.getElementById('nameInput').value.trim();
+  if (!room || !name) {
+    showToast('Please enter both room code and your name');
+    return;
+  }
+  jurorName = name;
+  currentRoom = room;
+  localStorage.setItem('jurorName', name);
+
+  if (socket && socket.connected) {
+    socket.emit('jury:join', { clientId, name, roomCode: room });
+  } else {
+    fetch('/api/jury/state?clientId=' + encodeURIComponent(clientId))
+      .then(r => r.json())
+      .then(state => {
+        currentJuryState = state;
+        renderState(state);
+      })
+      .catch(() => showToast('Could not connect to jury backend.'));
+  }
+});
+
+document.getElementById('voteForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const selected = document.querySelector('input[name="juryOpt"]:checked');
+  if (!selected) {
+    showToast('Please select one of the 3 options');
+    return;
+  }
+  const optionIndex = parseInt(selected.value, 10);
+  const reason = document.getElementById('reasonInput').value.trim();
+
+  if (socket && socket.connected) {
+    socket.emit('jury:vote', { clientId, name: jurorName, optionIndex, reason });
+  } else {
+    fetch('/api/jury/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientId, name: jurorName, optionIndex, reason })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        showToast('Vote submitted!');
+        hasVotedCurrentQ = true;
+        renderState(data.state);
+      }
+    })
+    .catch(() => showToast('Failed to submit vote.'));
+  }
+});
+
+initSocket();
+</script>
+</body>
+</html>

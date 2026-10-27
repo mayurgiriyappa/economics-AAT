@@ -571,6 +571,87 @@ body {
 
 
 /* ===== JURY LIVE POLL CSS ===== */
+
+/* ===== ENHANCED PRIVATE JURY LIVE CSS ===== */
+.jury-room-badge {
+  background: #143a2c;
+  color: #fff;
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.8px;
+}
+.jury-conn-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1b6b4b;
+  background: #e8f5ee;
+  padding: 4px 9px;
+  border-radius: 12px;
+  border: 1px solid #c0dfc8;
+}
+.jury-users-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11.5px;
+  font-weight: 750;
+  color: #17382b;
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #28a745;
+  display: inline-block;
+  animation: juryPulse 1.8s infinite;
+}
+@keyframes juryPulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+.jury-showcase-pill {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: #eef2ef;
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+.jury-showcase-pill.showcasing {
+  background: #e8f5ee;
+  color: #1b6b4b;
+  border-color: #a5d6b4;
+}
+.juror-roster-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.juror-roster-pill.voted {
+  border-color: #a5d6b4;
+  background: #f1faf4;
+  color: #1b6b4b;
+}
+.btn-sm {
+  padding: 6px 11px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .jury-live-wrap{display:grid;grid-template-columns:1fr 1.2fr;gap:18px;margin-top:16px}
 @media(max-width:1050px){.jury-live-wrap{grid-template-columns:1fr}}
 .jury-ballot-card,.jury-live-card{height:fit-content}
@@ -609,6 +690,7 @@ body {
 .jury-matrix-stat{font-size:9px;color:var(--muted);line-height:1.4}
 
 </style>
+<script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 <div class="app">
@@ -716,25 +798,58 @@ body {
 <section class="section" id="view-jury">
   <div class="page-head">
     <div>
-      <div class="eyebrow">Courtroom decision · Live Jury Poll</div>
+      <div class="eyebrow">Courtroom decision · Private Live Jury Poll</div>
       <h1>Courtroom &amp; Jury</h1>
-      <p>Vote live on 5 strategy questions with 3 options each. Real-time ratio bars update instantly as votes come in.</p>
+      <p>Private live deliberation with real-time backend synchronization. Minimum 6+ participants can join via room code simultaneously; host showcases live ratio results at the end of each question.</p>
     </div>
     <div class="head-actions">
       <button class="btn btn-primary" id="openEditJuryBtn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit Questions &amp; Options
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit 5 Questions &amp; Options
+      </button>
+      <button class="btn btn-soft" id="juryCopyLinkBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:4px"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Share Juror Link (Mobile/Web)
       </button>
       <button class="btn" id="exportVotes">Export votes ↓</button>
     </div>
   </div>
 
-  <!-- 5 Question Tabs -->
-  <div class="jury-q-tabs" id="juryTabs"></div>
+  <!-- Private Live Session Control Bar -->
+  <div class="card panel jury-session-bar" style="margin-bottom:16px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:#f5faf6;border:1.5px solid #c2e2ce">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:7px">
+        <span style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:0.4px">Private Room:</span>
+        <span class="jury-room-badge" id="juryRoomCodeBadge">JURY-CONNECTING</span>
+      </div>
+      <div class="jury-conn-badge" id="juryBackendStatusBadge">
+        <span class="status-dot"></span>
+        <span id="juryBackendStatusText">Connecting to backend…</span>
+      </div>
+      <div class="jury-users-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:4px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        <span id="juryOnlineCount">0</span> Jurors Connected <span style="font-size:10px;opacity:0.75">(Min. 6 supported)</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="btn btn-soft btn-sm" id="juryNewRoomBtn" title="Generate a fresh private room code">New Room</button>
+      <button class="btn btn-soft btn-sm" id="resetJuryDemoVotesBtn">Reset All Votes</button>
+    </div>
+  </div>
+
+  <!-- Host Showcase Banner & Question Navigation -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+    <div class="jury-q-tabs" id="juryTabs"></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="btn btn-primary" id="juryToggleShowcaseBtn" style="font-weight:800">
+        📢 Showcase Live Results to Jurors
+      </button>
+      <button class="btn btn-soft" id="juryNextQBtn">Next Q →</button>
+    </div>
+  </div>
 
   <!-- Main Live Poll Layout -->
   <div class="jury-live-wrap">
 
-    <!-- Left: Ballot Card -->
+    <!-- Left: Question Ballot Card (No Round Dropdown!) -->
     <article class="card panel jury-ballot-card">
       <div class="section-top" style="margin-bottom:16px">
         <div>
@@ -744,55 +859,48 @@ body {
         <span class="stat-chip" id="activeQChip">Q1 of 5</span>
       </div>
 
-      <div class="field" style="margin-bottom:12px">
-        <label for="voterName" style="font-size:11px;font-weight:750;color:#52635a">Your name / ID</label>
-        <input id="voterName" placeholder="e.g. Jury Member 01" maxlength="50" autocomplete="off" />
-      </div>
-
       <div class="field" style="margin-bottom:14px">
-        <label for="voteRound" style="font-size:11px;font-weight:750;color:#52635a">Round</label>
-        <select id="voteRound">
-          <option value="Before debate">Before debate</option>
-          <option value="After cross-examination">After cross-examination</option>
-        </select>
+        <label for="voterName" style="font-size:11px;font-weight:750;color:#52635a">Your Name / Juror ID</label>
+        <input id="voterName" placeholder="e.g. Dr. Ramesh / Juror 01" maxlength="40" autocomplete="name" />
       </div>
 
       <div style="margin-bottom:14px">
-        <div style="font-size:11px;font-weight:750;color:#52635a;margin-bottom:10px">Select your option:</div>
+        <div style="font-size:11px;font-weight:750;color:#52635a;margin-bottom:10px">Select preferred option (3 options):</div>
         <div id="juryOptionsList" class="jury-options-list"></div>
       </div>
 
-      <div class="field" style="margin-bottom:14px">
-        <label for="voteReason" style="font-size:11px;font-weight:750;color:#52635a">Written reasoning (optional)</label>
-        <textarea id="voteReason" placeholder="Explain your reasoning, evidence, or risk consideration…" style="min-height:65px;max-height:120px"></textarea>
+      <div class="field" style="margin-bottom:16px">
+        <label for="voteReason" style="font-size:11px;font-weight:750;color:#52635a">Written reasoning / evidence (optional)</label>
+        <textarea id="voteReason" placeholder="Explain the main evidence, cost trade-off, or risk rationale behind your choice..." style="min-height:65px;max-height:120px"></textarea>
       </div>
 
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-        <button class="btn btn-primary" id="castJuryVoteBtn" style="flex:1">Cast Vote →</button>
-        <button class="btn btn-soft" id="juryNextQBtn" style="flex:0 0 auto">Next Q →</button>
+      <button class="btn btn-primary" id="castJuryVoteBtn" style="width:100%">Cast Jury Vote →</button>
+
+      <!-- Connected Jurors Live Roster -->
+      <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--line)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:11px;font-weight:800;color:#1b3d2f">Connected Jurors Live Status</span>
+          <span style="font-size:10px;color:var(--muted)" id="juryVotedSummary">0 of 0 voted</span>
+        </div>
+        <div id="juryParticipantsRoster" style="display:flex;flex-wrap:wrap;gap:6px;max-height:90px;overflow-y:auto"></div>
       </div>
-      <p style="font-size:9px;color:var(--muted);margin-top:8px">Votes stored locally in this browser only.</p>
     </article>
 
-    <!-- Right: Live Ratio Distribution -->
+    <!-- Right: Live Ratio Distribution (Live Showcase) -->
     <article class="card panel jury-live-card">
       <div class="section-top" style="margin-bottom:16px">
         <div>
           <h3 class="panel-title">Live Ratio Distribution</h3>
-          <p class="panel-desc">Real-time percentage breakdown for the selected question.</p>
+          <p class="panel-desc" id="juryShowcaseStatusDesc">Real-time percentage breakdown for the active question.</p>
         </div>
-        <select class="mini-select" id="juryRoundFilter">
-          <option value="all">All rounds</option>
-          <option value="Before debate">Before debate</option>
-          <option value="After cross-examination">After cross-examination</option>
-        </select>
+        <span class="jury-showcase-pill" id="juryShowcasePill">Voting in progress</span>
       </div>
 
       <div class="result-grid" style="margin-bottom:18px">
         <div class="result">
           <div class="r-label">Votes counted (this Q)</div>
           <div class="r-value" id="juryVoteTotal" style="font-size:28px">0</div>
-          <div class="r-note" id="juryVoteScopeNote">Across all rounds</div>
+          <div class="r-note" id="juryVoteScopeNote">Live across all connected jurors</div>
         </div>
         <div class="result">
           <div class="r-label">Leading option</div>
@@ -801,14 +909,14 @@ body {
         </div>
       </div>
 
-      <!-- LIVE RATIO BARS: auto-animating like classroom quiz -->
+      <!-- LIVE RATIO BARS: animated real-time ratios -->
       <div id="juryRatioBars"></div>
 
       <!-- 5-Question Snapshot Matrix -->
       <div style="margin-top:22px;border-top:1px solid var(--line);padding-top:16px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
           <h4 style="font-size:12px;font-weight:800;color:#1b3d2f;margin:0">All 5 Questions Snapshot</h4>
-          <span style="font-size:10px;color:var(--muted)">Click to switch question</span>
+          <span style="font-size:10px;color:var(--muted)">Click any card to switch active question</span>
         </div>
         <div id="juryMatrix" class="jury-matrix"></div>
       </div>
@@ -820,9 +928,8 @@ body {
     <div class="section-top">
       <div>
         <h3 class="panel-title">Jury Deliberation Log</h3>
-        <p class="panel-desc">Recorded rationale by question and round.</p>
+        <p class="panel-desc">Recorded rationale by juror in real time.</p>
       </div>
-      <button class="btn btn-soft" id="resetJuryDemoVotesBtn">Reset Jury Votes</button>
     </div>
     <div id="voteReasonList" style="margin-top:12px"></div>
   </article>
@@ -835,7 +942,7 @@ body {
     <div class="modal-head">
       <div>
         <h3 style="font-size:17px;font-weight:800;color:#123325">Edit 5 Jury Questions &amp; 3 Options</h3>
-        <p style="font-size:11px;color:var(--muted);margin:3px 0 0">Customize the questions and 3 options for the live courtroom jury poll.</p>
+        <p style="font-size:11px;color:var(--muted);margin:3px 0 0">Customize the questions and 3 options for the private live classroom courtroom jury deliberation.</p>
       </div>
       <button class="x-btn" id="closeEditJuryModal">×</button>
     </div>
@@ -851,7 +958,6 @@ body {
     </form>
   </div>
 </div>
-
 
 <section class="section" id="view-quiz">
   <div class="page-head"><div><div class="eyebrow">Interactive participation</div><h1>Live classroom quiz</h1><p>Host a room, let classmates join from their own devices, and monitor answer ratios and response distributions in real time.</p></div><div class="head-actions"><span class="stat-chip">REAL-TIME QUIZ</span><a class="btn" href="quiz.html" target="_blank" rel="noopener">Open standalone ↗</a></div></div>
@@ -1319,14 +1425,69 @@ function getJuryQuestions() {
 }
 
 
-// ============ JURY LIVE POLL SYSTEM ============
+// ============ JURY LIVE POLL SYSTEM (BACKEND & REAL-TIME SYNCED) ============
+
+let jurySocket = null;
+let juryClientId = localStorage.getItem('juryClientId') || ('host_' + Math.random().toString(36).substring(2, 10));
+localStorage.setItem('juryClientId', juryClientId);
+let liveJuryState = null;
 
 function getJuryQuestions() {
+  if (liveJuryState && Array.isArray(liveJuryState.allQuestions) && liveJuryState.allQuestions.length === 5) {
+    return liveJuryState.allQuestions;
+  }
   if (!state.juryQuestions || !Array.isArray(state.juryQuestions) || state.juryQuestions.length !== 5) {
     state.juryQuestions = JSON.parse(JSON.stringify(defaultJuryQuestions));
     persist();
   }
   return state.juryQuestions;
+}
+
+function initJurySocket() {
+  if (typeof io === 'undefined') {
+    const statusText = document.getElementById('juryBackendStatusText');
+    if (statusText) statusText.textContent = 'Local Standalone';
+    return;
+  }
+
+  jurySocket = io();
+
+  jurySocket.on('connect', () => {
+    const statusText = document.getElementById('juryBackendStatusText');
+    if (statusText) statusText.textContent = 'Live Connected';
+    const voterName = (document.getElementById('voterName')?.value || '').trim() || 'Presenter';
+    jurySocket.emit('jury:join', { clientId: juryClientId, name: voterName });
+  });
+
+  jurySocket.on('disconnect', () => {
+    const statusText = document.getElementById('juryBackendStatusText');
+    if (statusText) statusText.textContent = 'Reconnecting…';
+  });
+
+  jurySocket.on('jury:joined', (data) => {
+    const roomBadge = document.getElementById('juryRoomCodeBadge');
+    if (roomBadge && data.roomCode) roomBadge.textContent = data.roomCode;
+  });
+
+  jurySocket.on('jury:state', (serverState) => {
+    liveJuryState = serverState;
+    if (serverState.roomCode) {
+      const roomBadge = document.getElementById('juryRoomCodeBadge');
+      if (roomBadge) roomBadge.textContent = serverState.roomCode;
+    }
+    const onlineEl = document.getElementById('juryOnlineCount');
+    if (onlineEl) onlineEl.textContent = serverState.activeParticipants || serverState.totalParticipants || 1;
+    
+    currentJuryQIndex = serverState.currentQuestionIndex !== undefined ? serverState.currentQuestionIndex : currentJuryQIndex;
+    
+    renderJuryTabs();
+    renderJuryBallot();
+    renderVotes();
+  });
+
+  jurySocket.on('jury:vote-accepted', () => {
+    toast('Jury vote recorded live across all devices!');
+  });
 }
 
 function renderJuryTabs() {
@@ -1335,7 +1496,12 @@ function renderJuryTabs() {
   const questions = getJuryQuestions();
   container.innerHTML = questions.map((q, idx) => {
     const active = idx === currentJuryQIndex ? 'active' : '';
-    const qVotes = state.votes.filter(v => v.questionId === q.id).length;
+    let qVotes = 0;
+    if (liveJuryState && liveJuryState.matrix && liveJuryState.matrix[idx]) {
+      qVotes = liveJuryState.matrix[idx].totalVotes || 0;
+    } else {
+      qVotes = state.votes.filter(v => v.questionId === q.id).length;
+    }
     return '<button type="button" class="jury-q-tab-btn ' + active + '" onclick="selectJuryQuestion(' + idx + ')">'
       + '<span class="jury-tab-qlabel">Q' + (idx+1) + ' <span class="jury-tab-cat">' + esc(q.category) + '</span></span>'
       + '<span class="jury-tab-badge-count">' + qVotes + '</span>'
@@ -1356,102 +1522,173 @@ function renderJuryBallot() {
 
   const optContainer = document.getElementById('juryOptionsList');
   if (!optContainer) return;
+
+  const myVote = liveJuryState?.myVote || null;
+
   optContainer.innerHTML = q.options.map((opt, i) => {
     const id = 'juryOpt_' + i;
+    const isChecked = myVote && myVote.optionIndex === i ? 'checked' : '';
     return '<label class="jury-option-label" for="' + id + '">'
-      + '<input type="radio" name="juryOptionRadio" id="' + id + '" value="' + i + '" />'
+      + '<input type="radio" name="juryOptionRadio" id="' + id + '" value="' + i + '" ' + isChecked + ' />'
       + '<span class="jury-option-letter">' + String.fromCharCode(65+i) + '</span>'
       + '<span class="jury-option-text">' + esc(opt) + '</span>'
       + '</label>';
   }).join('');
+
+  // Update participants roster
+  const rosterEl = document.getElementById('juryParticipantsRoster');
+  const votedSummary = document.getElementById('juryVotedSummary');
+  if (liveJuryState && Array.isArray(liveJuryState.participants) && liveJuryState.participants.length > 0) {
+    const totalP = liveJuryState.participants.length;
+    const votedP = liveJuryState.participants.filter(p => p.hasVoted).length;
+    if (votedSummary) votedSummary.textContent = votedP + ' of ' + totalP + ' voted';
+    if (rosterEl) {
+      rosterEl.innerHTML = liveJuryState.participants.map(p => {
+        return '<span class="juror-roster-pill ' + (p.hasVoted ? 'voted' : '') + '">'
+          + (p.hasVoted ? '✓ ' : '⏳ ') + esc(p.name)
+          + '</span>';
+      }).join('');
+    }
+  } else {
+    if (votedSummary) votedSummary.textContent = 'Local Mode';
+    if (rosterEl) rosterEl.innerHTML = '<span style="font-size:10px;color:var(--muted)">Share link above so minimum 6+ jurors can join live.</span>';
+  }
 }
 
 function selectJuryQuestion(idx) {
   currentJuryQIndex = idx;
+  if (jurySocket && jurySocket.connected) {
+    jurySocket.emit('jury:host-set-question', { index: idx });
+  }
   renderJuryTabs();
   renderJuryBallot();
   renderVotes();
 }
 
 function renderVotes() {
-  const round = document.getElementById('juryRoundFilter')?.value || 'all';
   const questions = getJuryQuestions();
   const q = questions[currentJuryQIndex];
   if (!q) return;
 
-  const allVotes = state.votes.filter(v => v.questionId === q.id && (round === 'all' || v.round === round));
-  const total = allVotes.length;
+  let total = 0;
+  let optCounts = [];
+  let topOpt = null;
+  let recentVotes = [];
+  const isShowcasing = liveJuryState ? !!liveJuryState.showResult : false;
+
+  // Toggle Showcase Button text
+  const showcaseBtn = document.getElementById('juryToggleShowcaseBtn');
+  const showcasePill = document.getElementById('juryShowcasePill');
+  const showcaseDesc = document.getElementById('juryShowcaseStatusDesc');
+
+  if (showcaseBtn) {
+    showcaseBtn.textContent = isShowcasing ? '🔒 Hide Results / Reopen Voting' : '📢 Showcase Live Results to Jurors';
+    showcaseBtn.className = isShowcasing ? 'btn btn-soft' : 'btn btn-primary';
+  }
+  if (showcasePill) {
+    showcasePill.textContent = isShowcasing ? '📢 Results Showcased Live' : 'Voting in progress';
+    showcasePill.classList.toggle('showcasing', isShowcasing);
+  }
+  if (showcaseDesc) {
+    showcaseDesc.textContent = isShowcasing 
+      ? 'Results are currently broadcast live to all connected juror screens.' 
+      : 'Real-time percentage breakdown. Click "Showcase" to reveal live to all jurors.';
+  }
+
+  if (liveJuryState && liveJuryState.optionCounts) {
+    total = liveJuryState.totalVotes || 0;
+    optCounts = liveJuryState.optionCounts.map(o => ({
+      label: o.label,
+      letter: String.fromCharCode(65 + o.index),
+      n: o.count,
+      pct: o.pct
+    }));
+    topOpt = liveJuryState.leadingOption;
+    recentVotes = liveJuryState.recentVotes || [];
+  } else {
+    // Local fallback
+    const allVotes = state.votes.filter(v => v.questionId === q.id);
+    total = allVotes.length;
+    optCounts = q.options.map((opt, i) => {
+      const n = allVotes.filter(v => v.optionIndex === i).length;
+      return {
+        label: opt,
+        letter: String.fromCharCode(65 + i),
+        n,
+        pct: total > 0 ? Number(((n / total) * 100).toFixed(1)) : 0
+      };
+    });
+    const maxN = Math.max(...optCounts.map(o => o.n), 0);
+    topOpt = total > 0 ? optCounts.find(o => o.n === maxN) : null;
+    recentVotes = allVotes.slice(0, 15);
+  }
 
   // Update count
   const totalEl = document.getElementById('juryVoteTotal');
   if (totalEl) totalEl.textContent = total;
-  const scopeEl = document.getElementById('juryVoteScopeNote');
-  if (scopeEl) scopeEl.textContent = round === 'all' ? 'Across all rounds' : round;
 
-  // Option counts
-  const optCounts = q.options.map((opt, i) => ({
-    label: opt,
-    letter: String.fromCharCode(65+i),
-    n: allVotes.filter(v => v.optionIndex === i).length
-  }));
-
-  const maxN = Math.max(...optCounts.map(o => o.n), 1);
-  const topOpt = [...optCounts].sort((a, b) => b.n - a.n)[0];
-
+  // Leading option
   const topRatioEl = document.getElementById('juryTopRatio');
   const topNameEl = document.getElementById('juryTopOptionName');
-  if (topRatioEl) topRatioEl.textContent = total > 0 ? (topOpt.n / total * 100).toFixed(1) + '%' : '—';
-  if (topNameEl) topNameEl.textContent = total > 0 ? topOpt.letter + '. ' + topOpt.label.slice(0, 48) + '…' : 'No votes yet';
+  if (topRatioEl) topRatioEl.textContent = total > 0 && topOpt ? topOpt.pct + '%' : '—';
+  if (topNameEl) topNameEl.textContent = total > 0 && topOpt ? String.fromCharCode(65 + (topOpt.index !== undefined ? topOpt.index : 0)) + '. ' + topOpt.label.slice(0, 48) + '…' : 'No votes yet';
 
-  // LIVE RATIO BARS (like classroom quiz)
+  // LIVE RATIO BARS
   const barsEl = document.getElementById('juryRatioBars');
   if (barsEl) {
-    barsEl.innerHTML = optCounts.map(opt => {
-      const pct = total > 0 ? (opt.n / total * 100) : 0;
-      const isTop = opt.n === topOpt.n && total > 0;
+    const maxCount = Math.max(...optCounts.map(o => o.n), 0);
+    barsEl.innerHTML = optCounts.map((opt, i) => {
+      const isTop = opt.n === maxCount && total > 0;
       return '<div class="jury-ratio-row">'
         + '<div class="jury-ratio-header">'
         +   '<span class="jury-ratio-letter ' + (isTop ? 'jury-ratio-top' : '') + '">' + opt.letter + '</span>'
         +   '<span class="jury-ratio-label">' + esc(opt.label.length > 55 ? opt.label.slice(0, 55) + '…' : opt.label) + '</span>'
-        +   '<span class="jury-ratio-pct ' + (isTop ? 'jury-ratio-pct-top' : '') + '">' + pct.toFixed(1) + '%</span>'
+        +   '<span class="jury-ratio-pct ' + (isTop ? 'jury-ratio-pct-top' : '') + '">' + opt.pct + '%</span>'
         + '</div>'
         + '<div class="jury-ratio-track">'
-        +   '<div class="jury-ratio-fill ' + (isTop ? 'jury-ratio-fill-lead' : '') + '" style="width:' + pct + '%;transition:width 0.5s ease"></div>'
+        +   '<div class="jury-ratio-fill ' + (isTop ? 'jury-ratio-fill-lead' : '') + '" style="width:' + opt.pct + '%;transition:width 0.5s ease"></div>'
         + '</div>'
         + '<div class="jury-ratio-votes">' + opt.n + ' vote' + (opt.n !== 1 ? 's' : '') + '</div>'
         + '</div>';
     }).join('');
   }
 
-  // Matrix snapshot
+  // 5-Question Matrix snapshot
   const matrixEl = document.getElementById('juryMatrix');
   if (matrixEl) {
     matrixEl.innerHTML = questions.map((jq, idx) => {
-      const jqVotes = state.votes.filter(v => v.questionId === jq.id && (round === 'all' || v.round === round));
-      const jqTotal = jqVotes.length;
-      const jqCounts = jq.options.map((_, i) => jqVotes.filter(v => v.optionIndex === i).length);
-      const jqTop = jqCounts.indexOf(Math.max(...jqCounts));
+      let jqTotal = 0;
+      let leaderLetter = '—';
+      if (liveJuryState && liveJuryState.matrix && liveJuryState.matrix[idx]) {
+        jqTotal = liveJuryState.matrix[idx].totalVotes || 0;
+        const lIdx = liveJuryState.matrix[idx].leadingIndex;
+        leaderLetter = lIdx >= 0 ? String.fromCharCode(65 + lIdx) : '—';
+      } else {
+        const jqVotes = state.votes.filter(v => v.questionId === jq.id);
+        jqTotal = jqVotes.length;
+        const jqCounts = jq.options.map((_, i) => jqVotes.filter(v => v.optionIndex === i).length);
+        const jqTop = jqCounts.indexOf(Math.max(...jqCounts));
+        leaderLetter = jqTotal > 0 ? String.fromCharCode(65 + jqTop) : '—';
+      }
       const active = idx === currentJuryQIndex ? 'jury-matrix-active' : '';
       return '<div class="jury-matrix-card ' + active + '" onclick="selectJuryQuestion(' + idx + ')">'
         + '<div class="jury-matrix-q">Q' + (idx+1) + ': ' + esc(jq.category) + '</div>'
-        + '<div class="jury-matrix-stat">' + (jqTotal > 0 ? jqTotal + ' vote' + (jqTotal !== 1 ? 's' : '') + ' · Leader: ' + String.fromCharCode(65+jqTop) : 'No votes yet') + '</div>'
+        + '<div class="jury-matrix-stat">' + (jqTotal > 0 ? jqTotal + ' vote' + (jqTotal !== 1 ? 's' : '') + ' · Leader: ' + leaderLetter : 'No votes yet') + '</div>'
         + '</div>';
     }).join('');
   }
 
-  // Deliberation log
+  // Deliberation log (No Round tags!)
   const logEl = document.getElementById('voteReasonList');
   if (logEl) {
-    const recentVotes = [...state.votes].filter(v => v.questionId === q.id).sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 12);
     logEl.innerHTML = recentVotes.length > 0
       ? recentVotes.map(v => {
           const optLabel = q.options[v.optionIndex] !== undefined ? String.fromCharCode(65 + v.optionIndex) + '. ' + q.options[v.optionIndex].slice(0, 50) + '…' : '?';
           return '<div style="padding:12px 0;border-bottom:1px solid #edf1ed">'
             + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
             + '<strong style="font-size:11px">' + esc(v.name || 'Anonymous') + '</strong>'
-            + '<span class="badge">' + esc(v.round) + '</span>'
             + '<span class="pill answered">' + esc(optLabel) + '</span>'
-            + '<span style="font-size:9px;color:#89958e;margin-left:auto">' + timeAgo(v.at) + '</span>'
+            + '<span style="font-size:9px;color:#89958e;margin-left:auto">' + (v.at ? timeAgo(v.at) : 'just now') + '</span>'
             + '</div>'
             + (v.reason ? '<p style="font-size:11px;line-height:1.6;color:#596960;margin:7px 0 0">' + esc(v.reason) + '</p>' : '')
             + '</div>';
@@ -1460,56 +1697,94 @@ function renderVotes() {
   }
 }
 
-// Cast vote handler
-document.getElementById('castJuryVoteBtn').addEventListener('click', () => {
-  const name = (document.getElementById('voterName').value || '').trim() || 'Anonymous';
-  const round = document.getElementById('voteRound').value;
+// Cast Vote Button
+document.getElementById('castJuryVoteBtn')?.addEventListener('click', () => {
+  const name = (document.getElementById('voterName').value || '').trim() || 'Presenter';
   const checked = document.querySelector('input[name="juryOptionRadio"]:checked');
   if (!checked) { toast('Please select one of the 3 options before casting your vote.'); return; }
   const optionIndex = parseInt(checked.value, 10);
   const reason = (document.getElementById('voteReason').value || '').trim();
   const questions = getJuryQuestions();
   const q = questions[currentJuryQIndex];
-  state.votes.push({
-    id: 'V-' + Date.now(),
-    name,
-    round,
-    questionId: q.id,
-    optionIndex,
-    reason,
-    at: new Date().toISOString(),
-    demo: false
-  });
+
+  if (jurySocket && jurySocket.connected) {
+    jurySocket.emit('jury:vote', { clientId: juryClientId, name, optionIndex, reason });
+  } else {
+    state.votes.push({
+      id: 'V-' + Date.now(),
+      name,
+      questionId: q.id,
+      optionIndex,
+      reason,
+      at: new Date().toISOString()
+    });
+    persist();
+    renderJuryTabs();
+    renderVotes();
+    toast('Vote recorded locally.');
+  }
+
   logActivity(name + ' cast a jury vote on Q' + (currentJuryQIndex + 1) + ' (' + q.category + ').', '⚖');
-  persist();
-  // Clear selection
-  document.querySelectorAll('input[name="juryOptionRadio"]').forEach(r => r.checked = false);
   document.getElementById('voteReason').value = '';
-  renderJuryTabs();
-  renderVotes();
-  toast('Vote recorded! Real-time ratios updated.');
+});
+
+// Showcase / Hide Results Live to Jurors Button
+document.getElementById('juryToggleShowcaseBtn')?.addEventListener('click', () => {
+  if (jurySocket && jurySocket.connected) {
+    const willShow = !liveJuryState?.showResult;
+    jurySocket.emit('jury:host-showcase-result', { show: willShow });
+    toast(willShow ? '📢 Results are now showcased live on all juror screens!' : '🔒 Results hidden. Voting reopened.');
+  } else {
+    toast('Showcase toggled locally (connect to server to sync with 6+ jurors).');
+  }
 });
 
 // Next question button
-document.getElementById('juryNextQBtn').addEventListener('click', () => {
-  selectJuryQuestion((currentJuryQIndex + 1) % 5);
+document.getElementById('juryNextQBtn')?.addEventListener('click', () => {
+  if (jurySocket && jurySocket.connected) {
+    jurySocket.emit('jury:host-next-question');
+  } else {
+    selectJuryQuestion((currentJuryQIndex + 1) % 5);
+  }
 });
 
-// Round filter
-document.getElementById('juryRoundFilter').addEventListener('change', renderVotes);
-
-// Reset jury votes
-document.getElementById('resetJuryDemoVotesBtn').addEventListener('click', () => {
-  if (!confirm('Reset all jury votes for all questions? This cannot be undone.')) return;
-  state.votes = state.votes.filter(v => !v.questionId || !getJuryQuestions().some(q => q.id === v.questionId));
-  persist();
-  renderJuryTabs();
-  renderVotes();
-  toast('Jury votes reset.');
+// New Room button
+document.getElementById('juryNewRoomBtn')?.addEventListener('click', () => {
+  if (confirm('Create a new private jury session room? This will generate a fresh room code.')) {
+    if (jurySocket && jurySocket.connected) {
+      jurySocket.emit('jury:host-new-room');
+      toast('New private jury room created!');
+    }
+  }
 });
 
-// Edit modal
-document.getElementById('openEditJuryBtn').addEventListener('click', () => {
+// Copy Juror Link
+document.getElementById('juryCopyLinkBtn')?.addEventListener('click', () => {
+  const room = liveJuryState?.roomCode || document.getElementById('juryRoomCodeBadge')?.textContent || 'JURY-LIVE';
+  const url = window.location.origin + '/jury.html?room=' + encodeURIComponent(room);
+  navigator.clipboard.writeText(url).then(() => {
+    toast('Copied Juror Share Link! Share with your 6+ jurors: ' + url);
+  }).catch(() => {
+    prompt('Share this link with your 6+ jurors to join live:', url);
+  });
+});
+
+// Reset votes button
+document.getElementById('resetJuryDemoVotesBtn')?.addEventListener('click', () => {
+  if (!confirm('Reset all votes across all 5 questions?')) return;
+  if (jurySocket && jurySocket.connected) {
+    jurySocket.emit('jury:host-reset-votes');
+  } else {
+    state.votes = state.votes.filter(v => !v.questionId);
+    persist();
+    renderJuryTabs();
+    renderVotes();
+  }
+  toast('All jury votes reset.');
+});
+
+// Edit Modal Handlers
+document.getElementById('openEditJuryBtn')?.addEventListener('click', () => {
   const questions = getJuryQuestions();
   const body = document.getElementById('editJuryModalBody');
   if (!body) return;
@@ -1531,14 +1806,14 @@ document.getElementById('openEditJuryBtn').addEventListener('click', () => {
   document.getElementById('editJuryModal').classList.add('open');
 });
 
-document.getElementById('closeEditJuryModal').addEventListener('click', () => {
+document.getElementById('closeEditJuryModal')?.addEventListener('click', () => {
   document.getElementById('editJuryModal').classList.remove('open');
 });
-document.getElementById('cancelEditJuryBtn').addEventListener('click', () => {
+document.getElementById('cancelEditJuryBtn')?.addEventListener('click', () => {
   document.getElementById('editJuryModal').classList.remove('open');
 });
 
-document.getElementById('editJuryForm').addEventListener('submit', (e) => {
+document.getElementById('editJuryForm')?.addEventListener('submit', (e) => {
   e.preventDefault();
   const questions = getJuryQuestions();
   questions.forEach((q, qi) => {
@@ -1551,19 +1826,25 @@ document.getElementById('editJuryForm').addEventListener('submit', (e) => {
   });
   state.juryQuestions = questions;
   persist();
+
+  if (jurySocket && jurySocket.connected) {
+    jurySocket.emit('jury:host-save-questions', { questions });
+  }
+
   document.getElementById('editJuryModal').classList.remove('open');
   renderJuryTabs();
   renderJuryBallot();
   renderVotes();
-  toast('Jury questions and options saved.');
+  toast('Questions and options saved and synchronized to server!');
 });
 
-document.getElementById('resetJuryDefaultsBtn').addEventListener('click', () => {
+document.getElementById('resetJuryDefaultsBtn')?.addEventListener('click', () => {
   if (!confirm('Reset all 5 jury questions and options to defaults?')) return;
   state.juryQuestions = JSON.parse(JSON.stringify(defaultJuryQuestions));
   persist();
-  const body = document.getElementById('editJuryModalBody');
-  if (body) body.innerHTML = '';
+  if (jurySocket && jurySocket.connected) {
+    jurySocket.emit('jury:host-save-questions', { questions: state.juryQuestions });
+  }
   document.getElementById('editJuryModal').classList.remove('open');
   renderJuryTabs();
   renderJuryBallot();
@@ -1571,25 +1852,9 @@ document.getElementById('resetJuryDefaultsBtn').addEventListener('click', () => 
   toast('Jury questions reset to defaults.');
 });
 
-// Export votes CSV
-document.getElementById('exportVotes').addEventListener('click', () => {
-  const questions = getJuryQuestions();
-  const rows = [['ID','Name','Round','Question','Option','Reason','Timestamp'],
-    ...state.votes.filter(v => v.questionId).map(v => {
-      const q = questions.find(jq => jq.id === v.questionId);
-      const optLabel = q && v.optionIndex !== undefined ? String.fromCharCode(65+v.optionIndex) + '. ' + q.options[v.optionIndex] : '';
-      return [v.id, v.name||'', v.round, q ? q.question : v.questionId, optLabel, v.reason||'', v.at];
-    })
-  ];
-  const csv = rows.map(r => r.map(c => '"' + String(c||'').replace(/"/g, '""') + '"').join(',')).join('\r\n');
-  const blob = new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8;'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = 'jury-votes.csv'; document.body.appendChild(a); a.click(); a.remove();
-  toast('Jury votes exported to CSV.');
-});
-
-// Initialize jury on page load
+// Initialize Jury System
 function renderJury() {
+  initJurySocket();
   renderJuryTabs();
   renderJuryBallot();
   renderVotes();
