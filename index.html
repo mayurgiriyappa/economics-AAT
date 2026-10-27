@@ -317,6 +317,297 @@ body {
   border: 1px solid #2f7358 !important;
 }
 
+
+
+/* === LIVE JURY QUIZ & REAL RATIO DISTRIBUTION STYLES === */
+.jury-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 20px;
+}
+.jury-tab-btn {
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 750;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all .15s ease;
+}
+.jury-tab-btn:hover {
+  border-color: var(--green);
+  background: #f7faf8;
+}
+.jury-tab-btn.active {
+  background: #143e2d;
+  color: #fff;
+  border-color: #143e2d;
+}
+.jury-tab-badge {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255,255,255,.2);
+  color: inherit;
+}
+.jury-tab-btn:not(.active) .jury-tab-badge {
+  background: #eaf5ee;
+  color: var(--green);
+}
+.jury-q-card {
+  background: linear-gradient(180deg, #fbfdfb 0%, #fff 100%);
+  border: 1px solid #dbe6de;
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+}
+.jury-q-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.jury-q-cat {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #1c6943;
+  background: #e4f5ea;
+  padding: 4px 9px;
+  border-radius: 6px;
+}
+.jury-q-num {
+  font-size: 11px;
+  font-weight: 750;
+  color: var(--muted);
+}
+.jury-q-text {
+  font-size: 17px;
+  font-weight: 800;
+  color: #142820;
+  line-height: 1.4;
+  margin: 0;
+}
+.jury-opt-card {
+  border: 1.5px solid #dce7e0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 11px;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  cursor: pointer;
+  background: #fff;
+  transition: all .15s ease;
+}
+.jury-opt-card:hover {
+  border-color: #79b996;
+  background: #fbfdfb;
+}
+.jury-opt-card.selected {
+  border-color: #1b6b4b;
+  background: #f4faf6;
+  box-shadow: 0 0 0 1px #1b6b4b;
+}
+.jury-opt-letter {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #eaf5ee;
+  color: #1b6b4b;
+  display: grid;
+  place-items: center;
+  font-weight: 850;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.jury-opt-card.selected .jury-opt-letter {
+  background: #1b6b4b;
+  color: #fff;
+}
+.jury-opt-info {
+  flex: 1;
+  min-width: 0;
+}
+.jury-opt-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #162c22;
+  margin-bottom: 3px;
+}
+.jury-opt-desc {
+  font-size: 11px;
+  color: #63756c;
+  line-height: 1.45;
+}
+.jury-opt-radio {
+  margin-top: 5px;
+  accent-color: #1b6b4b;
+}
+
+/* Ratio breakdown bars (Real Ratio Knows like Classroom Quiz) */
+.ratio-row {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #edf2ee;
+}
+.ratio-row:last-child {
+  border-bottom: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.ratio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.ratio-title {
+  font-size: 12.5px;
+  font-weight: 750;
+  color: #193226;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.ratio-stats {
+  font-size: 12px;
+  font-weight: 850;
+  color: #154e36;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ratio-track {
+  height: 14px;
+  background: #ebf2ed;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #dce8e0;
+}
+.ratio-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1b6b4b 0%, #3d9b72 100%);
+  transition: width .4s cubic-bezier(.2,.8,.2,1);
+}
+.ratio-bar.leader {
+  background: linear-gradient(90deg, #125439 0%, #2f855a 100%);
+  box-shadow: 0 0 10px rgba(47, 133, 90, 0.4);
+}
+.leader-tag {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #def7e9;
+  color: #15623e;
+  border: 1px solid #bcecd0;
+}
+
+/* 5 Questions Overview Matrix */
+.jury-matrix {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+@media(max-width: 900px) {
+  .jury-matrix { grid-template-columns: 1fr; }
+}
+.jury-matrix-item {
+  background: #f7faf8;
+  border: 1px solid #dce8e0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.jury-matrix-item:hover, .jury-matrix-item.active {
+  border-color: #1b6b4b;
+  background: #eef7f2;
+}
+.jury-matrix-qnum {
+  font-size: 10px;
+  font-weight: 800;
+  color: #1b6b4b;
+}
+.jury-matrix-title {
+  font-size: 10.5px;
+  font-weight: 750;
+  color: #172a22;
+  margin: 4px 0 8px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.jury-matrix-bars {
+  display: flex;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e2ede5;
+  gap: 1px;
+}
+.jury-matrix-bar-seg {
+  height: 100%;
+}
+.jury-matrix-bar-seg.segA { background: #1b6b4b; }
+.jury-matrix-bar-seg.segB { background: #3d9b72; }
+.jury-matrix-bar-seg.segC { background: #7cc9a2; }
+
+
+/* ===== JURY LIVE POLL CSS ===== */
+.jury-live-wrap{display:grid;grid-template-columns:1fr 1.2fr;gap:18px;margin-top:16px}
+@media(max-width:1050px){.jury-live-wrap{grid-template-columns:1fr}}
+.jury-ballot-card,.jury-live-card{height:fit-content}
+.jury-q-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.jury-q-tab-btn{border:1.5px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;color:var(--text);display:flex;flex-direction:column;align-items:flex-start;gap:3px;transition:all .18s ease;min-width:100px}
+.jury-q-tab-btn:hover{border-color:#1b6b4b;background:#f1faf4}
+.jury-q-tab-btn.active{border-color:#1b6b4b;background:#e8f5ee;color:#1b6b4b}
+.jury-tab-qlabel{font-size:11px;font-weight:800}
+.jury-tab-cat{font-size:9px;font-weight:600;opacity:.7;display:block}
+.jury-tab-badge-count{font-size:9px;font-weight:750;background:#e8f5ee;color:#1b6b4b;border:1px solid #c0dfc8;border-radius:8px;padding:2px 7px;min-width:20px;text-align:center}
+.jury-q-tab-btn.active .jury-tab-badge-count{background:#1b6b4b;color:#fff;border-color:#1b6b4b}
+.jury-options-list{display:flex;flex-direction:column;gap:9px}
+.jury-option-label{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;cursor:pointer;transition:all .15s ease;background:var(--panel)}
+.jury-option-label:hover{border-color:#1b6b4b;background:#f4fbf6}
+.jury-option-label:has(input:checked){border-color:#1b6b4b;background:#e8f5ee}
+.jury-option-label input[type=radio]{accent-color:#1b6b4b;width:15px;height:15px;flex-shrink:0}
+.jury-option-letter{font-size:12px;font-weight:800;color:#1b6b4b;background:#e8f5ee;border-radius:7px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.jury-option-text{font-size:12px;font-weight:600;color:var(--text);line-height:1.4}
+.jury-ratio-row{margin-bottom:16px}
+.jury-ratio-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.jury-ratio-letter{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:#f0f4f2;font-size:11px;font-weight:800;color:#52635a;flex-shrink:0}
+.jury-ratio-letter.jury-ratio-top{background:#1b6b4b;color:#fff}
+.jury-ratio-label{font-size:11.5px;font-weight:600;color:var(--text);flex:1;line-height:1.3}
+.jury-ratio-pct{font-size:12px;font-weight:800;color:var(--muted);min-width:40px;text-align:right}
+.jury-ratio-pct.jury-ratio-pct-top{color:#1b6b4b}
+.jury-ratio-track{height:10px;background:#edf0ed;border-radius:10px;overflow:hidden;margin-bottom:4px}
+.jury-ratio-fill{height:100%;background:#a5d6b4;border-radius:10px;transition:width 0.5s cubic-bezier(.4,0,.2,1)}
+.jury-ratio-fill.jury-ratio-fill-lead{background:linear-gradient(90deg,#1b6b4b,#2f9468)}
+.jury-ratio-votes{font-size:9px;color:var(--muted);text-align:right}
+.jury-matrix{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+@media(max-width:760px){.jury-matrix{grid-template-columns:repeat(2,1fr)}}
+.jury-matrix-card{border:1px solid var(--line);border-radius:10px;padding:10px 8px;cursor:pointer;transition:all .15s;background:var(--panel)}
+.jury-matrix-card:hover{border-color:#1b6b4b;background:#f4fbf6}
+.jury-matrix-card.jury-matrix-active{border-color:#1b6b4b;background:#e8f5ee}
+.jury-matrix-q{font-size:9px;font-weight:800;color:#1b6b4b;margin-bottom:4px}
+.jury-matrix-stat{font-size:9px;color:var(--muted);line-height:1.4}
+
 </style>
 </head>
 <body>
@@ -384,7 +675,7 @@ body {
       <div class="bio-card highlight-card">
         <div class="bio-card-icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line><line x1="2" y1="20" x2="22" y2="20"></line></svg></div>
         <h3 class="bio-card-title">45% Market Share</h3>
-        <p class="bio-card-text">In terms of product, columns hold the highest (around 45%) share of the current market. Prepacked columns are widely used in Liquid Chromatography (LC) across Thermo Fisher, Waters Corp, and leading biopharma manufacturers.</p>
+        <p class="bio-card-text">In terms of product, columns hold the highest (around 45%) share of the current market. Prepacked columns are widely used in Liquid Chromatography (LC).</p>
       </div>
     </div>
   </div>
@@ -420,12 +711,148 @@ body {
   <div class="grid kpi-grid"><article class="card kpi"><div class="kpi-top">Lowest annual equivalent cost <span class="kpi-ico">₹</span></div><div class="kpi-value" id="bestScenarioCost">₹0</div><div class="kpi-foot" id="bestScenarioName">Calculated on current assumptions</div></article><article class="card kpi"><div class="kpi-top">Capital investment <span class="kpi-ico">⌂</span></div><div class="kpi-value" id="scenarioCapex">₹0</div><div class="kpi-foot">Full localization investment estimate</div></article><article class="card kpi"><div class="kpi-top">Current base demand <span class="kpi-ico">▤</span></div><div class="kpi-value" id="scenarioDemand">0</div><div class="kpi-foot">Usable units per year</div></article><article class="card kpi"><div class="kpi-top">Quality gate <span class="kpi-ico">✓</span></div><div class="kpi-value" style="font-size:20px">Independent</div><div class="kpi-foot">Cost cannot override failed product qualification</div></article></div>
   <div class="grid category-grid"><article class="card panel"><h3 class="panel-title">Annual equivalent cost by strategy</h3><p class="panel-desc">Lower is less costly under this model; each strategy includes distinct sourcing-share and cost assumptions.</p><div id="scenarioBars"></div><div class="footnote">Scenario-specific uplifts and sourcing shares below are illustrative modeling conventions. Edit the base assumptions or adjust these defaults in the source code for your case.</div></article><article class="card panel"><h3 class="panel-title">Strategy comparison</h3><p class="panel-desc">Decision factors that should be presented to the jury alongside cost.</p><div class="table-wrap" style="margin-top:15px"><table class="data-table" style="min-width:480px"><thead><tr><th>Strategy</th><th>Cost posture</th><th>Supply resilience</th><th>Quality risk</th></tr></thead><tbody id="scenarioTable"></tbody></table></div><div class="footnote">Qualitative labels are hypotheses for debate, not verified ratings of an actual supplier or product.</div></article></div>
 </section>
+
+
 <section class="section" id="view-jury">
-  <div class="page-head"><div><div class="eyebrow">Courtroom decision</div><h1>Courtroom & jury</h1><p>Record a first opinion, challenge assumptions, then vote again after evidence review.</p></div><div class="head-actions"><button class="btn" id="exportVotes">Export votes ↓</button></div></div>
-  <div class="grid category-grid"><article class="card panel"><h3 class="panel-title">Submit your jury vote</h3><p class="panel-desc">Select a strategy and justify it. Demo votes are stored in this browser only and are not secure election records.</p><form id="voteForm" style="margin-top:16px"><div class="field-grid"><div class="field"><label for="voterName">Display name / jury ID</label><input id="voterName" placeholder="e.g. Jury member 01" required maxlength="50"/></div><div class="field"><label for="voteRound">Voting round</label><select id="voteRound"><option value="Before debate">Before debate</option><option value="After cross-examination">After cross-examination</option></select></div><div class="field wide"><label>Preferred strategy</label><div class="vote-options"><label class="vote-option"><input type="radio" name="strategyVote" value="Continue importing" required/><span><strong>Continue importing</strong><small>Preserve current supply and avoid localization capex</small></span></label><label class="vote-option"><input type="radio" name="strategyVote" value="Manufacture locally"/><span><strong>Manufacture locally</strong><small>Move directly to domestic supply after investment</small></span></label><label class="vote-option"><input type="radio" name="strategyVote" value="Phased localization"/><span><strong>Phased localization</strong><small>Develop locally while retaining imports during qualification</small></span></label><label class="vote-option"><input type="radio" name="strategyVote" value="Dual sourcing"/><span><strong>Dual sourcing</strong><small>Maintain qualified domestic and foreign sources</small></span></label><label class="vote-option"><input type="radio" name="strategyVote" value="Defer pending evidence"/><span><strong>Defer pending evidence</strong><small>Collect verified quotes, data and qualification results first</small></span></label></div></div><div class="field wide"><label for="voteReason">Written reasoning (required)</label><textarea id="voteReason" placeholder="Explain the main evidence, cost trade-off, quality gate or uncertainty behind your vote..." required minlength="15" maxlength="1000"></textarea></div></div><button class="btn btn-primary" style="margin-top:15px" type="submit">Submit vote</button></form></article><article class="card panel"><div class="section-top"><div><h3 class="panel-title">Live jury distribution</h3><p class="panel-desc">Share of submitted votes within the selected round.</p></div><select class="mini-select" id="juryRoundFilter"><option value="all">All rounds</option><option>Before debate</option><option>After cross-examination</option></select></div><div class="result-grid"><div class="result"><div class="r-label">Votes counted</div><div class="r-value" id="voteTotal">0</div></div><div class="result"><div class="r-label">Top strategy</div><div class="r-value" id="topVote" style="font-size:16px">No votes yet</div></div></div><div id="voteChart" style="margin-top:20px"></div><div class="footnote">Percentages are calculated as votes for an option ÷ eligible submitted votes in the selected scope. This demo cannot enforce identity or prevent manipulation across devices.</div></article></div>
-  <article class="card panel" style="margin-top:16px"><h3 class="panel-title">Written jury reasoning</h3><p class="panel-desc">Recent recorded votes, with display names shown as entered. Do not enter sensitive personal data.</p><div id="voteReasonList" style="margin-top:10px"></div></article>
-  <article class="card panel" style="margin-top:16px"><h3 class="panel-title">Verdict worksheet</h3><p class="panel-desc">Use these gates to turn the debate into a defensible recommendation, not just a popularity vote.</p><div class="field-grid" style="margin-top:17px"><div class="field"><label for="qualityGate">Technical / quality qualification</label><select id="qualityGate"><option value="not-tested">Not demonstrated yet</option><option value="in-progress">In progress</option><option value="passed">Passed with documented evidence</option><option value="failed">Failed / material gap</option></select></div><div class="field"><label for="supplierGate">Domestic supplier readiness</label><select id="supplierGate"><option value="unknown">Unknown / not assessed</option><option value="pilot">Pilot capability demonstrated</option><option value="qualified">Qualified and capable at required scale</option><option value="gap">Material capacity or capability gap</option></select></div><div class="field wide"><label for="verdictNotes">Verdict rationale and conditions</label><textarea id="verdictNotes" placeholder="State the recommendation, evidence supporting it, counterarguments, and conditions that would change the decision."></textarea></div></div><button class="btn btn-primary" id="saveVerdict" style="margin-top:13px">Save verdict notes</button><div class="verdict-box" id="verdictSummary"><div class="label">Provisional decision framing</div><h3>Phased localization with qualified dual sourcing</h3><p>This is a starting hypothesis only. Do not switch critical biopharmaceutical process consumables until documented product performance, change control and supply qualification requirements are met. The final recommendation should follow verified data and the model.</p></div></article>
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">Courtroom decision · Live Jury Poll</div>
+      <h1>Courtroom &amp; Jury</h1>
+      <p>Vote live on 5 strategy questions with 3 options each. Real-time ratio bars update instantly as votes come in.</p>
+    </div>
+    <div class="head-actions">
+      <button class="btn btn-primary" id="openEditJuryBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit Questions &amp; Options
+      </button>
+      <button class="btn" id="exportVotes">Export votes ↓</button>
+    </div>
+  </div>
+
+  <!-- 5 Question Tabs -->
+  <div class="jury-q-tabs" id="juryTabs"></div>
+
+  <!-- Main Live Poll Layout -->
+  <div class="jury-live-wrap">
+
+    <!-- Left: Ballot Card -->
+    <article class="card panel jury-ballot-card">
+      <div class="section-top" style="margin-bottom:16px">
+        <div>
+          <h3 class="panel-title" id="juryActiveQTitle">Question 1</h3>
+          <p class="panel-desc" id="juryActiveQDesc">Loading question…</p>
+        </div>
+        <span class="stat-chip" id="activeQChip">Q1 of 5</span>
+      </div>
+
+      <div class="field" style="margin-bottom:12px">
+        <label for="voterName" style="font-size:11px;font-weight:750;color:#52635a">Your name / ID</label>
+        <input id="voterName" placeholder="e.g. Jury Member 01" maxlength="50" autocomplete="off" />
+      </div>
+
+      <div class="field" style="margin-bottom:14px">
+        <label for="voteRound" style="font-size:11px;font-weight:750;color:#52635a">Round</label>
+        <select id="voteRound">
+          <option value="Before debate">Before debate</option>
+          <option value="After cross-examination">After cross-examination</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:750;color:#52635a;margin-bottom:10px">Select your option:</div>
+        <div id="juryOptionsList" class="jury-options-list"></div>
+      </div>
+
+      <div class="field" style="margin-bottom:14px">
+        <label for="voteReason" style="font-size:11px;font-weight:750;color:#52635a">Written reasoning (optional)</label>
+        <textarea id="voteReason" placeholder="Explain your reasoning, evidence, or risk consideration…" style="min-height:65px;max-height:120px"></textarea>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <button class="btn btn-primary" id="castJuryVoteBtn" style="flex:1">Cast Vote →</button>
+        <button class="btn btn-soft" id="juryNextQBtn" style="flex:0 0 auto">Next Q →</button>
+      </div>
+      <p style="font-size:9px;color:var(--muted);margin-top:8px">Votes stored locally in this browser only.</p>
+    </article>
+
+    <!-- Right: Live Ratio Distribution -->
+    <article class="card panel jury-live-card">
+      <div class="section-top" style="margin-bottom:16px">
+        <div>
+          <h3 class="panel-title">Live Ratio Distribution</h3>
+          <p class="panel-desc">Real-time percentage breakdown for the selected question.</p>
+        </div>
+        <select class="mini-select" id="juryRoundFilter">
+          <option value="all">All rounds</option>
+          <option value="Before debate">Before debate</option>
+          <option value="After cross-examination">After cross-examination</option>
+        </select>
+      </div>
+
+      <div class="result-grid" style="margin-bottom:18px">
+        <div class="result">
+          <div class="r-label">Votes counted (this Q)</div>
+          <div class="r-value" id="juryVoteTotal" style="font-size:28px">0</div>
+          <div class="r-note" id="juryVoteScopeNote">Across all rounds</div>
+        </div>
+        <div class="result">
+          <div class="r-label">Leading option</div>
+          <div class="r-value" id="juryTopRatio" style="font-size:20px;color:#1b6b4b">—</div>
+          <div class="r-note" id="juryTopOptionName" style="font-size:10px;color:var(--muted)">No votes yet</div>
+        </div>
+      </div>
+
+      <!-- LIVE RATIO BARS: auto-animating like classroom quiz -->
+      <div id="juryRatioBars"></div>
+
+      <!-- 5-Question Snapshot Matrix -->
+      <div style="margin-top:22px;border-top:1px solid var(--line);padding-top:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+          <h4 style="font-size:12px;font-weight:800;color:#1b3d2f;margin:0">All 5 Questions Snapshot</h4>
+          <span style="font-size:10px;color:var(--muted)">Click to switch question</span>
+        </div>
+        <div id="juryMatrix" class="jury-matrix"></div>
+      </div>
+    </article>
+  </div>
+
+  <!-- Deliberation Log -->
+  <article class="card panel" style="margin-top:18px">
+    <div class="section-top">
+      <div>
+        <h3 class="panel-title">Jury Deliberation Log</h3>
+        <p class="panel-desc">Recorded rationale by question and round.</p>
+      </div>
+      <button class="btn btn-soft" id="resetJuryDemoVotesBtn">Reset Jury Votes</button>
+    </div>
+    <div id="voteReasonList" style="margin-top:12px"></div>
+  </article>
+
 </section>
+
+<!-- Modal: Edit 5 Questions & 3 Options -->
+<div class="modal-backdrop" id="editJuryModal">
+  <div class="modal" style="width:min(780px,100%)">
+    <div class="modal-head">
+      <div>
+        <h3 style="font-size:17px;font-weight:800;color:#123325">Edit 5 Jury Questions &amp; 3 Options</h3>
+        <p style="font-size:11px;color:var(--muted);margin:3px 0 0">Customize the questions and 3 options for the live courtroom jury poll.</p>
+      </div>
+      <button class="x-btn" id="closeEditJuryModal">×</button>
+    </div>
+    <form id="editJuryForm">
+      <div class="modal-body" id="editJuryModalBody" style="max-height:65vh;overflow-y:auto;display:flex;flex-direction:column;gap:20px"></div>
+      <div class="modal-footer" style="border-top:1px solid var(--line);padding:16px 22px;background:#fbfdfb;display:flex;justify-content:space-between;align-items:center">
+        <button type="button" class="btn" id="resetJuryDefaultsBtn" style="color:#8b3c3c">Reset to Defaults</button>
+        <div style="display:flex;gap:10px">
+          <button type="button" class="btn" id="cancelEditJuryBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Questions &amp; Options</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
 <section class="section" id="view-quiz">
   <div class="page-head"><div><div class="eyebrow">Interactive participation</div><h1>Live classroom quiz</h1><p>Host a room, let classmates join from their own devices, and monitor answer ratios and response distributions in real time.</p></div><div class="head-actions"><span class="stat-chip">REAL-TIME QUIZ</span><a class="btn" href="quiz.html" target="_blank" rel="noopener">Open standalone ↗</a></div></div>
   <div class="card" style="padding:12px;overflow:hidden"><iframe id="quizFrame" title="Live classroom quiz interface" src="quiz.html?embed=1" style="display:block;width:100%;height:1050px;min-height:850px;border:0;border-radius:12px;background:#f3f6f3" allow="clipboard-read; clipboard-write"></iframe></div>
@@ -818,12 +1245,360 @@ document.getElementById('saveModel').addEventListener('click', () => {
   updateDashboard();
 });
 function renderScenarios(){const m=computeModel(),cap=m.invest;const scenarios=[{name:'Continue importing',unit:m.importUnit,annual:m.importAnnual,capex:0,share:0,posture:'Baseline',resilience:'Low–moderate',risk:'Known supplier',color:'#6d91c6'},{name:'Immediate full localization',unit:m.localUnit,annual:m.d*m.localUnit+m.quality+cap/m.horizon,capex:cap,share:1,posture:'Capex-heavy',resilience:'Potentially higher',risk:'High until qualified',color:'#3d9b72'},{name:'Phased localization',unit:.5*m.importUnit+.5*m.localUnit,annual:m.d*(.5*m.importUnit+.5*m.localUnit)+m.quality+cap*.7/m.horizon,capex:cap*.7,share:.5,posture:'Transition cost',resilience:'Improves over time',risk:'Managed by gates',color:'#5aaba0'},{name:'Dual sourcing',unit:.5*m.importUnit+.5*m.localUnit,annual:m.d*(.5*m.importUnit+.5*m.localUnit)+m.quality+cap*1.1/m.horizon,capex:cap*1.1,share:.5,posture:'Redundancy premium',resilience:'Potentially higher',risk:'Depends on equivalence',color:'#d9a24a'}];const sorted=[...scenarios].sort((a,b)=>a.annual-b.annual),best=sorted[0];document.getElementById('bestScenarioCost').textContent=money(best.annual);document.getElementById('bestScenarioName').textContent='Lowest modeled cost: '+best.name;document.getElementById('scenarioCapex').textContent=money(cap);document.getElementById('scenarioDemand').textContent=number(m.d);const max=Math.max(1,...scenarios.map(s=>s.annual));document.getElementById('scenarioBars').innerHTML=scenarios.map(s=>`<div class="scenario-row"><div class="scenario-label">${esc(s.name)}</div><div class="scenario-bar"><span style="width:${s.annual/max*100}%;background:${s.color}"></span></div><div class="scenario-cost">${money(s.annual)}</div></div>`).join('');document.getElementById('scenarioTable').innerHTML=scenarios.map(s=>`<tr><td><strong>${esc(s.name)}</strong></td><td>${esc(s.posture)}</td><td>${esc(s.resilience)}</td><td>${esc(s.risk)}</td></tr>`).join('')}
-function renderVotes(){const round=document.getElementById('juryRoundFilter')?.value||'all',votes=state.votes.filter(v=>round==='all'||v.round===round),opts=['Continue importing','Manufacture locally','Phased localization','Dual sourcing','Defer pending evidence'],counts=opts.map(o=>({name:o,n:votes.filter(v=>v.strategy===o).length})),total=votes.length,sorted=[...counts].sort((a,b)=>b.n-a.n);document.getElementById('voteTotal').textContent=total;document.getElementById('topVote').textContent=total?sorted[0].name:'No votes yet';document.getElementById('voteChart').innerHTML=counts.map(x=>`<div class="vote-row"><span>${esc(x.name)}</span><div class="vote-track"><span style="width:${total?x.n/total*100:0}%"></span></div><span class="vote-num">${x.n} · ${pct(total?x.n/total*100:0)}</span></div>`).join('');const reasons=[...votes].sort((a,b)=>new Date(b.at)-new Date(a.at)).slice(0,8);document.getElementById('voteReasonList').innerHTML=reasons.map(v=>`<div style="padding:12px 0;border-bottom:1px solid #edf1ed"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><strong style="font-size:11px">${esc(v.name)}</strong><span class="badge">${esc(v.round)}</span><span class="pill answered">${esc(v.strategy)}</span><span style="font-size:9px;color:#89958e;margin-left:auto">${timeAgo(v.at)}</span></div><p style="font-size:11px;line-height:1.6;color:#596960;margin:7px 0 0">${esc(v.reason)}</p></div>`).join('')||'<div class="empty">No votes in this round yet.</div>';renderVerdictSummary()}
-document.getElementById('juryRoundFilter').addEventListener('change',renderVotes);document.getElementById('voteForm').addEventListener('submit',e=>{e.preventDefault();const name=document.getElementById('voterName').value.trim(),round=document.getElementById('voteRound').value,strategy=document.querySelector('input[name="strategyVote"]:checked')?.value,reason=document.getElementById('voteReason').value.trim();if(!strategy||reason.length<15){toast('Choose a strategy and provide at least 15 characters of reasoning.');return}if(state.votes.some(v=>v.round===round&&v.name.toLowerCase()===name.toLowerCase())){toast('This display name already voted in that round in this browser.');return}state.votes.push({id:'V-'+String(Date.now()),name,round,strategy,reason,at:new Date().toISOString(),demo:false});logActivity(`${name} submitted a jury vote for ${strategy} (${round}).`,'⚖');persist();document.getElementById('voteForm').reset();updateDashboard();renderVotes();toast('Vote recorded locally. It is not a secure multi-user ballot.')});
-document.getElementById('saveVerdict').addEventListener('click',()=>{state.verdict={qualityGate:document.getElementById('qualityGate').value,supplierGate:document.getElementById('supplierGate').value,notes:document.getElementById('verdictNotes').value};persist();logActivity('Verdict gate assessment and rationale saved.','⚖');renderVerdictSummary();toast('Verdict worksheet saved locally.')});function renderVerdictSummary(){const v=state.verdict||{},quality=v.qualityGate||'not-tested',supplier=v.supplierGate||'unknown',notes=v.notes||'';const box=document.getElementById('verdictSummary');if(!box)return;let title='Provisional decision framing',text='Phased localization with qualified dual sourcing remains a hypothesis until cost and technical evidence support it.';if(quality==='failed'||supplier==='gap'){title='Do not switch critical supply yet';text='A material quality or supplier-capability gap is recorded. Maintain the qualified supply route while defining corrective actions and evidence needed to pass the gate.'}else if(quality==='passed'&&supplier==='qualified'){title='Localization may proceed to controlled decision';text='The worksheet records both quality qualification and supplier readiness as passed. Check current cost, capacity, change control and supply-continuity evidence before authorizing a sourcing switch.'}else if(quality==='in-progress'||supplier==='pilot'){title='Continue qualification with a transition plan';text='Keep the current supplier available while pilot production and quality evidence are completed. Do not interpret pilot capability as commercial-scale qualification.'}box.innerHTML=`<div class="label">Verdict worksheet · provisional</div><h3>${esc(title)}</h3><p>${esc(text)}${notes?' Recorded rationale: '+esc(notes):''}</p>`}
+
+
+
+const defaultJuryQuestions = [
+  {
+    id: 'JQ-01',
+    category: 'Economics',
+    question: 'What is the most credible reason the imported column costs more than a locally packed one?',
+    options: [
+      'Currency risk and freight add ~20–30% above the manufacturing cost',
+      'The supplier charges a quality premium for pre-packed convenience',
+      'Import duties and GST make domestic production impossible to justify'
+    ]
+  },
+  {
+    id: 'JQ-02',
+    category: 'Quality & Regulation',
+    question: 'Before switching to a locally packed column, what evidence is most critical?',
+    options: [
+      'A lower quotation from the domestic supplier',
+      'Demonstrated bed efficiency, peak symmetry and process compatibility data',
+      'Government scheme certification confirming Make in India eligibility'
+    ]
+  },
+  {
+    id: 'JQ-03',
+    category: 'Strategy',
+    question: 'Which sourcing strategy best balances cost savings and supply risk?',
+    options: [
+      'Continue importing — existing supply is qualified and risk is known',
+      'Phased localization — develop local capability while retaining the import as backup',
+      'Full switch to local — cut costs immediately after pilot batch approval'
+    ]
+  },
+  {
+    id: 'JQ-04',
+    category: 'Technical',
+    question: 'What is the biggest technical barrier to packing columns in-house?',
+    options: [
+      'Achieving reproducible bed uniformity and pressure/flow profiles batch to batch',
+      'Sourcing the resin — most resins are imported anyway',
+      'Regulatory documentation — GMP change control is too slow for urgent supply'
+    ]
+  },
+  {
+    id: 'JQ-05',
+    category: 'Decision',
+    question: 'What single piece of evidence would most change your vote today?',
+    options: [
+      'A verified domestic supplier quotation showing >20% unit cost saving',
+      'Pilot batch data showing equivalent performance to the imported column',
+      'A confirmed PLI or government subsidy that covers tooling and validation costs'
+    ]
+  }
+];
+
+
+if (!state.juryQuestions || !Array.isArray(state.juryQuestions) || state.juryQuestions.length !== 5) {
+  state.juryQuestions = JSON.parse(JSON.stringify(defaultJuryQuestions));
+  persist();
+}
+
+
+let currentJuryQIndex = 0;
+
+function getJuryQuestions() {
+  if (!state.juryQuestions || !Array.isArray(state.juryQuestions) || state.juryQuestions.length !== 5) {
+    state.juryQuestions = JSON.parse(JSON.stringify(defaultJuryQuestions));
+    persist();
+  }
+  return state.juryQuestions;
+}
+
+
+// ============ JURY LIVE POLL SYSTEM ============
+
+function getJuryQuestions() {
+  if (!state.juryQuestions || !Array.isArray(state.juryQuestions) || state.juryQuestions.length !== 5) {
+    state.juryQuestions = JSON.parse(JSON.stringify(defaultJuryQuestions));
+    persist();
+  }
+  return state.juryQuestions;
+}
+
+function renderJuryTabs() {
+  const container = document.getElementById('juryTabs');
+  if (!container) return;
+  const questions = getJuryQuestions();
+  container.innerHTML = questions.map((q, idx) => {
+    const active = idx === currentJuryQIndex ? 'active' : '';
+    const qVotes = state.votes.filter(v => v.questionId === q.id).length;
+    return '<button type="button" class="jury-q-tab-btn ' + active + '" onclick="selectJuryQuestion(' + idx + ')">'
+      + '<span class="jury-tab-qlabel">Q' + (idx+1) + ' <span class="jury-tab-cat">' + esc(q.category) + '</span></span>'
+      + '<span class="jury-tab-badge-count">' + qVotes + '</span>'
+      + '</button>';
+  }).join('');
+}
+
+function renderJuryBallot() {
+  const questions = getJuryQuestions();
+  const q = questions[currentJuryQIndex];
+  if (!q) return;
+  const titleEl = document.getElementById('juryActiveQTitle');
+  const descEl = document.getElementById('juryActiveQDesc');
+  const chipEl = document.getElementById('activeQChip');
+  if (titleEl) titleEl.textContent = 'Q' + (currentJuryQIndex+1) + ': ' + q.category;
+  if (descEl) descEl.textContent = q.question;
+  if (chipEl) chipEl.textContent = 'Q' + (currentJuryQIndex+1) + ' of 5';
+
+  const optContainer = document.getElementById('juryOptionsList');
+  if (!optContainer) return;
+  optContainer.innerHTML = q.options.map((opt, i) => {
+    const id = 'juryOpt_' + i;
+    return '<label class="jury-option-label" for="' + id + '">'
+      + '<input type="radio" name="juryOptionRadio" id="' + id + '" value="' + i + '" />'
+      + '<span class="jury-option-letter">' + String.fromCharCode(65+i) + '</span>'
+      + '<span class="jury-option-text">' + esc(opt) + '</span>'
+      + '</label>';
+  }).join('');
+}
+
+function selectJuryQuestion(idx) {
+  currentJuryQIndex = idx;
+  renderJuryTabs();
+  renderJuryBallot();
+  renderVotes();
+}
+
+function renderVotes() {
+  const round = document.getElementById('juryRoundFilter')?.value || 'all';
+  const questions = getJuryQuestions();
+  const q = questions[currentJuryQIndex];
+  if (!q) return;
+
+  const allVotes = state.votes.filter(v => v.questionId === q.id && (round === 'all' || v.round === round));
+  const total = allVotes.length;
+
+  // Update count
+  const totalEl = document.getElementById('juryVoteTotal');
+  if (totalEl) totalEl.textContent = total;
+  const scopeEl = document.getElementById('juryVoteScopeNote');
+  if (scopeEl) scopeEl.textContent = round === 'all' ? 'Across all rounds' : round;
+
+  // Option counts
+  const optCounts = q.options.map((opt, i) => ({
+    label: opt,
+    letter: String.fromCharCode(65+i),
+    n: allVotes.filter(v => v.optionIndex === i).length
+  }));
+
+  const maxN = Math.max(...optCounts.map(o => o.n), 1);
+  const topOpt = [...optCounts].sort((a, b) => b.n - a.n)[0];
+
+  const topRatioEl = document.getElementById('juryTopRatio');
+  const topNameEl = document.getElementById('juryTopOptionName');
+  if (topRatioEl) topRatioEl.textContent = total > 0 ? (topOpt.n / total * 100).toFixed(1) + '%' : '—';
+  if (topNameEl) topNameEl.textContent = total > 0 ? topOpt.letter + '. ' + topOpt.label.slice(0, 48) + '…' : 'No votes yet';
+
+  // LIVE RATIO BARS (like classroom quiz)
+  const barsEl = document.getElementById('juryRatioBars');
+  if (barsEl) {
+    barsEl.innerHTML = optCounts.map(opt => {
+      const pct = total > 0 ? (opt.n / total * 100) : 0;
+      const isTop = opt.n === topOpt.n && total > 0;
+      return '<div class="jury-ratio-row">'
+        + '<div class="jury-ratio-header">'
+        +   '<span class="jury-ratio-letter ' + (isTop ? 'jury-ratio-top' : '') + '">' + opt.letter + '</span>'
+        +   '<span class="jury-ratio-label">' + esc(opt.label.length > 55 ? opt.label.slice(0, 55) + '…' : opt.label) + '</span>'
+        +   '<span class="jury-ratio-pct ' + (isTop ? 'jury-ratio-pct-top' : '') + '">' + pct.toFixed(1) + '%</span>'
+        + '</div>'
+        + '<div class="jury-ratio-track">'
+        +   '<div class="jury-ratio-fill ' + (isTop ? 'jury-ratio-fill-lead' : '') + '" style="width:' + pct + '%;transition:width 0.5s ease"></div>'
+        + '</div>'
+        + '<div class="jury-ratio-votes">' + opt.n + ' vote' + (opt.n !== 1 ? 's' : '') + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  // Matrix snapshot
+  const matrixEl = document.getElementById('juryMatrix');
+  if (matrixEl) {
+    matrixEl.innerHTML = questions.map((jq, idx) => {
+      const jqVotes = state.votes.filter(v => v.questionId === jq.id && (round === 'all' || v.round === round));
+      const jqTotal = jqVotes.length;
+      const jqCounts = jq.options.map((_, i) => jqVotes.filter(v => v.optionIndex === i).length);
+      const jqTop = jqCounts.indexOf(Math.max(...jqCounts));
+      const active = idx === currentJuryQIndex ? 'jury-matrix-active' : '';
+      return '<div class="jury-matrix-card ' + active + '" onclick="selectJuryQuestion(' + idx + ')">'
+        + '<div class="jury-matrix-q">Q' + (idx+1) + ': ' + esc(jq.category) + '</div>'
+        + '<div class="jury-matrix-stat">' + (jqTotal > 0 ? jqTotal + ' vote' + (jqTotal !== 1 ? 's' : '') + ' · Leader: ' + String.fromCharCode(65+jqTop) : 'No votes yet') + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  // Deliberation log
+  const logEl = document.getElementById('voteReasonList');
+  if (logEl) {
+    const recentVotes = [...state.votes].filter(v => v.questionId === q.id).sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 12);
+    logEl.innerHTML = recentVotes.length > 0
+      ? recentVotes.map(v => {
+          const optLabel = q.options[v.optionIndex] !== undefined ? String.fromCharCode(65 + v.optionIndex) + '. ' + q.options[v.optionIndex].slice(0, 50) + '…' : '?';
+          return '<div style="padding:12px 0;border-bottom:1px solid #edf1ed">'
+            + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+            + '<strong style="font-size:11px">' + esc(v.name || 'Anonymous') + '</strong>'
+            + '<span class="badge">' + esc(v.round) + '</span>'
+            + '<span class="pill answered">' + esc(optLabel) + '</span>'
+            + '<span style="font-size:9px;color:#89958e;margin-left:auto">' + timeAgo(v.at) + '</span>'
+            + '</div>'
+            + (v.reason ? '<p style="font-size:11px;line-height:1.6;color:#596960;margin:7px 0 0">' + esc(v.reason) + '</p>' : '')
+            + '</div>';
+        }).join('')
+      : '<div class="empty">No votes for this question yet.</div>';
+  }
+}
+
+// Cast vote handler
+document.getElementById('castJuryVoteBtn').addEventListener('click', () => {
+  const name = (document.getElementById('voterName').value || '').trim() || 'Anonymous';
+  const round = document.getElementById('voteRound').value;
+  const checked = document.querySelector('input[name="juryOptionRadio"]:checked');
+  if (!checked) { toast('Please select one of the 3 options before casting your vote.'); return; }
+  const optionIndex = parseInt(checked.value, 10);
+  const reason = (document.getElementById('voteReason').value || '').trim();
+  const questions = getJuryQuestions();
+  const q = questions[currentJuryQIndex];
+  state.votes.push({
+    id: 'V-' + Date.now(),
+    name,
+    round,
+    questionId: q.id,
+    optionIndex,
+    reason,
+    at: new Date().toISOString(),
+    demo: false
+  });
+  logActivity(name + ' cast a jury vote on Q' + (currentJuryQIndex + 1) + ' (' + q.category + ').', '⚖');
+  persist();
+  // Clear selection
+  document.querySelectorAll('input[name="juryOptionRadio"]').forEach(r => r.checked = false);
+  document.getElementById('voteReason').value = '';
+  renderJuryTabs();
+  renderVotes();
+  toast('Vote recorded! Real-time ratios updated.');
+});
+
+// Next question button
+document.getElementById('juryNextQBtn').addEventListener('click', () => {
+  selectJuryQuestion((currentJuryQIndex + 1) % 5);
+});
+
+// Round filter
+document.getElementById('juryRoundFilter').addEventListener('change', renderVotes);
+
+// Reset jury votes
+document.getElementById('resetJuryDemoVotesBtn').addEventListener('click', () => {
+  if (!confirm('Reset all jury votes for all questions? This cannot be undone.')) return;
+  state.votes = state.votes.filter(v => !v.questionId || !getJuryQuestions().some(q => q.id === v.questionId));
+  persist();
+  renderJuryTabs();
+  renderVotes();
+  toast('Jury votes reset.');
+});
+
+// Edit modal
+document.getElementById('openEditJuryBtn').addEventListener('click', () => {
+  const questions = getJuryQuestions();
+  const body = document.getElementById('editJuryModalBody');
+  if (!body) return;
+  body.innerHTML = questions.map((q, qi) => {
+    return '<div style="border:1px solid var(--line);border-radius:12px;padding:18px">'
+      + '<div style="font-size:12px;font-weight:800;color:#1b6b4b;margin-bottom:10px">Question ' + (qi+1) + ' (' + esc(q.category) + ')</div>'
+      + '<div class="field" style="margin-bottom:10px">'
+      +   '<label style="font-size:11px;font-weight:700">Question text</label>'
+      +   '<textarea name="jqq_' + qi + '" style="min-height:60px;resize:vertical">' + esc(q.question) + '</textarea>'
+      + '</div>'
+      + q.options.map((opt, oi) => {
+          return '<div class="field" style="margin-bottom:8px">'
+            + '<label style="font-size:11px;font-weight:700">Option ' + String.fromCharCode(65+oi) + '</label>'
+            + '<input name="jqo_' + qi + '_' + oi + '" type="text" value="' + esc(opt) + '" />'
+            + '</div>';
+        }).join('')
+      + '</div>';
+  }).join('');
+  document.getElementById('editJuryModal').classList.add('open');
+});
+
+document.getElementById('closeEditJuryModal').addEventListener('click', () => {
+  document.getElementById('editJuryModal').classList.remove('open');
+});
+document.getElementById('cancelEditJuryBtn').addEventListener('click', () => {
+  document.getElementById('editJuryModal').classList.remove('open');
+});
+
+document.getElementById('editJuryForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const questions = getJuryQuestions();
+  questions.forEach((q, qi) => {
+    const qEl = document.querySelector('[name="jqq_' + qi + '"]');
+    if (qEl) q.question = qEl.value.trim();
+    q.options.forEach((_, oi) => {
+      const oEl = document.querySelector('[name="jqo_' + qi + '_' + oi + '"]');
+      if (oEl) q.options[oi] = oEl.value.trim();
+    });
+  });
+  state.juryQuestions = questions;
+  persist();
+  document.getElementById('editJuryModal').classList.remove('open');
+  renderJuryTabs();
+  renderJuryBallot();
+  renderVotes();
+  toast('Jury questions and options saved.');
+});
+
+document.getElementById('resetJuryDefaultsBtn').addEventListener('click', () => {
+  if (!confirm('Reset all 5 jury questions and options to defaults?')) return;
+  state.juryQuestions = JSON.parse(JSON.stringify(defaultJuryQuestions));
+  persist();
+  const body = document.getElementById('editJuryModalBody');
+  if (body) body.innerHTML = '';
+  document.getElementById('editJuryModal').classList.remove('open');
+  renderJuryTabs();
+  renderJuryBallot();
+  renderVotes();
+  toast('Jury questions reset to defaults.');
+});
+
+// Export votes CSV
+document.getElementById('exportVotes').addEventListener('click', () => {
+  const questions = getJuryQuestions();
+  const rows = [['ID','Name','Round','Question','Option','Reason','Timestamp'],
+    ...state.votes.filter(v => v.questionId).map(v => {
+      const q = questions.find(jq => jq.id === v.questionId);
+      const optLabel = q && v.optionIndex !== undefined ? String.fromCharCode(65+v.optionIndex) + '. ' + q.options[v.optionIndex] : '';
+      return [v.id, v.name||'', v.round, q ? q.question : v.questionId, optLabel, v.reason||'', v.at];
+    })
+  ];
+  const csv = rows.map(r => r.map(c => '"' + String(c||'').replace(/"/g, '""') + '"').join(',')).join('\r\n');
+  const blob = new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'jury-votes.csv'; document.body.appendChild(a); a.click(); a.remove();
+  toast('Jury votes exported to CSV.');
+});
+
+// Initialize jury on page load
+function renderJury() {
+  renderJuryTabs();
+  renderJuryBallot();
+  renderVotes();
+}
+
+function renderVerdictSummary(){const v=state.verdict||{},quality=v.qualityGate||'not-tested',supplier=v.supplierGate||'unknown',notes=v.notes||'';const box=document.getElementById('verdictSummary');if(!box)return;let title='Provisional decision framing',text='Phased localization with qualified dual sourcing remains a hypothesis until cost and technical evidence support it.';if(quality==='failed'||supplier==='gap'){title='Do not switch critical supply yet';text='A material quality or supplier-capability gap is recorded. Maintain the qualified supply route while defining corrective actions and evidence needed to pass the gate.'}else if(quality==='passed'&&supplier==='qualified'){title='Localization may proceed to controlled decision';text='The worksheet records both quality qualification and supplier readiness as passed. Check current cost, capacity, change control and supply-continuity evidence before authorizing a sourcing switch.'}else if(quality==='in-progress'||supplier==='pilot'){title='Continue qualification with a transition plan';text='Keep the current supplier available while pilot production and quality evidence are completed. Do not interpret pilot capability as commercial-scale qualification.'}box.innerHTML=`<div class="label">Verdict worksheet · provisional</div><h3>${esc(title)}</h3><p>${esc(text)}${notes?' Recorded rationale: '+esc(notes):''}</p>`}
 function renderAdminSummary(){const q=document.getElementById('adminQCount');if(q)q.textContent=state.questions.length;const e=document.getElementById('adminECount');if(e)e.textContent=state.evidence.length;const v=document.getElementById('adminVCount');if(v)v.textContent=state.votes.length}
 function renderAdmin(){renderAdminSummary();const box=document.getElementById('adminActivity');box.innerHTML=state.activity.map(a=>`<div class="activity"><span class="activity-ico">${esc(a.icon||'↻')}</span><div class="activity-text">${esc(a.text)}</div><span class="activity-time">${new Date(a.at).toLocaleString('en-IN',{dateStyle:'short',timeStyle:'short'})}</span></div>`).join('')||'<div class="empty">No activity.</div>';document.getElementById('qualityGate').value=state.verdict?.qualityGate||'not-tested';document.getElementById('supplierGate').value=state.verdict?.supplierGate||'unknown';document.getElementById('verdictNotes').value=state.verdict?.notes||'';renderVerdictSummary()}
-function csvDownload(filename,rows){const content=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+content],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('CSV exported: '+filename)}function evidenceCSV(){csvDownload('strategy-court-evidence.csv',[['ID','Title','Publisher','Type','URL','Note','Linked'],...state.evidence.map(e=>[e.id,e.title,e.publisher,e.type,e.url,e.note,e.linked])])}function votesCSV(){csvDownload('strategy-court-jury-votes.csv',[['ID','Name','Round','Strategy','Reason','Timestamp'],...state.votes.map(v=>[v.id,v.name,v.round,v.strategy,v.reason,v.at])])}document.getElementById('adminExportEvidence').addEventListener('click',evidenceCSV);document.getElementById('exportVotes').addEventListener('click',votesCSV);document.getElementById('adminExportVotes').addEventListener('click',votesCSV);document.getElementById('exportTop').addEventListener('click',()=>toast('No question data to export.'));document.getElementById('resetDemo').addEventListener('click',()=>{if(confirm('Reset ALL evidence, model changes, jury votes and verdict notes in this browser to the original illustrative demo?')){state=makeInitial();persist();updateDashboard();renderEvidence();renderModel();renderScenarios();renderVotes();renderAdmin();toast('Demo data reset.')}});
+function csvDownload(filename,rows){const content=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+content],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('CSV exported: '+filename)}function evidenceCSV(){csvDownload('strategy-court-evidence.csv',[['ID','Title','Publisher','Type','URL','Note','Linked'],...state.evidence.map(e=>[e.id,e.title,e.publisher,e.type,e.url,e.note,e.linked])])}function votesCSV(){csvDownload('strategy-court-jury-votes.csv',[['ID','Name','Round','Strategy','Reason','Timestamp'],...state.votes.map(v=>[v.id,v.name,v.round,v.strategy,v.reason,v.at])])}document.getElementById('adminExportEvidence').addEventListener('click',evidenceCSV);document.getElementById('exportVotes').addEventListener('click',votesCSV);document.getElementById('adminExportVotes').addEventListener('click',votesCSV);document.getElementById('exportTop').addEventListener('click',()=>toast('No question data to export.'));document.getElementById('resetDemo').addEventListener('click',()=>{if(confirm('Reset ALL evidence, model changes, jury votes and verdict notes in this browser to the original illustrative demo?')){state=makeInitial();persist();updateDashboard();renderEvidence();renderModel();renderScenarios();renderJury();renderAdmin();toast('Demo data reset.')}});
 document.getElementById('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){navTo('evidence');renderEvidence()}});
 window.addEventListener('message',event=>{if(event.origin!==location.origin)return;const frame=document.getElementById('quizFrame');if(!frame||event.source!==frame.contentWindow||!event.data||event.data.type!=='strategy-quiz-height')return;const h=Number(event.data.height);if(Number.isFinite(h)&&h>0)frame.style.height=Math.max(850,Math.min(h+12,12000))+'px'});
 updateDashboard();renderEvidence();renderModel();renderScenarios();renderVotes();renderAdmin();
