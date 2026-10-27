@@ -51,6 +51,23 @@
 .pathway-btn:hover{background:#3d9b72;color:#fff}
 @media(max-width:1150px){.sidebar{width:218px}.main{margin-left:218px;width:calc(100% - 218px)}.main-charts{grid-template-columns:1fr 1fr}.main-charts .trend-card{grid-column:1/-1}.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.content{padding:25px 24px}.topbar{padding:0 24px}.donut-wrap{justify-content:flex-start}.hero-pills{grid-template-columns:repeat(2,minmax(0,1fr))}.pathways-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.sidebar{transform:translateX(-100%);transition:transform .2s;width:258px;box-shadow:10px 0 50px rgba(0,0,0,.1)}.sidebar.open{transform:translateX(0)}.main{margin-left:0;width:100%}.topbar{height:62px;padding:0 15px;gap:10px}.mobile-menu{display:inline-flex;border:1px solid var(--line);background:white;border-radius:9px;padding:8px}.crumb{display:none}.top-search{width:auto;flex:1}.top-search input{font-size:11px}.top-action{display:none}.content{padding:23px 14px 34px}.page-head{display:block}.page-head h1{font-size:23px}.head-actions{margin-top:15px}.kpi-grid{gap:10px}.kpi{padding:14px;min-height:120px}.kpi-value{font-size:25px}.main-charts,.category-grid,.bottom-grid,.split{grid-template-columns:1fr}.main-charts .trend-card{grid-column:auto}.donut-wrap{gap:16px;padding:13px 16px 17px}.donut{width:118px;height:118px;min-width:118px}.legend{gap:8px}.field-grid{grid-template-columns:1fr}.field.wide{grid-column:auto}.scenario-row{grid-template-columns:108px 1fr 84px;gap:8px}.vote-row{grid-template-columns:120px 1fr 55px;gap:8px}.panel{padding:15px}.alert-strip{align-items:flex-start}.evidence-card{grid-template-columns:36px 1fr}.evidence-card>.source-link{grid-column:2}.source-icon{height:34px;width:34px}.ratio-dual{margin-top:18px}.barrow{grid-template-columns:102px 1fr 25px;gap:7px}.hero-banner{padding:46px 18px 40px}.hero-title{font-size:28px;line-height:1.2;margin-bottom:18px}.hero-desc{font-size:15px;margin-bottom:26px}.hero-actions{flex-direction:column;width:100%}.btn-hero-primary,.btn-hero-secondary{width:100%;justify-content:center}.pathways-grid{grid-template-columns:1fr}}
+
+.bio-consumable-section{background:#14130f;color:#f4efe5;border-radius:var(--radius);padding:36px 32px 38px;margin-bottom:22px;border:1px solid #2e2921;box-shadow:0 16px 45px rgba(0,0,0,.22)}
+.bio-section-header{margin-bottom:20px}
+.bio-section-title{font-size:23px;font-weight:850;letter-spacing:-.025em;color:#fff;margin:0 0 7px}
+.bio-section-subtitle{font-size:13.5px;color:#c0d4c7;line-height:1.55;margin:0}
+.bio-cards-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
+.bio-cards-grid-5{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media(max-width:1150px){.bio-cards-grid,.bio-cards-grid-5{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.bio-consumable-section{padding:26px 18px 28px}.bio-section-title{font-size:20px}.bio-cards-grid,.bio-cards-grid-5{grid-template-columns:1fr}}
+.bio-card{background:#1c1b15;border:1px solid #322d23;border-radius:14px;padding:22px 18px;display:flex;flex-direction:column;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.bio-card:hover{transform:translateY(-2px);border-color:#4a4233;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.bio-card.highlight-card{background:linear-gradient(180deg,#1e231b 0%,#161b14 100%);border-color:#3c4e33}
+.bio-card.highlight-card:hover{border-color:#5a734c}
+.bio-card-icon{font-size:26px;margin-bottom:13px;line-height:1}
+.bio-card-title{font-size:15px;font-weight:800;color:#fff;margin:0 0 8px;letter-spacing:-.01em}
+.bio-card-text{font-size:12px;line-height:1.6;color:#bacdc1;margin:0}
+
 </style>
 </head>
 <body>
@@ -92,35 +109,72 @@
     </div>
   </div>
 
-  <div class="alert-strip"><span>ⓘ</span><div><strong>Decision context:</strong> imported chromatography consumables face foreign-exchange, freight and lead-time exposure. Local production requires tooling, process validation, supplier qualification and quality-system investment. <strong>All starter figures below are illustrative demo data, not real company records or vendor quotations.</strong></div></div>
-  
 
-
-
-  <!-- Strategic Pathways Comparison Section from BioPopcorn Overview -->
-  <div class="card panel" style="margin-bottom:17px">
-    <div class="section-top"><div><h3 class="panel-title">Strategic Pathways & Sourcing Options</h3><p class="panel-desc">Four operating pathways evaluated for BioPopcorn's bioprocessing consumables.</p></div><button class="btn btn-soft" data-go="scenarios">Simulate all in Scenario Tool ↗</button></div>
-    <div class="pathways-grid">
-      <div class="pathway-card">
-        <div><span class="pathway-tag" style="background:#feeceb;color:#a8352a">Current Base</span><div class="pathway-title">Continue Importing</div><p class="pathway-desc">Retain overseas suppliers. Zero upfront tooling capex, but leaves operations vulnerable to FX fluctuations, logistics delays, and tariff changes.</p></div>
-        <button class="pathway-btn" data-go="scenarios">Inspect Cost Profile →</button>
+  <!-- Section 1: Our critical consumable: prepacked chromatography columns -->
+  <div class="bio-consumable-section">
+    <div class="bio-section-header">
+      <h2 class="bio-section-title">Our critical consumable: prepacked chromatography columns</h2>
+      <p class="bio-section-subtitle">Ready-to-use columns, already packed with chromatography resin and tested, that connect straight into a purification system.</p>
+    </div>
+    <div class="bio-cards-grid">
+      <div class="bio-card">
+        <div class="bio-card-icon">📦</div>
+        <h3 class="bio-card-title">What it is</h3>
+        <p class="bio-card-text">A column body holding a uniformly packed resin bed, delivered qualified and ready to connect. Many are single-use.</p>
       </div>
-      <div class="pathway-card">
-        <div><span class="pathway-tag" style="background:#e8f4fd;color:#24639c">Full Switch</span><div class="pathway-title">Manufacture Locally</div><p class="pathway-desc">Transition 100% to Indian production after validation. Cuts lead times to days and shields operating margins from currency shocks.</p></div>
-        <button class="pathway-btn" data-go="scenarios">Inspect Cost Profile →</button>
+      <div class="bio-card">
+        <div class="bio-card-icon">⏱️</div>
+        <h3 class="bio-card-title">Why it matters</h3>
+        <p class="bio-card-text">It removes in-house packing time and bed-to-bed variability, and its performance affects the yield and purity of every batch.</p>
       </div>
-      <div class="pathway-card" style="border-color:#aad1b7;background:#fbfdfb">
-        <div><span class="pathway-tag" style="background:#e4f5ea;color:#1c6943">Recommended</span><div class="pathway-title">Phased Localization</div><p class="pathway-desc">Develop and validate domestic manufacturing capability while continuing imports for critical lots until stability and purity parity are proven.</p></div>
-        <button class="pathway-btn" data-go="scenarios" style="background:#246947;color:#fff">Inspect Cost Profile →</button>
+      <div class="bio-card">
+        <div class="bio-card-icon">🔬</div>
+        <h3 class="bio-card-title">Quality checks</h3>
+        <p class="bio-card-text">Packed columns are typically tested for bed efficiency and peak symmetry before release.</p>
       </div>
-      <div class="pathway-card">
-        <div><span class="pathway-tag" style="background:#fff3dc;color:#94671d">High Resilience</span><div class="pathway-title">Dual Sourcing</div><p class="pathway-desc">Contract 60% locally and 40% globally. Balances cost savings with redundant supply assurance for high-volume bioreactor operations.</p></div>
-        <button class="pathway-btn" data-go="scenarios">Inspect Cost Profile →</button>
+      <div class="bio-card highlight-card">
+        <div class="bio-card-icon">📊</div>
+        <h3 class="bio-card-title">45% Market Share</h3>
+        <p class="bio-card-text">In terms of product, columns hold the highest (around 45%) share of the current market. Prepacked columns are widely used in Liquid Chromatography (LC) across Thermo Fisher, Waters Corp, and top biopharma suppliers.</p>
       </div>
     </div>
   </div>
 
-  <div class="grid bottom-grid"><article class="card panel"><div class="section-top"><div><h3 class="panel-title">Decision snapshot</h3><p class="panel-desc">Live outputs from the current illustrative cost assumptions.</p></div><span class="stat-chip">MODEL LINKED</span></div><div class="result-grid"><div class="result"><div class="r-label">Imported landed cost / usable unit</div><div class="r-value" id="snapImport">₹0</div><div class="r-note">Based on price, FX, freight and duty assumptions</div></div><div class="result"><div class="r-label">Local variable cost / usable unit</div><div class="r-value" id="snapLocal">₹0</div><div class="r-note">Adjusted for usable production yield</div></div><div class="result"><div class="r-label">Annual cost difference</div><div class="r-value" id="snapSavings">₹0</div><div class="r-note" id="snapSavingsNote">Import cost minus local equivalent cost</div></div><div class="result"><div class="r-label">Break-even annual volume</div><div class="r-value" id="snapBreakEven">—</div><div class="r-note">Includes annual quality costs and investment amortisation</div></div></div><div style="margin-top:13px"><button class="btn btn-soft" data-go="model">Edit assumptions and inspect formulas ↗</button></div></article><article class="card panel"><h3 class="panel-title">Decision principle</h3><p class="panel-desc">Do not localise solely because “Make in India” sounds strategically attractive. Compare usable-unit costs and quality readiness against total supply risk.</p><div class="status-timeline"><div class="timeline-item"><strong>1. Establish import baseline</strong><p>Confirm product specification, landed cost, lead time, tax treatment and supplier performance.</p></div><div class="timeline-item"><strong>2. Qualify the domestic process</strong><p>Test critical quality attributes, batch consistency, extractables/leachables where relevant, and process compatibility.</p></div><div class="timeline-item"><strong>3. Scale only after evidence</strong><p>Use dual sourcing or phased localization until technical equivalence and reliable supply are demonstrated.</p></div></div></article></div>
+  <!-- Section 2: What local manufacture requires -->
+  <div class="bio-consumable-section">
+    <div class="bio-section-header">
+      <h2 class="bio-section-title">What local manufacture requires</h2>
+      <p class="bio-section-subtitle">Localization is not just a price decision. Domestic production needs investment before it saves anything.</p>
+    </div>
+    <div class="bio-cards-grid bio-cards-grid-5">
+      <div class="bio-card">
+        <div class="bio-card-icon">🔧</div>
+        <h3 class="bio-card-title">Packing tooling</h3>
+        <p class="bio-card-text">Column hardware, packing pump, and slurry-packing assembly equipment.</p>
+      </div>
+      <div class="bio-card">
+        <div class="bio-card-icon">🧬</div>
+        <h3 class="bio-card-title">Validation</h3>
+        <p class="bio-card-text">Proving packed-bed performance, such as efficiency and symmetry, in our process.</p>
+      </div>
+      <div class="bio-card">
+        <div class="bio-card-icon">🏭</div>
+        <h3 class="bio-card-title">Supplier qualification</h3>
+        <p class="bio-card-text">Auditing and approving resin, hardware, frit and sanitary-component suppliers.</p>
+      </div>
+      <div class="bio-card">
+        <div class="bio-card-icon">📋</div>
+        <h3 class="bio-card-title">Quality systems</h3>
+        <p class="bio-card-text">Lot traceability, release testing and documentation for every packed column.</p>
+      </div>
+      <div class="bio-card highlight-card">
+        <div class="bio-card-icon">💡</div>
+        <h3 class="bio-card-title">In-House Control & Savings</h3>
+        <p class="bio-card-text">Packing in-house delivers direct process control and substantial unit-cost savings over imported prepacked consumables (equipment requirements: packing pump, media, column hardware factored into model capex).</p>
+      </div>
+    </div>
+  </div>
+
 </section>
 <section class="section" id="view-evidence">
   <div class="page-head"><div><div class="eyebrow">Source traceability</div><h1>Research evidence board</h1><p>Connect claims to sources and make uncertainty visible before the courtroom debate.</p></div><div class="head-actions"><button class="btn btn-primary" id="openEvidenceModal">＋ Add evidence</button></div></div>
@@ -204,7 +258,8 @@ const seedQuestions=[
 ['What evidence should persuade the jury to change its vote?','Define decision-changing facts such as verified quotations, pilot performance, supply guarantees and robust cost results.','Market & strategy','Normal','Answered','Facilitator','The jury should document which evidence changed the decision and distinguish preference changes from newly verified facts.',['E-03','E-04']]
 ];
 const seedEvidence=[
-{id:'E-01',title:'Chromatography Consumables Market: Size & Trends',publisher:'Roots Analysis',type:'Industry report',url:'https://www.rootsanalysis.com/reports/chromatography-consumables-market.html',note:'Commercial market overview and forecasts. Use as a secondary market-sizing source; verify exact definitions, forecast date, market scope and methodology before quoting headline figures.',linked:true},
+{id:'E-04',title:'In-House Column Packing: Control, Cost Savings & Hardware Needs',publisher:'Analysys / Biopharma HPLC Insights',type:'Industry report',url:'https://www.linkedin.com/posts/analysys_pharmaceuticals-biotechnology-hplc-share-7483092523301785601-1zEj/',note:'Expert analysis showing packing in-house delivers greater process control and long-term cost savings compared to imported prepacked columns. Key requirements factored into model: packing pump, chromatography media/resin, and column hardware.',linked:true},
+{id:'E-01',title:'Chromatography Consumables: Columns Hold Highest (around 45%) Share',publisher:'Roots Analysis / Industry Market Data',type:'Industry report',url:'https://www.rootsanalysis.com/reports/chromatography-consumables-market.html',note:'In terms of product, columns hold the highest (around 45%) share of the current market. Prepacked chromatography columns are widely used in Liquid Chromatography (LC) across Thermo Fisher, Waters Corp, and leading biopharma manufacturers.',linked:true},
 {id:'E-02',title:'Indian Customs / Tariff Classification Verification',publisher:'CBIC / ICEGATE reference starting point',type:'Official policy',url:'https://www.cbic.gov.in/',note:'Use official customs resources to verify product-specific classification, notifications and applicable charges. This generic link does not establish a tariff rate for the case product.',linked:true},
 {id:'E-03',title:'Cost model assumptions and break-even framework',publisher:'Team analytical worksheet',type:'Team assumption',url:'',note:'Illustrative cost relationships to be replaced with supplier quotations and validated operating assumptions. The model excludes disruption benefit unless separately substantiated.',linked:true},
 {id:'E-04',title:'ICH Q9(R1): Quality Risk Management',publisher:'International Council for Harmonisation',type:'Technical / quality',url:'https://www.ich.org/page/quality-guidelines',note:'Relevant quality-risk-management guidance. Check the current official guideline and determine its applicability with the quality unit; this is not a product-specific approval.',linked:true},
