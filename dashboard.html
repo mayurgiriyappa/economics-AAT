@@ -585,10 +585,10 @@ body {
   border: 1px solid #bcecd0;
 }
 
-/* 5 Questions Overview Matrix */
+/* Deliberation Questions Overview Matrix */
 .jury-matrix {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 10px;
   margin-top: 18px;
 }
@@ -635,8 +635,9 @@ body {
   height: 100%;
 }
 .jury-matrix-bar-seg.segA { background: #1b6b4b; }
-.jury-matrix-bar-seg.segB { background: #3d9b72; }
-.jury-matrix-bar-seg.segC { background: #7cc9a2; }
+.jury-matrix-bar-seg.segB { background: #e4a03c; }
+.jury-matrix-bar-seg.segC { background: #4a7ab5; }
+.jury-matrix-bar-seg.segD { background: #9055a2; }
 
 
 /* ===== JURY LIVE POLL CSS ===== */
@@ -1007,8 +1008,15 @@ function renderStatusChart(){const donut=document.getElementById('statusDonut');
 function renderTrend(){const svg=document.getElementById('trendSvg');if(!svg)return;const days=Number(document.getElementById('trendPeriod')?.value||7),w=330,h=145,pad={l:16,r:10,t:10,b:15};let submitted=[],answered=[],labels=[];for(let i=days-1;i>=0;i--){let d=new Date();d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);labels.push(key);submitted.push(state.questions.filter(q=>q.createdAt&&q.createdAt.slice(0,10)===key).length);answered.push(state.questions.filter(q=>q.status==='Answered'&&q.updatedAt&&q.updatedAt.slice(0,10)===key).length)}const max=Math.max(2,...submitted,...answered);const x=i=>pad.l+i*(w-pad.l-pad.r)/Math.max(1,days-1),y=v=>h-pad.b-v/max*(h-pad.t-pad.b);let grid='';for(let i=0;i<4;i++){const yy=pad.t+i*(h-pad.t-pad.b)/3;grid+=`<line x1="${pad.l}" y1="${yy}" x2="${w-pad.r}" y2="${yy}" stroke="#edf1ed" stroke-width="1"/>`}const path=arr=>arr.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ');const dots=(arr,col)=>arr.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v)}" r="2.3" fill="${col}"/>`).join('');svg.innerHTML=grid+`<path d="${path(submitted)}" fill="none" stroke="#2d865b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="${path(answered)}" fill="none" stroke="#6d91c6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`+dots(submitted,'#2d865b')+dots(answered,'#6d91c6');const idxs=[0,Math.floor((days-1)/3),Math.floor((days-1)*2/3),days-1];const lbls=document.getElementById('trendLabels');if(lbls){lbls.innerHTML=[...new Set(idxs)].map(i=>{const d=new Date(labels[i]+'T12:00:00');return '<span>'+d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})+'</span>'}).join('')}}
 function renderCategoryBars(){const box=document.getElementById('categoryBars');if(!box)return;const countsBy=CATEGORIES.map(c=>({name:c,n:state.questions.filter(q=>q.category===c).length})),max=Math.max(1,...countsBy.map(x=>x.n));box.innerHTML=countsBy.map(x=>`<div class="barrow"><span class="barlabel">${esc(x.name)}</span><div class="bartrack"><div class="barfill" style="width:${x.n/max*100}%"></div></div><span class="barcount">${x.n}</span></div>`).join('')}
 function renderActivity(){const box=document.getElementById('activityList');if(!box)return;const items=state.activity.slice(0,5);box.innerHTML=items.map(a=>`<div class="activity"><span class="activity-ico">${esc(a.icon||'↻')}</span><div class="activity-text">${esc(a.text)}</div><span class="activity-time">${timeAgo(a.at)}</span></div>`).join('')||'<div class="empty">No activity recorded yet.</div>'}
-function timeAgo(iso){const ms=Date.now()-new Date(iso).getTime();if(!Number.isFinite(ms)||ms<0)return 'just now';const mins=Math.floor(ms/60000);if(mins<1)return 'just now';if(mins<60)return mins+'m ago';const hrs=Math.floor(mins/60);if(hrs<24)return hrs+'h ago';const days=Math.floor(hrs/24);return days+'d ago'}
-function renderSnapshot(){const m=computeModel();document.getElementById('snapImport').textContent=money(m.importUnit);document.getElementById('snapLocal').textContent=money(m.localUnit);document.getElementById('snapSavings').textContent=money(m.savings);document.getElementById('snapSavings').style.color=m.savings>=0?'#24794e':'#b14c42';document.getElementById('snapSavingsNote').textContent=m.savings>=0?'Local equivalent cost is lower in this model':'Local equivalent cost is higher in this model';document.getElementById('snapBreakEven').textContent=m.breakEven!==null&&Number.isFinite(m.breakEven)?number(m.breakEven)+' units':'Not reached';}
+function renderSnapshot(){
+  const m=computeModel();
+  const setEl=(id,val,col)=>{const el=document.getElementById(id);if(el){if(val!==undefined)el.textContent=val;if(col!==undefined)el.style.color=col;}};
+  setEl('snapImport',money(m.importUnit));
+  setEl('snapLocal',money(m.localUnit));
+  setEl('snapSavings',money(m.savings),m.savings>=0?'#24794e':'#b14c42');
+  setEl('snapSavingsNote',m.savings>=0?'Local equivalent cost is lower in this model':'Local equivalent cost is higher in this model');
+  setEl('snapBreakEven',m.breakEven!==null&&Number.isFinite(m.breakEven)?number(m.breakEven)+' units':'Not reached');
+}
 
 
 
@@ -1315,73 +1323,60 @@ function renderScenarios(){const m=computeModel(),cap=m.invest;const scenarios=[
 const defaultJuryQuestions = [
   {
     id: 'JQ-01',
-    category: 'Economics',
-    question: 'What is the most credible reason the imported column costs more than a locally packed one?',
+    category: 'Horizon & Valuation',
+    text: 'Is a five-year evaluation horizon long enough to judge this investment?',
+    question: 'Is a five-year evaluation horizon long enough to judge this investment?',
     options: [
-      'Currency risk and freight add ~20–30% above the manufacturing cost',
-      'The supplier charges a quality premium for pre-packed convenience',
-      'Import duties and GST make domestic production impossible to justify'
+      'Yes, if discounted cash flow is positive and payback fits within the horizon.',
+      'Use five years as the base case and test 8–10 years plus residual value.',
+      'Extend the horizon before deciding because long-term strategic value may be missed.',
+      'Judge against asset life, replacement cycle, risk and alternative uses of capital.'
     ]
   },
   {
     id: 'JQ-02',
-    category: 'Quality & Regulation',
-    question: 'Before switching to a locally packed column, what evidence is most critical?',
+    category: 'Payback & Ramp-up',
+    text: 'With an estimated 2.5-year payback, is it worth accepting losses during the ramp-up period?',
+    question: 'With an estimated 2.5-year payback, is it worth accepting losses during the ramp-up period?',
     options: [
-      'A lower quotation from the domestic supplier',
-      'Demonstrated bed efficiency, peak symmetry and process compatibility data',
-      'Government scheme certification confirming Make in India eligibility'
+      'Accept ramp-up losses if risk-adjusted NPV is positive and cash runway is adequate.',
+      'Approve phased funding with milestone-based go/no-go gates and downside caps.',
+      'Reject the investment unless it becomes cash-positive earlier.',
+      'Compare ramp-up losses with ongoing import costs and disruption exposure before deciding.'
     ]
   },
   {
     id: 'JQ-03',
-    category: 'Strategy',
-    question: 'Which sourcing strategy best balances cost savings and supply risk?',
+    category: 'Strategic Cost & Timing',
+    text: 'If we delay the local facility, what is the strategic cost if competitors build first and capture the market?',
+    question: 'If we delay the local facility, what is the strategic cost if competitors build first and capture the market?',
     options: [
-      'Continue importing — existing supply is qualified and risk is known',
-      'Phased localization — develop local capability while retaining the import as backup',
-      'Full switch to local — cut costs immediately after pilot batch approval'
+      'Invest now at full scale to secure a first-mover advantage.',
+      'Start a domestic pilot and reserve scale-up options while validating demand and quality.',
+      'Use a contract manufacturer or partnership before committing full capital expenditure.',
+      'Delay major capital expenditure until demand and economics are demonstrated.'
     ]
   },
   {
     id: 'JQ-04',
-    category: 'Technical',
-    question: 'What is the biggest technical barrier to packing columns in-house?',
+    category: 'Quality & Regulatory Risk',
+    text: 'Given the quality-critical nature of biopharma purification, how should we manage the risk of a locally made consumable failing a regulatory audit?',
+    question: 'Given the quality-critical nature of biopharma purification, how should we manage the risk of a locally made consumable failing a regulatory audit?',
     options: [
-      'Achieving reproducible bed uniformity and pressure/flow profiles batch to batch',
-      'Sourcing the resin — most resins are imported anyway',
-      'Regulatory documentation — GMP change control is too slow for urgent supply'
-    ]
-  },
-  {
-    id: 'JQ-05',
-    category: 'Decision',
-    question: 'What single piece of evidence would most change your vote today?',
-    options: [
-      'A verified domestic supplier quotation showing >20% unit cost saving',
-      'Pilot batch data showing equivalent performance to the imported column',
-      'A confirmed PLI or government subsidy that covers tooling and validation costs'
+      'Do not use the local product in GMP production until validation and QA approval pass.',
+      'Dual-source only after formal supplier qualification, comparability and change control.',
+      'Continue importing for production while validating the local alternative in parallel.',
+      'Run non-GMP engineering trials first and transition only after acceptance and audit checks pass.'
     ]
   }
 ];
 
-
-if (!state.juryQuestions || !Array.isArray(state.juryQuestions) || state.juryQuestions.length !== 5) {
+if (!state.juryQuestions || !Array.isArray(state.juryQuestions) || state.juryQuestions.length !== 4 || state.juryQuestions[0]?.question !== defaultJuryQuestions[0].question) {
   state.juryQuestions = JSON.parse(JSON.stringify(defaultJuryQuestions));
   persist();
 }
 
-
 let currentJuryQIndex = 0;
-
-function getJuryQuestions() {
-  if (!state.juryQuestions || !Array.isArray(state.juryQuestions) || state.juryQuestions.length !== 5) {
-    state.juryQuestions = JSON.parse(JSON.stringify(defaultJuryQuestions));
-    persist();
-  }
-  return state.juryQuestions;
-}
-
 
 // ============ JURY LIVE POLL SYSTEM (BACKEND & REAL-TIME SYNCED) ============
 
@@ -1391,10 +1386,10 @@ localStorage.setItem('juryClientId', juryClientId);
 let liveJuryState = null;
 
 function getJuryQuestions() {
-  if (liveJuryState && Array.isArray(liveJuryState.allQuestions) && liveJuryState.allQuestions.length === 5) {
+  if (liveJuryState && Array.isArray(liveJuryState.allQuestions) && liveJuryState.allQuestions.length >= 1) {
     return liveJuryState.allQuestions;
   }
-  if (!state.juryQuestions || !Array.isArray(state.juryQuestions) || state.juryQuestions.length !== 5) {
+  if (!state.juryQuestions || !Array.isArray(state.juryQuestions) || state.juryQuestions.length !== 4 || state.juryQuestions[0]?.question !== defaultJuryQuestions[0].question) {
     state.juryQuestions = JSON.parse(JSON.stringify(defaultJuryQuestions));
     persist();
   }
@@ -1475,8 +1470,8 @@ function renderJuryBallot() {
   const descEl = document.getElementById('juryActiveQDesc');
   const chipEl = document.getElementById('activeQChip');
   if (titleEl) titleEl.textContent = 'Q' + (currentJuryQIndex+1) + ': ' + q.category;
-  if (descEl) descEl.textContent = q.question;
-  if (chipEl) chipEl.textContent = 'Q' + (currentJuryQIndex+1) + ' of 5';
+  if (descEl) descEl.textContent = q.question || q.text;
+  if (chipEl) chipEl.textContent = 'Q' + (currentJuryQIndex+1) + ' of ' + questions.length;
 
   const optContainer = document.getElementById('juryOptionsList');
   if (!optContainer) return;

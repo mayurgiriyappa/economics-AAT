@@ -39,16 +39,20 @@ const BANK_PATH = path.join(DATA_DIR, 'quiz-questions.json');
 try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (_) {}
 
 const starterQuestions = [
-  {id:'q1', category:'Strategy', text:'The domestic consumable is not yet qualified for critical biopharmaceutical use. What is the most defensible immediate strategy?', options:['Stop importing immediately','Use phased localization while retaining a qualified supply source','Choose the cheapest supplier without testing','Assume local supply is automatically equivalent'], correctIndex:1, explanation:'A phased approach preserves continuity while local manufacturing, comparability, validation and supplier qualification evidence is generated.', points:1000},
-  {id:'q2', category:'Economics', text:'The imported unit price is US$420 and the assumed exchange rate is ₹87 per US dollar. What is the product purchase cost before freight and import charges?', options:['₹36,540','₹38,340','₹420','₹40,200'], correctIndex:0, explanation:'US$420 × ₹87/US$ = ₹36,540. Freight and applicable non-recoverable charges must be added separately.', points:1000},
-  {id:'q3', category:'Economics', text:'The rupee depreciates against the US dollar, while the supplier keeps the USD price unchanged. What happens to the INR product purchase cost?', options:['It decreases','It stays exactly the same','It increases','It becomes zero'], correctIndex:2, explanation:'A higher INR-per-USD rate increases the INR cost of an unchanged foreign-currency invoice.', points:1000},
-  {id:'q4', category:'Manufacturing', text:'A process has 92% usable yield. To deliver 5,000 usable units, approximately how many units must be attempted?', options:['4,600','5,000','5,435','5,920'], correctIndex:2, explanation:'Required attempts = usable output ÷ yield = 5,000 ÷ 0.92 ≈ 5,435 attempts.', points:1000},
-  {id:'q5', category:'Economics', text:'Which cost is most clearly an initial localization investment rather than a recurring per-unit cost?', options:['Routine packaging for each unit','Raw material consumed per batch','Tooling and equipment setup','Freight paid on each import'], correctIndex:2, explanation:'Tooling and equipment setup is typically an upfront capital investment; the model should keep it separate from recurring unit costs.', points:1000},
-  {id:'q6', category:'Tax & landed cost', text:'When calculating economic import cost, how should recoverable input GST generally be treated?', options:['Always add it as a permanent cost','Exclude it from cost to the extent it is recoverable, while tracking cash-flow timing separately','Ignore every tax and charge','Count it twice to be conservative'], correctIndex:1, explanation:'Recoverable input tax is generally not a permanent economic cost to the extent credit can be claimed. Confirm transaction-specific eligibility and cash-flow impacts.', points:1000},
-  {id:'q7', category:'Quality', text:'Before replacing a qualified imported chromatography consumable with a locally manufactured alternative, what should be demonstrated?', options:['Only a lower list price','Only a supplier marketing statement','Specification fit, performance comparability, appropriate validation and approved change control','Only that the product is manufactured in India'], correctIndex:2, explanation:'A sourcing decision must preserve product quality and process performance through documented qualification, testing, validation as applicable, and change control.', points:1000},
-  {id:'q8', category:'Supply chain', text:'What is the strongest direct benefit of dual sourcing when both suppliers are qualified?', options:['It guarantees no disruptions','It can reduce dependence on one source, although cost and comparability must be managed','It always halves the unit cost','It removes the need for quality assurance'], correctIndex:1, explanation:'Qualified dual sourcing can improve resilience, but benefits depend on capacity, inventory, supplier independence, qualification and transition costs.', points:1000},
-  {id:'q9', category:'Decision analysis', text:'What does a break-even demand estimate identify in an import-versus-local model?', options:['The demand level at which modeled costs are equal under stated assumptions','The number of employees needed for every factory','A government-guaranteed sales quantity','The product’s regulatory approval date'], correctIndex:0, explanation:'Break-even demand identifies the modeled volume at which the cost of the alternatives is equal. Fixed costs, yields, capacity and cost definitions must be consistent.', points:1000},
-  {id:'q10', category:'Evidence', text:'Which is the most reliable basis for claiming that a specific Indian incentive applies to the proposed consumable?', options:['A social media post about Make in India','A generic blog about manufacturing','Current official scheme guidelines matched to the product, applicant and eligibility conditions','A competitor’s unverified estimate'], correctIndex:2, explanation:'Use current official scheme guidelines and verify the exact applicant, product, investment and eligibility requirements. Do not infer eligibility from general policy branding.', points:1000}
+  {
+    id: 'q1',
+    category: 'Strategic Decision',
+    text: "Based on the evidence presented, do you support our solution for the company's future?",
+    options: [
+      'Yes — Fully support the proposed localization and dual-sourcing strategy',
+      'Yes — Support with phased milestones, risk gates, and downside caps',
+      'Conditional — Require additional pilot batch comparability and QA evidence first',
+      'No — Retain existing qualified imported supply to avoid manufacturing risks'
+    ],
+    correctIndex: 0,
+    explanation: 'The strategic evidence indicates that phased localization with dual sourcing delivers substantial unit cost savings, shields against rupee depreciation, and maintains supply reliability while comparability is proven.',
+    points: 1000
+  }
 ];
 
 
@@ -56,47 +60,50 @@ const starterQuestions = [
 const defaultJuryQuestions = [
   {
     id: 'j1',
-    text: 'What is the most credible reason the imported column costs more than a locally packed one?',
+    category: 'Horizon & Valuation',
+    text: 'Is a five-year evaluation horizon long enough to judge this investment?',
+    question: 'Is a five-year evaluation horizon long enough to judge this investment?',
     options: [
-      'Currency risk and freight add ~20–30% above manufacturing cost',
-      'The supplier charges a quality premium for pre-packed convenience',
-      'Import duties and GST make domestic production impossible to justify'
+      'Yes, if discounted cash flow is positive and payback fits within the horizon.',
+      'Use five years as the base case and test 8–10 years plus residual value.',
+      'Extend the horizon before deciding because long-term strategic value may be missed.',
+      'Judge against asset life, replacement cycle, risk and alternative uses of capital.'
     ]
   },
   {
     id: 'j2',
-    text: 'Before switching to a locally packed column, what evidence is most critical?',
+    category: 'Payback & Ramp-up',
+    text: 'With an estimated 2.5-year payback, is it worth accepting losses during the ramp-up period?',
+    question: 'With an estimated 2.5-year payback, is it worth accepting losses during the ramp-up period?',
     options: [
-      'A lower quotation from the domestic supplier',
-      'Demonstrated bed efficiency, peak symmetry and process compatibility data',
-      'Government scheme certification confirming Make in India eligibility'
+      'Accept ramp-up losses if risk-adjusted NPV is positive and cash runway is adequate.',
+      'Approve phased funding with milestone-based go/no-go gates and downside caps.',
+      'Reject the investment unless it becomes cash-positive earlier.',
+      'Compare ramp-up losses with ongoing import costs and disruption exposure before deciding.'
     ]
   },
   {
     id: 'j3',
-    text: 'Which sourcing strategy best balances cost savings and supply risk?',
+    category: 'Strategic Cost & Timing',
+    text: 'If we delay the local facility, what is the strategic cost if competitors build first and capture the market?',
+    question: 'If we delay the local facility, what is the strategic cost if competitors build first and capture the market?',
     options: [
-      'Continue importing — existing supply is qualified and risk is known',
-      'Phased localization — develop local capability while retaining the import as backup',
-      'Full switch to local — cut costs immediately after pilot batch approval'
+      'Invest now at full scale to secure a first-mover advantage.',
+      'Start a domestic pilot and reserve scale-up options while validating demand and quality.',
+      'Use a contract manufacturer or partnership before committing full capital expenditure.',
+      'Delay major capital expenditure until demand and economics are demonstrated.'
     ]
   },
   {
     id: 'j4',
-    text: 'What is the biggest technical barrier to packing columns in-house?',
+    category: 'Quality & Regulatory Risk',
+    text: 'Given the quality-critical nature of biopharma purification, how should we manage the risk of a locally made consumable failing a regulatory audit?',
+    question: 'Given the quality-critical nature of biopharma purification, how should we manage the risk of a locally made consumable failing a regulatory audit?',
     options: [
-      'Achieving reproducible bed uniformity and pressure/flow profiles batch to batch',
-      'Sourcing the resin — most resins are imported anyway',
-      'Regulatory documentation — GMP change control is too slow for urgent supply'
-    ]
-  },
-  {
-    id: 'j5',
-    text: 'What single piece of evidence would most change your vote today?',
-    options: [
-      'A verified domestic supplier quotation showing >20% unit cost saving',
-      'Pilot batch data showing equivalent performance to the imported column',
-      'A confirmed PLI or government subsidy that covers tooling and validation costs'
+      'Do not use the local product in GMP production until validation and QA approval pass.',
+      'Dual-source only after formal supplier qualification, comparability and change control.',
+      'Continue importing for production while validating the local alternative in parallel.',
+      'Run non-GMP engineering trials first and transition only after acceptance and audit checks pass.'
     ]
   }
 ];
@@ -248,6 +255,27 @@ function getJuryParticipantState(clientId) {
     } : null,
     results: currentResults,
     allResults: juryGame.status === 'ended' ? getJuryAllResults(juryGame) : null
+  };
+}
+
+function getJuryState(clientId) {
+  const host = getJuryHostState();
+  const participant = clientId ? getJuryParticipantState(clientId) : null;
+  const q = juryGame && juryGame.currentIndex >= 0 ? juryGame.questions[juryGame.currentIndex] : null;
+  return {
+    ok: true,
+    roomCode: juryGame ? juryGame.roomCode : 'JURY-000000',
+    status: juryGame ? juryGame.status : 'lobby',
+    currentQuestionIndex: juryGame ? juryGame.currentIndex : 0,
+    questionCount: juryGame ? juryGame.questions.length : juryBank.length,
+    allQuestions: juryGame ? juryGame.questions : juryBank,
+    currentQuestion: q,
+    showResult: juryGame ? !!juryGame.resultsVisible : false,
+    totalParticipants: juryGame ? Object.keys(juryGame.participants).length : 0,
+    totalVotes: host.votedCount || 0,
+    optionCounts: host.optionCounts || [],
+    host,
+    participant
   };
 }
 
@@ -466,7 +494,7 @@ app.post('/api/jury/vote', express.json(), (req, res) => {
   try {
     const { clientId, name, optionIndex, reason } = req.body || {};
     if (!clientId) return res.status(400).json({ ok: false, message: 'Missing clientId' });
-    const qIdx = juryGame.currentQuestionIndex;
+    const qIdx = juryGame.currentIndex;
     let p = juryGame.participants[clientId];
     if (!p) {
       p = juryGame.participants[clientId] = {
@@ -536,11 +564,13 @@ io.on('connection', socket=>{
     try {
       if (!socket.data?.isJuryHost) throw new Error('Host authorization required.');
       if (juryGame && juryGame.status === 'live') throw new Error('Cannot edit questions during a live vote.');
-      if (Array.isArray(payload.questions) && payload.questions.length === 5) {
+      if (Array.isArray(payload.questions) && payload.questions.length >= 1) {
         juryBank = payload.questions.map((q, i) => ({
           id: q.id || 'j' + (i + 1),
-          text: String(q.text || '').trim(),
-          options: (q.options || []).slice(0, 3).map(o => String(o || '').trim())
+          text: String(q.text || q.question || '').trim(),
+          question: String(q.question || q.text || '').trim(),
+          category: String(q.category || 'Deliberation').trim(),
+          options: (q.options || []).map(o => String(o || '').trim())
         }));
         if (juryGame && juryGame.status === 'lobby') {
           juryGame.questions = JSON.parse(JSON.stringify(juryBank));
@@ -652,7 +682,7 @@ io.on('connection', socket=>{
       const optIdx = Number(payload.optionIndex);
       const reason = cleanText(payload.reason, 1000);
       const q = juryGame.questions[juryGame.currentIndex];
-      if (!q || optIdx < 0 || optIdx >= q.options.length) throw new Error('Choose one of the 3 available options.');
+      if (!q || optIdx < 0 || optIdx >= q.options.length) throw new Error('Choose one of the available options.');
 
       p.votes[juryGame.currentIndex] = {
         optionIndex: optIdx,
@@ -704,7 +734,11 @@ io.on('connection', socket=>{
   socket.on('host:end',()=>{try{if(!socket.data.isHost)throw new Error('Host authorization is required.');ensureGame();game.status='ended';broadcastState();}catch(e){socket.emit('quiz:error',{message:e.message});}});
   socket.on('participant:join',(payload={})=>{
     try{
-      ensureGame(); const code=cleanText(payload.roomCode,12).toUpperCase();
+      if(!game){
+        game={roomCode:roomCode(),status:'lobby',currentIndex:-1,questions:questionBank.map(q=>({...q,options:[...q.options]})),participants:{},createdAt:new Date().toISOString()};
+      }
+      const inputCode=cleanText(payload.roomCode,12).toUpperCase();
+      const code=inputCode || game.roomCode;
       if(code!==game.roomCode) throw new Error('Room code not found. Check the code shared by your host.');
       if(game.status==='ended') throw new Error('This quiz has ended. Ask the host to open a new room.');
       const name=cleanText(payload.name,28); if(name.length<2) throw new Error('Enter a display name with at least 2 characters.');
@@ -724,7 +758,8 @@ io.on('connection', socket=>{
       const q=getQuestion();if(!q)throw new Error('There is no active question.');
       if(p.answers[q.id])throw new Error('Your answer has already been recorded for this question.');
       const answerIndex=Number(payload.answerIndex);if(!Number.isInteger(answerIndex)||answerIndex<0||answerIndex>=q.options.length)throw new Error('Choose one of the available answers.');
-      p.answers[q.id]={answerIndex,answeredAt:new Date().toISOString(),scored:false};socket.emit('participant:answer-accepted',{questionId:q.id,answerIndex});broadcastState();
+      const descriptiveText = cleanText(payload.descriptiveText || payload.text || payload.reason || '', 2000);
+      p.answers[q.id]={answerIndex,descriptiveText,answeredAt:new Date().toISOString(),scored:false};socket.emit('participant:answer-accepted',{questionId:q.id,answerIndex});broadcastState();
     }catch(e){socket.emit('participant:answer-error',{message:e.message});}
   });
   socket.on('disconnect',()=>{

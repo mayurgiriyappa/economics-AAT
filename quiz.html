@@ -18,10 +18,11 @@
 
   <section id="welcome" class="grid role-grid">
     <article class="card cardpad"><div class="cardhead"><div><div class="eyebrow">For the instructor / host</div><h2>Host the quiz</h2><p class="sub">Edit questions, open a room, project the live answer chart, and reveal results.</p></div><div class="iconbox">♜</div></div>
-      <form id="hostLogin"><div class="field"><label for="hostPin">Host PIN</label><input id="hostPin" type="password" placeholder="Enter host PIN" autocomplete="current-password" required></div><button class="btn primary full" type="submit">Enter host control panel →</button><div class="sub">Local development PIN: <strong>2468</strong>. Change it before deploying publicly.</div><div class="error" id="hostError"></div></form>
+      <form id="hostLogin"><div class="field"><label for="hostPin">Host PIN</label><input id="hostPin" type="password" placeholder="Enter host PIN" autocomplete="current-password" required></div><button class="btn primary full" type="submit">Enter host control panel →</button><div class="error" id="hostError"></div></form>
     </article>
-    <article class="card cardpad"><div class="cardhead"><div><div class="eyebrow">For classmates / participants</div><h2>Join a quiz</h2><p class="sub">Enter the room code shared by the host and choose a display name.</p></div><div class="iconbox">◉</div></div>
-      <form id="joinForm"><div class="field"><label for="joinCode">Room code</label><input id="joinCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="Six digit room code" required></div><div class="field"><label for="playerName">Your display name</label><input id="playerName" maxlength="28" placeholder="e.g. Mayur" required minlength="2"></div><button class="btn primary full" type="submit">Join live quiz →</button><div class="sub">Your response is sent to the host instantly. You can answer each question once per participant session.</div><div class="error" id="joinError"></div></form>
+    <article class="card cardpad"><div class="cardhead"><div><div class="eyebrow">For classmates / participants</div><h2>Register your support</h2><p class="sub">Enter your name to participate in this live classroom session.</p></div><div class="iconbox">◉</div></div>
+      <div style="background:linear-gradient(135deg,#143b2d,#1b6b4b);border-radius:14px;padding:20px 22px;margin-bottom:18px;color:#fff"><div style="font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#b9ddc9;margin-bottom:10px">The question before you</div><p style="font-size:16px;font-weight:800;line-height:1.42;margin:0;color:#fff">Based on the evidence presented, do you support our solution for the company's future?</p></div>
+      <form id="joinForm"><input id="joinCode" type="hidden" value="000000"><div class="field"><label for="playerName">Your name</label><input id="playerName" maxlength="28" placeholder="Enter your name here" required minlength="2"></div><button class="btn primary full" type="submit">Yes, I support this solution →</button><div class="sub">Submitting your name registers your participation and support for the solution presented.</div><div class="error" id="joinError"></div></form>
     </article>
   </section>
 
@@ -61,12 +62,22 @@
   </section>
 
   <section id="playerApp" class="hidden player-shell">
-    <article class="card cardpad"><div class="player-status"><div><div class="eyebrow">Participant view</div><h2 id="playerGreeting">You are in the quiz</h2><p class="sub" id="playerRoomMeta">Waiting for the host.</p></div><span class="chip live" id="playerProgress">Waiting</span></div>
-      <div id="playerWaiting" style="padding:36px 10px;text-align:center"><div class="iconbox" style="margin:0 auto 14px;font-size:25px">◷</div><h2 id="waitingTitle">Waiting for the host to start</h2><p class="sub" id="waitingCopy">Keep this page open. The question will appear here as soon as the host starts.</p></div>
-      <div id="playerQuestionArea" class="hidden"><div class="eyebrow" id="playerQuestionMeta">Question 1</div><div class="player-question" id="playerQuestionText"></div><div id="playerOptions" class="player-options"></div><div id="playerAnswerNotice" class="sub" style="margin-top:12px"></div><div id="playerFeedback" class="feedback hidden"></div></div>
-      <div id="playerEnd" class="hidden"><div class="iconbox" style="margin:0 auto 14px;font-size:25px">✓</div><h2 style="text-align:center">Quiz complete</h2><p class="sub" style="text-align:center" id="finalScore"></p><h3 style="margin-top:23px">Leaderboard</h3><div id="playerLeaderboard" class="leader-list"></div></div>
+    <article class="card cardpad"><div class="player-status"><div><div class="eyebrow">Participant view</div><h2 id="playerGreeting">Support registered!</h2><p class="sub" id="playerRoomMeta">Your participation has been recorded.</p></div><span class="chip live" id="playerProgress">✓ Submitted</span></div>
+      <div style="background:linear-gradient(135deg,#143b2d,#1b6b4b);border-radius:14px;padding:26px 22px;margin:18px 0;color:#fff;text-align:center">
+        <div style="font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#b9ddc9;margin-bottom:14px">The jury question</div>
+        <p style="font-size:17px;font-weight:800;line-height:1.4;margin:0 0 22px;color:#fff">Based on the evidence presented, do you support our solution for the company's future?</p>
+        <div style="display:inline-flex;align-items:center;gap:12px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:50px;padding:13px 26px">
+          <span style="font-size:24px">✓</span>
+          <span style="font-size:15px;font-weight:800;color:#fff">YES — I support this solution</span>
+        </div>
+      </div>
+      <div id="playerWaiting" style="padding:10px;text-align:center"><p class="sub" id="waitingCopy">Thank you! Your support has been registered. The host will display the live participation count.</p></div>
+      <div id="playerQuestionArea" class="hidden"></div>
+      <div id="playerAnswerNotice" class="sub" style="margin-top:12px;text-align:center"></div>
+      <div id="playerFeedback" class="feedback hidden"></div>
+      <div id="playerEnd" class="hidden"></div>
     </article>
-    <div class="sub" style="text-align:center;margin-top:12px">Your answer is sent to the host live. Correct answers and explanations appear after the host reveals them.</div>
+    <div class="sub" style="text-align:center;margin-top:12px">Your name and response have been sent to the host. Thank you for participating in this session.</div>
   </section>
   <p class="footer">Strategy Court · DSCE Biotechnology · Live quiz room · Starter questions are editable and intended for classroom demonstration.</p>
 </main>
@@ -359,9 +370,8 @@ if (typeof io === 'undefined') {
   $('joinForm').addEventListener('submit',e=>{
     e.preventDefault();
     clearError('joinError');
-    const roomCode=$('joinCode').value.trim(),name=$('playerName').value.trim();
-    if(!/^\d{6}$/.test(roomCode)){showError('joinError','Enter the six-digit room code.');return}
-    if(name.length<2){showError('joinError','Enter a display name with at least two characters.');return}
+    const roomCode=$('joinCode').value.trim()||'000000',name=$('playerName').value.trim();
+    if(name.length<2){showError('joinError','Enter your name with at least two characters.');return}
     playerName=name;
     playerClientId=sessionStorage.getItem('scq_client_id');
     if(!playerClientId){
@@ -377,7 +387,7 @@ if (typeof io === 'undefined') {
       // Local / Cloud join
       clearError('joinError');
       showOnly('player');
-      toast(`Joined room ${roomCode}!`);
+      toast(`Thank you, ${name}! Your support has been registered.`);
       const q = currentHostState?.currentQuestion || editableBank[0];
       const pState = {
         hasGame: true,
