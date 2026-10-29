@@ -700,6 +700,15 @@ body {
 .jury-matrix-q{font-size:9px;font-weight:800;color:#1b6b4b;margin-bottom:4px}
 .jury-matrix-stat{font-size:9px;color:var(--muted);line-height:1.4}
 
+
+.slider-wrap{position:relative;width:100%;margin:6px 0 2px}
+.slider-bubble{position:absolute;top:-28px;transform:translateX(-50%);background:#102a23;color:#fff;font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;pointer-events:none;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.18);opacity:0;transition:opacity .15s ease,transform .15s ease;z-index:6}
+.slider-bubble::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border-width:4px;border-style:solid;border-color:#102a23 transparent transparent transparent}
+.slider-wrap:hover .slider-bubble,.slider-wrap input:active + .slider-bubble,.slider-wrap input:focus + .slider-bubble,.slider-wrap.dragging .slider-bubble{opacity:1;transform:translateX(-50%) translateY(-2px)}
+.assumption-value{font-size:12px;font-weight:850;color:#14583c;background:#eaf5ee;border:1px solid #d7eadf;padding:5px 8px;border-radius:8px;white-space:nowrap;font-variant-numeric:tabular-nums;transition:all .15s ease}
+.assumption-value.active{background:#1b6b4b!important;color:#fff!important;border-color:#1b6b4b!important;transform:scale(1.05);box-shadow:0 2px 10px rgba(27,107,75,.3)}
+.assumption-field input[type=range]{width:100%;padding:0;margin:0;accent-color:var(--green);cursor:pointer;border:0;background:transparent;box-shadow:none;height:22px}
+
 </style>
 <script src="/socket.io/socket.io.js"></script>
 </head>
@@ -718,6 +727,7 @@ body {
   </nav>
   <div class="nav-label">Management</div>
   <nav class="nav"><button data-view="admin"><span class="nav-icon"><svg class="nav-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span>Admin control panel</button></nav>
+
 </aside>
 <main class="main">
 <header class="topbar"><button class="mobile-menu" id="mobileMenu" aria-label="Open menu">☰</button><div class="crumb">Workspace&nbsp; / &nbsp;<strong id="crumbName">BioPopcorn Home</strong></div><div class="avatar" style="margin-left:auto" title="Demo administrator">AD</div></header>
@@ -771,37 +781,6 @@ body {
       </div>
     </div>
   </div>
-
-  <!-- Section 2: What local manufacture requires -->
-  <div class="bio-consumable-section" id="local-manufacture-section">
-    <div class="bio-section-header">
-      <h2 class="bio-section-title">What local manufacture requires</h2>
-      <p class="bio-section-subtitle">Localization is not just a price decision. Domestic production needs investment before it saves anything.</p>
-    </div>
-    <div class="bio-carousel-wrap">
-      <button class="bio-carousel-arrow bio-carousel-left" id="mfgCarouselLeft" aria-label="Scroll left">‹</button>
-      <div class="bio-carousel-track" id="mfgCarouselTrack">
-        <div class="bio-card">
-          <div class="bio-card-icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg></div>
-          <h3 class="bio-card-title">Packing tooling</h3>
-          <p class="bio-card-text">Column hardware, slurry-packing and assembly equipment.</p>
-        </div>
-        <div class="bio-card">
-          <div class="bio-card-icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg></div>
-          <h3 class="bio-card-title">Validation</h3>
-          <p class="bio-card-text">Proving packed-bed performance, such as efficiency and symmetry, in our process.</p>
-        </div>
-        <div class="bio-card">
-          <div class="bio-card-icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg></div>
-          <h3 class="bio-card-title">Supplier qualification</h3>
-          <p class="bio-card-text">Auditing and approving resin, hardware, frit and sanitary-component suppliers.</p>
-        </div>
-        <div class="bio-card">
-          <div class="bio-card-icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
-          <h3 class="bio-card-title">Quality systems</h3>
-          <p class="bio-card-text">Lot traceability, release testing and documentation for every packed column.</p>
-        </div>
-      </div>
       <button class="bio-carousel-arrow bio-carousel-right" id="mfgCarouselRight" aria-label="Scroll right">›</button>
     </div>
   </div>
@@ -814,19 +793,19 @@ body {
 <section class="section" id="view-model">
   <div class="page-head"><div><div class="eyebrow">Engineering economics</div><h1>Import vs local model</h1><p>Change assumptions to calculate the cost of imported supply versus qualified domestic manufacture.</p></div><div class="head-actions"><button class="btn" id="resetModel">Reset assumptions</button><button class="btn btn-primary" id="saveModel">Save scenario assumptions</button></div></div>
   <div class="split"><div class="card panel"><h3 class="panel-title">Editable assumptions</h3><p class="panel-desc">Change a value or slider; results recalculate immediately. Costs are INR unless otherwise stated.</p><div class="field-grid" style="margin-top:20px">
-    <div class="field assumption-field"><div class="assumption-head"><label for="demand">Annual demand (usable units)</label><output class="assumption-value" id="demandValue">5,000 units</output></div><input type="range" min="0" max="50000" step="100" id="demand" value="5000"/><div class="range-limits"><span>0</span><span>50,000 units</span></div><span class="hint">Forecast annual requirement after considering demand planning.</span></div>
-    <div class="field assumption-field"><div class="assumption-head"><label for="importUsd">Imported unit price (USD)</label><output class="assumption-value" id="importUsdValue">$420</output></div><input type="range" min="0" max="2500" step="10" id="importUsd" value="420"/><div class="range-limits"><span>$0</span><span>$2,500</span></div><span class="hint">Supplier quote per purchased unit, before freight and import charges.</span></div>
-    <div class="field assumption-field"><div class="assumption-head"><label for="fx">INR per USD</label><output class="assumption-value" id="fxValue">₹87.00</output></div><input type="range" min="50" max="150" step="0.25" id="fx" value="87"/><div class="range-limits"><span>₹50</span><span>₹150</span></div><span class="hint">Scenario assumption only; replace with a verified rate / hedge rate.</span></div>
-    <div class="field assumption-field"><div class="assumption-head"><label for="freight">Freight + insurance (₹ / unit)</label><output class="assumption-value" id="freightValue">₹1,800</output></div><input type="range" min="0" max="15000" step="100" id="freight" value="1800"/><div class="range-limits"><span>₹0</span><span>₹15,000</span></div></div>
-    <div class="field assumption-field"><div class="assumption-head"><label for="duty">Effective non-recoverable import charges (%)</label><output class="assumption-value" id="dutyValue">7.5%</output></div><input type="range" min="0" max="40" step="0.5" id="duty" value="7.5"/><div class="range-limits"><span>0%</span><span>40%</span></div><span class="hint">Use a verified effective rate; do not treat recoverable GST as permanent cost.</span></div>
-    <div class="field assumption-field"><div class="assumption-head"><label for="localCost">Local production cost (₹ / attempted unit)</label><output class="assumption-value" id="localCostValue">₹21,000</output></div><input type="range" min="0" max="100000" step="500" id="localCost" value="21000"/><div class="range-limits"><span>₹0</span><span>₹1,00,000</span></div><span class="hint">Raw materials, direct labour, energy, packaging and routine testing.</span></div>
-    <div class="field assumption-field"><div class="assumption-head"><label for="yield">Usable manufacturing yield (%)</label><output class="assumption-value" id="yieldValue">92%</output></div><input type="range" min="50" max="100" step="1" id="yield" value="92"/><div class="range-limits"><span>50%</span><span>100%</span></div><span class="hint">Usable output divided by attempted production units.</span></div>
-    <div class="field assumption-field"><div class="assumption-head"><label for="tooling">Tooling + equipment (₹)</label><output class="assumption-value" id="toolingValue">₹18,00,000</output></div><input type="range" min="0" max="30000000" step="100000" id="tooling" value="1800000"/><div class="range-limits"><span>₹0</span><span>₹3 crore</span></div></div>
-    <div class="field assumption-field"><div class="assumption-head"><label for="validation">Development + validation (₹)</label><output class="assumption-value" id="validationValue">₹12,00,000</output></div><input type="range" min="0" max="30000000" step="100000" id="validation" value="1200000"/><div class="range-limits"><span>₹0</span><span>₹3 crore</span></div></div>
-    <div class="field assumption-field"><div class="assumption-head"><label for="qualification">Supplier qualification / transfer (₹)</label><output class="assumption-value" id="qualificationValue">₹4,00,000</output></div><input type="range" min="0" max="15000000" step="50000" id="qualification" value="400000"/><div class="range-limits"><span>₹0</span><span>₹1.5 crore</span></div></div>
-    <div class="field assumption-field"><div class="assumption-head"><label for="qualityOpex">Annual quality-system / maintenance costs (₹)</label><output class="assumption-value" id="qualityOpexValue">₹5,00,000</output></div><input type="range" min="0" max="15000000" step="50000" id="qualityOpex" value="500000"/><div class="range-limits"><span>₹0</span><span>₹1.5 crore</span></div></div>
-    <div class="field assumption-field"><div class="assumption-head"><label for="horizon">Evaluation horizon (years)</label><output class="assumption-value" id="horizonValue">5 years</output></div><input type="range" min="1" max="20" step="1" id="horizon" value="5"/><div class="range-limits"><span>1 year</span><span>20 years</span></div></div>
-    <div class="field assumption-field"><div class="assumption-head"><label for="discount">Discount rate (%)</label><output class="assumption-value" id="discountValue">10%</output></div><input type="range" min="0" max="30" step="0.5" id="discount" value="10"/><div class="range-limits"><span>0%</span><span>30%</span></div></div>
+    <div class="field assumption-field"><div class="assumption-head"><label for="demand">Annual demand (usable units)</label><output class="assumption-value" id="demandValue">5,000 units</output></div><div class="slider-wrap"><input type="range" min="0" max="50000" step="100" id="demand" value="5000"/><div class="slider-bubble" id="demandBubble"></div></div><div class="range-limits"><span>0</span><span>50,000 units</span></div><span class="hint">Forecast annual requirement after considering demand planning.</span></div>
+    <div class="field assumption-field"><div class="assumption-head"><label for="importUsd">Imported unit price (USD)</label><output class="assumption-value" id="importUsdValue">$420</output></div><div class="slider-wrap"><input type="range" min="0" max="2500" step="10" id="importUsd" value="420"/><div class="slider-bubble" id="importUsdBubble"></div></div><div class="range-limits"><span>$0</span><span>$2,500</span></div><span class="hint">Supplier quote per purchased unit, before freight and import charges.</span></div>
+    <div class="field assumption-field"><div class="assumption-head"><label for="fx">INR per USD</label><output class="assumption-value" id="fxValue">₹87.00</output></div><div class="slider-wrap"><input type="range" min="50" max="150" step="0.25" id="fx" value="87"/><div class="slider-bubble" id="fxBubble"></div></div><div class="range-limits"><span>₹50</span><span>₹150</span></div><span class="hint">Scenario assumption only; replace with a verified rate / hedge rate.</span></div>
+    <div class="field assumption-field"><div class="assumption-head"><label for="freight">Freight + insurance (₹ / unit)</label><output class="assumption-value" id="freightValue">₹1,800</output></div><div class="slider-wrap"><input type="range" min="0" max="15000" step="100" id="freight" value="1800"/><div class="slider-bubble" id="freightBubble"></div></div><div class="range-limits"><span>₹0</span><span>₹15,000</span></div></div>
+    <div class="field assumption-field"><div class="assumption-head"><label for="duty">Effective non-recoverable import charges (%)</label><output class="assumption-value" id="dutyValue">7.5%</output></div><div class="slider-wrap"><input type="range" min="0" max="40" step="0.5" id="duty" value="7.5"/><div class="slider-bubble" id="dutyBubble"></div></div><div class="range-limits"><span>0%</span><span>40%</span></div><span class="hint">Use a verified effective rate; do not treat recoverable GST as permanent cost.</span></div>
+    <div class="field assumption-field"><div class="assumption-head"><label for="localCost">Local production cost (₹ / attempted unit)</label><output class="assumption-value" id="localCostValue">₹21,000</output></div><div class="slider-wrap"><input type="range" min="0" max="100000" step="500" id="localCost" value="21000"/><div class="slider-bubble" id="localCostBubble"></div></div><div class="range-limits"><span>₹0</span><span>₹1,00,000</span></div><span class="hint">Raw materials, direct labour, energy, packaging and routine testing.</span></div>
+    <div class="field assumption-field"><div class="assumption-head"><label for="yield">Usable manufacturing yield (%)</label><output class="assumption-value" id="yieldValue">92%</output></div><div class="slider-wrap"><input type="range" min="50" max="100" step="1" id="yield" value="92"/><div class="slider-bubble" id="yieldBubble"></div></div><div class="range-limits"><span>50%</span><span>100%</span></div><span class="hint">Usable output divided by attempted production units.</span></div>
+    <div class="field assumption-field"><div class="assumption-head"><label for="tooling">Tooling + equipment (₹)</label><output class="assumption-value" id="toolingValue">₹18,00,000</output></div><div class="slider-wrap"><input type="range" min="0" max="30000000" step="100000" id="tooling" value="1800000"/><div class="slider-bubble" id="toolingBubble"></div></div><div class="range-limits"><span>₹0</span><span>₹3 crore</span></div></div>
+    <div class="field assumption-field"><div class="assumption-head"><label for="validation">Development + validation (₹)</label><output class="assumption-value" id="validationValue">₹12,00,000</output></div><div class="slider-wrap"><input type="range" min="0" max="30000000" step="100000" id="validation" value="1200000"/><div class="slider-bubble" id="validationBubble"></div></div><div class="range-limits"><span>₹0</span><span>₹3 crore</span></div></div>
+    <div class="field assumption-field"><div class="assumption-head"><label for="qualification">Supplier qualification / transfer (₹)</label><output class="assumption-value" id="qualificationValue">₹4,00,000</output></div><div class="slider-wrap"><input type="range" min="0" max="15000000" step="50000" id="qualification" value="400000"/><div class="slider-bubble" id="qualificationBubble"></div></div><div class="range-limits"><span>₹0</span><span>₹1.5 crore</span></div></div>
+    <div class="field assumption-field"><div class="assumption-head"><label for="qualityOpex">Annual quality-system / maintenance costs (₹)</label><output class="assumption-value" id="qualityOpexValue">₹5,00,000</output></div><div class="slider-wrap"><input type="range" min="0" max="15000000" step="50000" id="qualityOpex" value="500000"/><div class="slider-bubble" id="qualityOpexBubble"></div></div><div class="range-limits"><span>₹0</span><span>₹1.5 crore</span></div></div>
+    <div class="field assumption-field"><div class="assumption-head"><label for="horizon">Evaluation horizon (years)</label><output class="assumption-value" id="horizonValue">5 years</output></div><div class="slider-wrap"><input type="range" min="1" max="20" step="1" id="horizon" value="5"/><div class="slider-bubble" id="horizonBubble"></div></div><div class="range-limits"><span>1 year</span><span>20 years</span></div></div>
+    <div class="field assumption-field"><div class="assumption-head"><label for="discount">Discount rate (%)</label><output class="assumption-value" id="discountValue">10%</output></div><div class="slider-wrap"><input type="range" min="0" max="30" step="0.5" id="discount" value="10"/><div class="slider-bubble" id="discountBubble"></div></div><div class="range-limits"><span>0%</span><span>30%</span></div></div>
   </div><div class="footnote">This simplified model assumes demand and prices remain constant through the evaluation horizon. It excludes working capital, inventory carrying costs, quality failures, tax depreciation, financing, ramp-up and disruption losses unless separately added. These omissions may materially change the decision.</div></div>
   <div><div class="card panel"><div class="section-top"><div><h3 class="panel-title">Live cost outputs</h3><p class="panel-desc">Calculated from current inputs</p></div><span class="stat-chip">LIVE MODEL</span></div><div class="result-grid"><div class="result"><div class="r-label">Import landed cost / unit</div><div class="r-value" id="modelImportUnit">₹0</div><div class="r-note">Before recoverable GST and internal distributor margins</div></div><div class="result"><div class="r-label">Local cost / usable unit</div><div class="r-value" id="modelLocalUnit">₹0</div><div class="r-note">Variable cost adjusted for production yield</div></div><div class="result"><div class="r-label">Annual import cost</div><div class="r-value" id="modelImportAnnual">₹0</div></div><div class="result"><div class="r-label">Annual local equivalent cost</div><div class="r-value" id="modelLocalAnnual">₹0</div><div class="r-note">Includes annual quality cost and straight-line investment allocation</div></div><div class="result"><div class="r-label">Annual equivalent saving</div><div class="r-value" id="modelSavings">₹0</div><div class="r-note" id="modelSavingsNote">Positive = local equivalent cost is lower</div></div><div class="result"><div class="r-label">Break-even annual demand</div><div class="r-value" id="modelBreakEven">—</div><div class="r-note">Includes quality opex plus investment allocated across horizon</div></div><div class="result"><div class="r-label">Simple payback</div><div class="r-value" id="modelPayback">—</div><div class="r-note">Initial investment ÷ positive annual operating benefit</div></div><div class="result"><div class="r-label">Net present value (NPV)</div><div class="r-value" id="modelNPV">₹0</div><div class="r-note">Initial investment plus discounted annual operating benefits</div></div></div><div class="verdict-box"><div class="label">Rule-based signal · not a final verdict</div><h3 id="modelVerdict">Evaluate cost and readiness</h3><p id="modelVerdictText">The model will explain which economic condition drives the signal. Quality equivalence and regulatory readiness remain independent go/no-go gates.</p></div></div><div class="card panel" style="margin-top:16px"><h3 class="panel-title">Cost build-up</h3><p class="panel-desc">View the components behind the comparison.</p><div id="costBuildUp" class="inner-pad" style="padding-left:0;padding-right:0"></div><details style="font-size:11px;color:#52635a;margin-top:12px"><summary style="cursor:pointer;font-weight:800;color:var(--green)">Show calculation formulas</summary><div class="footnote" style="margin-top:10px"><p><strong>Import unit cost</strong> = (USD purchase price × INR/USD + freight and insurance per unit) × (1 + effective non-recoverable import charges).</p><p><strong>Local usable-unit variable cost</strong> = local attempted-unit production cost ÷ usable yield.</p><p><strong>Local annual equivalent cost</strong> = annual demand × local usable-unit variable cost + annual quality/maintenance costs + initial localization investment ÷ evaluation horizon.</p><p><strong>Break-even demand</strong> = (annual quality costs + initial investment ÷ horizon) ÷ (import unit cost − local usable-unit cost), where the denominator is positive.</p><p><strong>Payback</strong> = initial investment ÷ [annual demand × (import unit cost − local usable-unit cost) − annual quality costs], where annual operating benefit is positive.</p><p><strong>NPV</strong> = − initial investment + annual operating benefit × present-value annuity factor. Constant annual savings and end-of-year cash flows are assumed.</p><p>Yield is included once in local unit cost. GST is excluded only under the stated recoverable-input-tax assumption. No expected-disruption benefit is added.</p></div></details></div></div></div>
 </section>
@@ -842,7 +821,7 @@ body {
     <div>
       <div class="eyebrow">Courtroom decision · Live Classroom Jury Voting</div>
       <h1>Courtroom &amp; Jury</h1>
-      <p>Six voices. One evidence-led verdict. Vote live on BioPopcorn’s import-versus-local manufacturing decision. The host reviews written reasoning and showcases live vote ratios at the end of each question.</p>
+      
     </div>
     <div class="head-actions">
       <a class="btn btn-primary" href="/jury.html?mode=host" target="_blank">Host Panel (PIN) ↗</a>
@@ -905,6 +884,7 @@ const seedEvidence=[
 {id:'E-04',title:'In-House Column Packing: Control, Cost Savings & Hardware Needs',publisher:'Analysys / Biopharma HPLC Insights',type:'Industry report',url:'https://www.linkedin.com/posts/analysys_pharmaceuticals-biotechnology-hplc-share-7483092523301785601-1zEj/',note:'Expert analysis showing packing in-house delivers greater process control and long-term cost savings compared to imported prepacked columns. Key requirements factored into model: packing pump, chromatography media/resin, and column hardware.',linked:true},
 {id:'E-01',title:'Chromatography Consumables: Columns Hold Highest (around 45%) Share',publisher:'Roots Analysis / Industry Market Data',type:'Industry report',url:'https://www.rootsanalysis.com/reports/chromatography-consumables-market.html',note:'In terms of product, columns hold the highest (around 45%) share of the current market. Prepacked chromatography columns are widely used in Liquid Chromatography (LC) across Thermo Fisher, Waters Corp, and leading biopharma manufacturers.',linked:true},
 {id:'E-02',title:'Indian Customs / Tariff Classification Verification',publisher:'CBIC / ICEGATE reference starting point',type:'Official policy',url:'https://www.cbic.gov.in/',note:'Use official customs resources to verify product-specific classification, notifications and applicable charges. This generic link does not establish a tariff rate for the case product.',linked:true},
+
 {id:'E-04',title:'ICH Q9(R1): Quality Risk Management',publisher:'International Council for Harmonisation',type:'Technical / quality',url:'https://www.ich.org/page/quality-guidelines',note:'Relevant quality-risk-management guidance. Check the current official guideline and determine its applicability with the quality unit; this is not a product-specific approval.',linked:true},
 {id:'E-05',title:'WHO guidance and GMP resources',publisher:'World Health Organization',type:'Technical / quality',url:'https://www.who.int/teams/health-product-policy-and-standards/standards-and-specifications/gmp',note:'A starting point for GMP principles and related resources. Requirements depend on the facility, intended use and applicable regulatory framework.',linked:true},
 {id:'E-06',title:'Make in India programme',publisher:'Government of India',type:'Official policy',url:'https://www.makeinindia.com/',note:'Policy context for domestic manufacturing. The programme branding alone does not establish eligibility for a specific incentive or product.',linked:false},
@@ -915,12 +895,14 @@ function dt(days){const d=new Date();d.setDate(d.getDate()-days);return d.toISOS
 function makeInitial(){return {questions:seedQuestions.map((q,i)=>({id:'Q-2026-'+String(i+1).padStart(3,'0'),title:q[0],description:q[1],category:q[2],priority:q[3],status:q[4],submitter:q[5],createdAt:dt((i*3)%24+1),updatedAt:dt((i*2)%14),answer:q[6],evidence:(Array.isArray(q[7])?q[7]:(String(q[7]||'').trim()==='[]'?[]:String(q[7]).replace(/[\[\]']/g,'').split(',').map(x=>x.trim()).filter(Boolean))),history:[{status:q[4],reason:'Seeded illustrative workflow record',at:dt((i*2)%14)}],demo:true})),evidence:seedEvidence.map(e=>({...e,createdAt:dt(2)})),votes:[{id:'V-001',name:'Jury A',round:'Before debate',strategy:'Continue importing',reason:'Existing validated supply is safer until the exact domestic product has comparable performance evidence.',at:dt(2),demo:true},{id:'V-002',name:'Jury B',round:'Before debate',strategy:'Phased localization',reason:'Start domestic development, but do not replace the current supplier before the quality gate is passed.',at:dt(1),demo:true},{id:'V-003',name:'Jury C',round:'After cross-examination',strategy:'Dual sourcing',reason:'A second qualified supplier could reduce concentration risk if the cost premium and quality comparability are justified.',at:dt(0),demo:true}],activity:[{text:'Demo workspace initialized with illustrative questions and evidence.',at:dt(0),icon:'✦'}],model:{demand:5000,importUsd:420,fx:87,freight:1800,duty:7.5,localCost:21000,yield:92,tooling:1800000,validation:1200000,qualification:400000,qualityOpex:500000,horizon:5,discount:10},verdict:{qualityGate:'not-tested',supplierGate:'unknown',notes:''}}}
 let state;
 try{
-  const saved=localStorage.getItem('strategyCourtDashboardV1');
+  const saved=localStorage.getItem('strategyCourtDashboardV2');
   state=saved?JSON.parse(saved):makeInitial();
   if(!state||typeof state!=='object') state=makeInitial();
   if(!state.questions||!Array.isArray(state.questions)) state.questions=makeInitial().questions;
   if(!state.evidence||!Array.isArray(state.evidence)) state.evidence=makeInitial().evidence;
-  state.evidence=state.evidence.filter(e=>e.id!=='E-03'&&e.title!=='Cost model assumptions and break-even framework');
+  state.evidence=state.evidence.filter(e=>e.id!=='E-03'&&!String(e.title||'').toLowerCase().includes('cost model assumptions'));
+  state.questions.forEach(q=>{if(Array.isArray(q.evidence)) q.evidence=q.evidence.filter(id=>id!=='E-03');});
+  
   state.questions.forEach(q=>{if(Array.isArray(q.evidence)) q.evidence=q.evidence.filter(id=>id!=='E-03');});
   state.model=Object.assign(makeInitial().model, state.model||{});
   if(!state.votes||!Array.isArray(state.votes)) state.votes=makeInitial().votes;
@@ -929,7 +911,7 @@ try{
 }catch(e){
   state=makeInitial();
 }
-function persist(){try{localStorage.setItem('strategyCourtDashboardV1',JSON.stringify(state))}catch(e){console.warn('Could not save to localStorage',e)}}
+function persist(){try{localStorage.setItem('strategyCourtDashboardV2',JSON.stringify(state))}catch(e){console.warn('Could not save to localStorage',e)}}
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(v,dec=0){if(!Number.isFinite(v))return '—';let abs=Math.abs(v);if(abs>=10000000)return (v<0?'−':'')+'₹'+(abs/10000000).toFixed(2)+' Cr';if(abs>=100000)return (v<0?'−':'')+'₹'+(abs/100000).toFixed(2)+' L';return (v<0?'−':'')+'₹'+Math.round(abs).toLocaleString('en-IN')}
 function number(v){return Math.round(v).toLocaleString('en-IN')}
@@ -981,6 +963,11 @@ function updateSliderFill(input){
   const val = Number(input.value) || 0;
   const pct = max > min ? Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100)) : 0;
   input.style.background = `linear-gradient(to right, #1f6b49 0%, #2f9468 ${pct}%, #e0e7e3 ${pct}%, #e0e7e3 100%)`;
+  const bubble = document.getElementById(input.id + 'Bubble');
+  if(bubble){
+    bubble.style.left = `calc(${pct}% + (${8 - pct * 0.16}px))`;
+    bubble.textContent = formatAssumption(input.id, val);
+  }
 }
 
 const escalatingAnimators = {};
@@ -1033,6 +1020,8 @@ function syncModelInputs(){
     }
     const out = document.getElementById(id+'Value');
     if(out && state.model[id] !== undefined) out.textContent = formatAssumption(id, state.model[id]);
+    const bubble = document.getElementById(id+'Bubble');
+    if(bubble && state.model[id] !== undefined) bubble.textContent = formatAssumption(id, state.model[id]);
   });
 }
 
@@ -1218,14 +1207,23 @@ function stopAutoSimulate(){
 modelInputs.forEach(id=>{
   const el = document.getElementById(id);
   if (!el) return;
+  const wrap = el.closest('.slider-wrap');
   el.addEventListener('input', () => {
     if (autoSimActive) stopAutoSimulate();
+    if (wrap) wrap.classList.add('dragging');
     readModelInputs(id);
-    renderModel(true);
+    renderModel(false);
     renderScenarios();
   });
   el.addEventListener('change', () => {
+    if (wrap) wrap.classList.remove('dragging');
+    readModelInputs(id);
+    renderModel(true);
+    renderScenarios();
     updateSliderFill(el);
+  });
+  el.addEventListener('blur', () => {
+    if (wrap) wrap.classList.remove('dragging');
   });
 });
 
@@ -1773,16 +1771,6 @@ window.addEventListener('message', event => {
       frame.style.height = Math.max(900, Math.min(h + 16, 12000)) + 'px';
     }
   }
-});
-
-// Carousel scroll controls for What local manufacture requires
-document.getElementById('mfgCarouselLeft')?.addEventListener('click', () => {
-  const track = document.getElementById('mfgCarouselTrack');
-  if (track) track.scrollBy({ left: -260, behavior: 'smooth' });
-});
-document.getElementById('mfgCarouselRight')?.addEventListener('click', () => {
-  const track = document.getElementById('mfgCarouselTrack');
-  if (track) track.scrollBy({ left: 260, behavior: 'smooth' });
 });
 
 updateDashboard();renderEvidence();renderModel();renderScenarios();renderVotes();renderAdmin();

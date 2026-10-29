@@ -3,14 +3,6 @@
     "id": "q1",
     "category": "Strategic Decision",
     "text": "Based on the evidence presented, do you support our solution for the company's future?",
-    "options": [
-      "Yes — Fully support the proposed localization and dual-sourcing strategy",
-      "Yes — Support with phased milestones, risk gates, and downside caps",
-      "Conditional — Require additional pilot batch comparability and QA evidence first",
-      "No — Retain existing qualified imported supply to avoid manufacturing risks"
-    ],
-    "correctIndex": 0,
-    "explanation": "The strategic evidence indicates that phased localization with dual sourcing delivers substantial unit cost savings, shields against rupee depreciation, and maintains supply reliability while comparability is proven.",
-    "points": 1000
+    "type": "descriptive"
   }
 ]

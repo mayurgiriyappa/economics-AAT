@@ -43,15 +43,8 @@ const starterQuestions = [
     id: 'q1',
     category: 'Strategic Decision',
     text: "Based on the evidence presented, do you support our solution for the company's future?",
-    options: [
-      'Yes — Fully support the proposed localization and dual-sourcing strategy',
-      'Yes — Support with phased milestones, risk gates, and downside caps',
-      'Conditional — Require additional pilot batch comparability and QA evidence first',
-      'No — Retain existing qualified imported supply to avoid manufacturing risks'
-    ],
-    correctIndex: 0,
-    explanation: 'The strategic evidence indicates that phased localization with dual sourcing delivers substantial unit cost savings, shields against rupee depreciation, and maintains supply reliability while comparability is proven.',
-    points: 1000
+    options: [],
+    type: 'descriptive'
   }
 ];
 
@@ -291,7 +284,14 @@ function broadcastJury() {
 }
 
 let questionBank = loadQuestionBank();
-let game = null;
+let game = {
+  roomCode: 'STRATEGY',
+  status: 'live',
+  currentIndex: 0,
+  questions: questionBank.map(q => ({...q})),
+  participants: {},
+  createdAt: new Date().toISOString()
+};
 const hostSockets = new Set();
 
 function loadQuestionBank(){
@@ -302,7 +302,7 @@ function loadQuestionBank(){
     }
   } catch(e) { console.error('Unable to load saved questions:', e.message); }
   saveQuestionBank(starterQuestions);
-  return starterQuestions.map(q => ({...q, options:[...q.options]}));
+  return starterQuestions.map(q => ({...q}));
 }
 function saveQuestionBank(bank){
   try {
@@ -312,37 +312,84 @@ function saveQuestionBank(bank){
   }
 }
 function normalizeQuestion(q, index=0){
-  const options = Array.isArray(q.options) ? q.options.slice(0,4).map(v=>String(v||'').trim()) : [];
-  while(options.length<4) options.push('Option '+(options.length+1));
-  return { id:String(q.id||`q${index+1}`), category:String(q.category||'General').slice(0,60), text:String(q.text||'').slice(0,1000), options, correctIndex:Math.min(3,Math.max(0,Number(q.correctIndex)||0)), explanation:String(q.explanation||'').slice(0,1800), points:Math.min(5000,Math.max(100,Number(q.points)||1000)) };
+  return {
+    id: String(q.id || `q${index+1}`),
+    category: String(q.category || 'Strategic Decision').slice(0,60),
+    text: String(q.text || "Based on the evidence presented, do you support our solution for the company's future?").slice(0,1000),
+    type: 'descriptive'
+  };
 }
 function cleanText(v, max=100){ return String(v||'').trim().replace(/[\u0000-\u001f]/g,'').slice(0,max); }
-function roomCode(){ return crypto.randomInt(100000, 999999).toString(); }
-function ensureGame(){ if(!game) throw new Error('No quiz session is open. The host must open a room first.'); }
-function getQuestion(){ return game && game.currentIndex>=0 ? game.questions[game.currentIndex] : null; }
+function roomCode(){ return 'STRATEGY'; }
+function ensureGame(){
+  if(!game) {
+    game = {
+      roomCode: 'STRATEGY',
+      status: 'live',
+      currentIndex: 0,
+      questions: questionBank.map(q => ({...q})),
+      participants: {},
+      createdAt: new Date().toISOString()
+    };
+  }
+}
+function getQuestion(){ return game && game.currentIndex>=0 ? game.questions[game.currentIndex] : (game?.questions[0] || questionBank[0]); }
 function participantTotal(){ return game ? Object.keys(game.participants).length : 0; }
 function currentResponses(){
   const q=getQuestion(); if(!game || !q) return [];
   return Object.values(game.participants).map(p=>({id:p.id, name:p.name, connected:!!p.connected, response:p.answers[q.id]||null}));
 }
-function optionCounts(){
-  const q=getQuestion(); if(!q) return [];
-  const counts=q.options.map((label,index)=>({index,label,count:0}));
-  for(const p of Object.values(game.participants)){ const r=p.answers[q.id]; if(r && Number.isInteger(r.answerIndex) && counts[r.answerIndex]) counts[r.answerIndex].count++; }
-  return counts;
-}
 function hostState(){
-  if(!game) return {hasGame:false, bank:questionBank, maxParticipants:MAX_PARTICIPANTS};
+  ensureGame();
   const q=getQuestion();
-  return {hasGame:true, roomCode:game.roomCode, status:game.status, currentIndex:game.currentIndex, questionCount:game.questions.length, questions:game.questions.map((x)=>({...x})), currentQuestion:q?{...q}:null, participants:Object.values(game.participants).map(p=>({id:p.id,name:p.name,connected:!!p.connected,score:p.score,answer:q&&p.answers[q.id]?{answerIndex:p.answers[q.id].answerIndex,answeredAt:p.answers[q.id].answeredAt}:null})), totalParticipants:participantTotal(), answeredCount:q?Object.values(game.participants).filter(p=>!!p.answers[q.id]).length:0, optionCounts:optionCounts(), leaderboard:Object.values(game.participants).map(p=>({id:p.id,name:p.name,score:p.score,connected:!!p.connected})).sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name)), bank:questionBank, maxParticipants:MAX_PARTICIPANTS };
+  const pList = Object.values(game.participants);
+  const answeredList = q ? pList.filter(p => !!p.answers[q.id]) : [];
+  return {
+    hasGame: true,
+    roomCode: game.roomCode,
+    status: game.status,
+    currentIndex: game.currentIndex,
+    questionCount: game.questions.length,
+    questions: game.questions.map((x)=>({...x})),
+    currentQuestion: q ? {...q} : null,
+    participants: pList.map(p => ({
+      id: p.id,
+      name: p.name,
+      connected: !!p.connected,
+      score: p.score || 0,
+      joinedAt: p.joinedAt,
+      answer: (q && p.answers[q.id]) ? {
+        descriptiveText: p.answers[q.id].descriptiveText || '',
+        stance: p.answers[q.id].stance || '',
+        answeredAt: p.answers[q.id].answeredAt
+      } : null
+    })),
+    totalParticipants: pList.length,
+    answeredCount: answeredList.length,
+    bank: questionBank,
+    maxParticipants: MAX_PARTICIPANTS
+  };
 }
 function playerState(playerId){
-  if(!game) return {hasGame:false};
+  ensureGame();
   const p=game.participants[playerId];
   const q=getQuestion();
   const ownAnswer=q&&p?p.answers[q.id]||null:null;
-  const revealed=game.status==='revealed'||game.status==='ended';
-  return {hasGame:true, roomCode:game.roomCode, status:game.status, currentIndex:game.currentIndex, questionCount:game.questions.length, participantCount:participantTotal(), answeredCount:q?Object.values(game.participants).filter(x=>!!x.answers[q.id]).length:0, question:q?{id:q.id,category:q.category,text:q.text,options:q.options,correctIndex:revealed?q.correctIndex:undefined,explanation:revealed?q.explanation:undefined,points:q.points}:null, myAnswer:ownAnswer?{answerIndex:ownAnswer.answerIndex,correct:revealed?ownAnswer.answerIndex===q.correctIndex:undefined}:null, score:p?p.score:0, revealed, leaderboard:revealed?Object.values(game.participants).map(x=>({name:x.name,score:x.score})).sort((a,b)=>b.score-a.score).slice(0,10):[] };
+  return {
+    hasGame: true,
+    roomCode: game.roomCode,
+    status: game.status,
+    currentIndex: game.currentIndex,
+    questionCount: game.questions.length,
+    participantCount: participantTotal(),
+    answeredCount: q ? Object.values(game.participants).filter(x => !!x.answers[q.id]).length : 0,
+    question: q ? { id: q.id, category: q.category, text: q.text, type: 'descriptive' } : null,
+    myAnswer: ownAnswer ? {
+      descriptiveText: ownAnswer.descriptiveText || '',
+      stance: ownAnswer.stance || '',
+      answeredAt: ownAnswer.answeredAt
+    } : null
+  };
 }
 function pushStates(){
   for(const s of io.sockets.sockets.values()){
@@ -352,18 +399,13 @@ function pushStates(){
 }
 function broadcastState(){ pushStates(); }
 function persistBankFromInput(arr){
-  if(!Array.isArray(arr) || arr.length<1 || arr.length>50) throw new Error('Keep between 1 and 50 questions.');
-  const ids=new Set();
-  const normalized=arr.map((q,i)=>{
-    const item=normalizeQuestion(q,i);
-    if(!item.text) throw new Error(`Question ${i+1} needs question text.`);
-    if(item.options.some(o=>!o)) throw new Error(`Question ${i+1} needs four non-empty options.`);
-    if(new Set(item.options.map(x=>x.toLowerCase())).size<4) throw new Error(`Question ${i+1} must have four distinct options.`);
-    if(ids.has(item.id)) item.id=`q-${crypto.randomBytes(5).toString('hex')}`;
-    ids.add(item.id);
-    return item;
-  });
-  questionBank=normalized; saveQuestionBank(questionBank);
+  if(!Array.isArray(arr) || arr.length<1) throw new Error('Provide at least one question.');
+  questionBank = arr.slice(0, 1).map(normalizeQuestion);
+  saveQuestionBank(questionBank);
+  if (game) {
+    game.questions = questionBank.map(q => ({...q}));
+    game.currentIndex = 0;
+  }
 }
 
 // Never expose server code, environment examples, or the editable bank (which includes answers).
@@ -477,7 +519,89 @@ app.get(['/quiz.html', '/quiz'], (req, res) => {
 });
 app.get('/healthz', (req,res)=>res.json({ok:true, service:'strategy-court-live-quiz', activeRoom:game?game.roomCode:null, participants:participantTotal()}));
 app.get('/api/quiz-info',(req,res)=>res.json({supportsLiveParticipants:true, maxParticipants:MAX_PARTICIPANTS, questionCount:questionBank.length, activeRoom:game?game.roomCode:null}));
-app.get('/api/room-code', (req,res)=>res.json({ok:true, roomCode: game ? game.roomCode : roomCode()}));
+app.get('/api/room-code', (req,res)=>res.json({ok:true, roomCode: game ? game.roomCode : 'STRATEGY'}));
+
+app.get('/api/quiz/state', (req, res) => {
+  res.json(hostState());
+});
+
+app.post('/api/quiz/submit', express.json(), (req, res) => {
+  try {
+    ensureGame();
+    const { name, clientId, descriptiveText, text, reason, stance } = req.body || {};
+    const pName = cleanText(name, 40) || 'Participant';
+    const cId = cleanText(clientId, 80) || ('p-' + Date.now() + Math.random().toString(36).slice(2, 6));
+    const content = cleanText(descriptiveText || text || reason || '', 3000);
+    if (!content) return res.status(400).json({ ok: false, message: 'Please provide a descriptive answer.' });
+
+    let p = game.participants[cId];
+    if (!p) {
+      p = game.participants[cId] = {
+        id: cId,
+        name: pName,
+        score: 0,
+        answers: {},
+        joinedAt: new Date().toISOString(),
+        connected: true
+      };
+    } else {
+      p.name = pName;
+      p.connected = true;
+    }
+    const q = getQuestion() || game.questions[0];
+    p.answers[q.id] = {
+      descriptiveText: content,
+      stance: cleanText(stance, 50) || 'Yes — I support this solution',
+      answeredAt: new Date().toISOString()
+    };
+    broadcastState();
+    res.json({ ok: true, message: 'Response recorded', answer: p.answers[q.id] });
+  } catch (err) {
+    res.status(500).json({ ok: false, message: err.message });
+  }
+});
+
+app.post('/api/quiz/reset', express.json(), (req, res) => {
+  try {
+    const pin = String(req.body?.pin || '').trim();
+    if (pin && pin !== HOST_PIN) return res.status(401).json({ ok: false, message: 'Invalid host PIN' });
+    if (game) {
+      game.participants = {};
+      game.status = 'live';
+      game.currentIndex = 0;
+      broadcastState();
+    }
+    res.json({ ok: true, message: 'Quiz responses reset' });
+  } catch (err) {
+    res.status(500).json({ ok: false, message: err.message });
+  }
+});
+
+app.get('/api/quiz/export', (req, res) => {
+  try {
+    const q = getQuestion() || (game && game.questions[0]);
+    const rows = [
+      ['Participant Name', 'Stance', 'Descriptive Response', 'Answered At']
+    ];
+    if (game && q) {
+      for (const p of Object.values(game.participants)) {
+        const a = p.answers[q.id];
+        rows.push([
+          p.name,
+          a ? (a.stance || '') : 'Not submitted',
+          a ? a.descriptiveText : '',
+          a ? a.answeredAt : ''
+        ]);
+      }
+    }
+    const csv = rows.map(r => r.map(cell => '"' + String(cell || '').replace(/"/g, '""') + '"').join(',')).join('\r\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="quiz-descriptive-responses.csv"');
+    res.send(csv);
+  } catch (err) {
+    res.status(500).send('Error generating export: ' + err.message);
+  }
+});
 app.post('/api/create-room', (req,res)=>{
   if(!game){
     game={roomCode:roomCode(),status:'lobby',currentIndex:-1,questions:questionBank.map(q=>({...q,options:[...q.options]})),participants:{},createdAt:new Date().toISOString()};
@@ -752,15 +876,48 @@ io.on('connection', socket=>{
   });
   socket.on('participant:answer',(payload={})=>{
     try{
-      if(socket.data.role!=='player'||!game||socket.data.roomCode!==game.roomCode)throw new Error('Join the active room before answering.');
-      if(game.status!=='live')throw new Error('The host is not accepting answers right now.');
-      const p=game.participants[socket.data.playerId];if(!p)throw new Error('Participant session not found. Rejoin using the room code.');
-      const q=getQuestion();if(!q)throw new Error('There is no active question.');
-      if(p.answers[q.id])throw new Error('Your answer has already been recorded for this question.');
-      const answerIndex=Number(payload.answerIndex);if(!Number.isInteger(answerIndex)||answerIndex<0||answerIndex>=q.options.length)throw new Error('Choose one of the available answers.');
-      const descriptiveText = cleanText(payload.descriptiveText || payload.text || payload.reason || '', 2000);
-      p.answers[q.id]={answerIndex,descriptiveText,answeredAt:new Date().toISOString(),scored:false};socket.emit('participant:answer-accepted',{questionId:q.id,answerIndex});broadcastState();
+      ensureGame();
+      const pId = socket.data.playerId || cleanText(payload.clientId, 80);
+      let p = game.participants[pId];
+      if(!p) {
+        const name = cleanText(payload.name, 35) || 'Participant';
+        p = game.participants[pId] = {
+          id: pId,
+          name,
+          score: 0,
+          answers: {},
+          joinedAt: new Date().toISOString(),
+          connected: true
+        };
+        socket.data.role = 'player';
+        socket.data.playerId = pId;
+        socket.data.roomCode = game.roomCode;
+      }
+      const q = getQuestion() || game.questions[0];
+      if(!q) throw new Error('There is no active question.');
+      const descriptiveText = cleanText(payload.descriptiveText || payload.text || payload.reason || payload.answer || '', 3000);
+      if(!descriptiveText) throw new Error('Please enter your descriptive answer or reasoning.');
+      const stance = cleanText(payload.stance || '', 50) || 'Yes — I support this solution';
+      p.answers[q.id] = {
+        descriptiveText,
+        stance,
+        answeredAt: new Date().toISOString()
+      };
+      socket.emit('participant:answer-accepted', { questionId: q.id });
+      broadcastState();
     }catch(e){socket.emit('participant:answer-error',{message:e.message});}
+  });
+
+  socket.on('host:reset', () => {
+    try {
+      if (!socket.data?.isHost) throw new Error('Host authorization required.');
+      if (game) {
+        game.participants = {};
+        game.status = 'live';
+        game.currentIndex = 0;
+        broadcastState();
+      }
+    } catch(e) { socket.emit('quiz:error', { message: e.message }); }
   });
   socket.on('disconnect',()=>{
     hostSockets.delete(socket.id);
@@ -774,7 +931,18 @@ io.on('connection', socket=>{
 if (process.env.VERCEL !== '1' && require.main === module) {
   server.listen(PORT,'0.0.0.0',()=>{
     console.log(`Strategy Court live quiz listening on http://localhost:${PORT}`);
-    console.log(`Host PIN: ${HOST_PIN==='2468'?'2468 (DEFAULT — change via HOST_PIN in production)':'configured via environment'}`);
+    try {
+      const os = require('os');
+      const ifaces = os.networkInterfaces();
+      for (const name of Object.keys(ifaces)) {
+        for (const net of ifaces[name]) {
+          if (net.family === 'IPv4' && !net.internal) {
+            console.log(`📡 Live sharing link on your local Wi-Fi: http://${net.address}:${PORT}/quiz`);
+          }
+        }
+      }
+    } catch (_) {}
+    console.log(`Host PIN: ${HOST_PIN}`);
     console.log(`Configured participant capacity: ${MAX_PARTICIPANTS}`);
   });
 }
