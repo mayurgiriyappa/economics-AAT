@@ -414,6 +414,7 @@ const apiHandler = require('./api/index.js');
 app.all(['/api', '/api/*'], (req, res) => {
   apiHandler(req, res);
 });
+app.use(express.static(path.join(__dirname, 'public'), { extensions:['html'], dotfiles:'ignore' }));
 app.use(express.static(__dirname, { extensions:['html'], dotfiles:'ignore' }));
 app.use(express.static(process.cwd(), { extensions:['html'], dotfiles:'ignore' }));
 

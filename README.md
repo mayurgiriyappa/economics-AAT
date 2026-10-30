@@ -37,6 +37,8 @@ The local development host PIN is `2468`. To change it locally, copy `.env.examp
 
 This is a Node.js + Socket.IO app; a static-only host such as a basic Cloudflare Pages deployment cannot run the included WebSocket server by itself. Deploy on a platform that supports a long-running Node.js server and WebSockets (for example, Render, Railway, Fly.io, or a VPS). Ensure its public URL uses HTTPS, then share that URL and the room code with participants. Use a single running server/instance for the quiz; multi-instance scaling requires a Socket.IO adapter and shared session storage.
 
+Vercel can serve the dashboard and its serverless HTTP API, but it does not host this app's Socket.IO server. The Vercel client therefore uses HTTP polling. For reliable rooms across serverless instances, configure `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in Vercel and apply `supabase-schema.sql`; without shared storage, in-memory rooms are best-effort and may not be visible to every participant. Use a long-running Node.js host for Socket.IO live updates.
+
 Set these environment variables on the host:
 
 - `NODE_ENV=production`

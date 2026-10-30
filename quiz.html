@@ -540,14 +540,14 @@ main{max-width:1200px;margin:0 auto;padding:24px 20px 48px}
     $('welcome')?.classList.add('hidden');
     $('hostApp')?.classList.remove('hidden');
     if ($('hostRoomPinDisplay')) $('hostRoomPinDisplay').textContent = currentRoomPin;
-    if ($('downloadCsvBtn')) $('downloadCsvBtn').href = `/api/quiz/export?pin=${currentRoomPin}`;
+    if ($('downloadCsvBtn')) $('downloadCsvBtn').href = window.realtimeSync.apiUrl(`/api/quiz/export?pin=${currentRoomPin}`);
 
     toast(`Room ${currentRoomPin} is live! Share PIN with classmates.`);
   });
 
   function renderHostDashboard(state) {
     if ($('hostRoomPinDisplay')) $('hostRoomPinDisplay').textContent = state.roomPin || currentRoomPin;
-    if ($('downloadCsvBtn')) $('downloadCsvBtn').href = `/api/quiz/export?pin=${state.roomPin || currentRoomPin}`;
+    if ($('downloadCsvBtn')) $('downloadCsvBtn').href = window.realtimeSync.apiUrl(`/api/quiz/export?pin=${state.roomPin || currentRoomPin}`);
     if ($('statParticipants')) $('statParticipants').textContent = state.totalParticipants || 0;
     if ($('statSubmitted')) $('statSubmitted').textContent = state.submittedCount || 0;
 

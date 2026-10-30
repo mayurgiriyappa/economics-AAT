@@ -23,6 +23,7 @@ if (SUPABASE_URL && SUPABASE_KEY) {
 
 // Host authentication secret from environment (defaults to secure runtime fallback if not set)
 const HOST_PIN = process.env.HOST_PIN || '2468';
+const HOST_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
 // ============================================================================
 // IN-MEMORY / PERSISTENT BACKUP STORE (for zero-config, serverless & local)
@@ -103,6 +104,29 @@ function generateSixDigitPin() {
 
 function generateToken() {
   return crypto.randomBytes(24).toString('hex');
+}
+
+function generateHostToken() {
+  const issuedAt = String(Date.now());
+  const signature = crypto.createHmac('sha256', HOST_PIN).update(`host:${issuedAt}`).digest('hex');
+  return `${issuedAt}.${signature}`;
+}
+
+function isValidHostToken(token) {
+  if (typeof token !== 'string') return false;
+  if (memoryStore.hostTokens.has(token)) return true;
+
+  const [issuedAtText, signature, extra] = token.split('.');
+  const issuedAt = Number(issuedAtText);
+  if (extra !== undefined || !Number.isSafeInteger(issuedAt)) return false;
+  if (issuedAt > Date.now() || Date.now() - issuedAt > HOST_TOKEN_TTL_MS) return false;
+
+  const expected = Buffer.from(
+    crypto.createHmac('sha256', HOST_PIN).update(`host:${issuedAtText}`).digest('hex'),
+    'hex'
+  );
+  const received = Buffer.from(signature || '', 'hex');
+  return received.length === expected.length && crypto.timingSafeEqual(received, expected);
 }
 
 function parseJsonBody(req) {
@@ -342,7 +366,7 @@ module.exports = async (req, res) => {
   }
 
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  const pathname = parsedUrl.pathname;
+  const pathname = parsedUrl.searchParams.get('__route') || parsedUrl.pathname;
   const searchParams = parsedUrl.searchParams;
 
   // --------------------------------------------------------------------------
@@ -366,7 +390,7 @@ module.exports = async (req, res) => {
     const pin = String(body.pin || '').trim();
 
     if (pin && pin === HOST_PIN) {
-      const token = generateToken();
+      const token = generateHostToken();
       memoryStore.hostTokens.add(token);
       return sendJson(res, 200, {
         ok: true,
@@ -391,12 +415,12 @@ module.exports = async (req, res) => {
     const token = req.headers['x-host-token'] || body.hostToken;
     const pinAuth = String(body.pin || '').trim();
 
-    const isAuthed = (token && memoryStore.hostTokens.has(token)) || (pinAuth && pinAuth === HOST_PIN);
+    const isAuthed = isValidHostToken(token) || (pinAuth && pinAuth === HOST_PIN);
     if (!isAuthed) {
       return sendJson(res, 403, { ok: false, error: 'Unauthorized host. Valid PIN or token required.' });
     }
 
-    const hostToken = token || generateToken();
+    const hostToken = token || generateHostToken();
     memoryStore.hostTokens.add(hostToken);
 
     const result = await createQuizSession(hostToken, body.question);
@@ -570,7 +594,7 @@ module.exports = async (req, res) => {
       'Oppose / Alternative': submittedCount ? Math.round((stanceTally['Oppose / Alternative'] / submittedCount) * 100) : 0
     };
 
-    const isHost = hostToken && (session.hostToken === hostToken || memoryStore.hostTokens.has(hostToken));
+    const isHost = isValidHostToken(hostToken);
 
     const response = {
       ok: true,
@@ -621,7 +645,7 @@ module.exports = async (req, res) => {
     const session = await getQuizSession(roomPin);
     if (!session) return sendJson(res, 404, { ok: false, error: 'Room not found.' });
 
-    const isAuthed = hostToken && (session.hostToken === hostToken || memoryStore.hostTokens.has(hostToken));
+    const isAuthed = isValidHostToken(hostToken);
     if (!isAuthed) return sendJson(res, 403, { ok: false, error: 'Unauthorized host token.' });
 
     if (action === 'toggle-reveal' || action === 'reveal') {
@@ -701,12 +725,12 @@ module.exports = async (req, res) => {
     const token = req.headers['x-host-token'] || body.hostToken;
     const pinAuth = String(body.pin || '').trim();
 
-    const isAuthed = (token && memoryStore.hostTokens.has(token)) || (pinAuth && pinAuth === HOST_PIN);
+    const isAuthed = isValidHostToken(token) || (pinAuth && pinAuth === HOST_PIN);
     if (!isAuthed) {
       return sendJson(res, 403, { ok: false, error: 'Unauthorized host. Valid PIN or token required.' });
     }
 
-    const hostToken = token || generateToken();
+    const hostToken = token || generateHostToken();
     memoryStore.hostTokens.add(hostToken);
 
     const result = await createJurySession(hostToken, body.questions);
@@ -897,7 +921,7 @@ module.exports = async (req, res) => {
       return { index: idx, label: opt, count, pct };
     }) : [];
 
-    const isHost = hostToken && (session.hostToken === hostToken || memoryStore.hostTokens.has(hostToken));
+    const isHost = isValidHostToken(hostToken);
 
     const state = {
       ok: true,
@@ -946,7 +970,7 @@ module.exports = async (req, res) => {
     const session = await getJurySession(roomPin);
     if (!session) return sendJson(res, 404, { ok: false, error: 'Jury room not found.' });
 
-    const isAuthed = hostToken && (session.hostToken === hostToken || memoryStore.hostTokens.has(hostToken));
+    const isAuthed = isValidHostToken(hostToken);
     if (!isAuthed) return sendJson(res, 403, { ok: false, error: 'Unauthorized host token.' });
 
     if (action === 'start') {

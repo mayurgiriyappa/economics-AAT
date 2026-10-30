@@ -25,6 +25,17 @@
     else localStorage.removeItem('biopopcorn_host_token');
   }
 
+  const isVercel = window.location.hostname.endsWith('.vercel.app');
+  function apiUrl(url) {
+    if (!isVercel) return url;
+    const requestUrl = new URL(url, window.location.origin);
+    requestUrl.searchParams.set('__route', requestUrl.pathname);
+    return `/api/index.js?${requestUrl.searchParams.toString()}`;
+  }
+  function apiFetch(url, options) {
+    return fetch(apiUrl(url), options);
+  }
+
   class RealtimeSyncManager {
     constructor() {
       this.clientId = getClientId();
@@ -43,7 +54,7 @@
 
     async _initSupabase() {
       try {
-        const res = await fetch('/api/config');
+        const res = await apiFetch('/api/config');
         if (res.ok) {
           const config = await res.json();
           if (config.hasSupabase && config.supabaseUrl && config.supabaseAnonKey) {
@@ -73,7 +84,7 @@
     // Host Login
     async hostLogin(pin) {
       try {
-        const res = await fetch('/api/auth/host-login', {
+        const res = await apiFetch('/api/auth/host-login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ pin })
@@ -134,7 +145,7 @@
 
       const url = `${endpoint}?pin=${encodeURIComponent(this.currentRoomPin)}&clientId=${encodeURIComponent(this.clientId)}&t=${Date.now()}`;
       try {
-        const res = await fetch(url, {
+        const res = await apiFetch(url, {
           headers: {
             'X-Client-Id': this.clientId,
             ...(hostToken ? { 'X-Host-Token': hostToken } : {})
@@ -171,7 +182,7 @@
     // Classroom Quiz actions
     async createQuizRoom(question) {
       const hostToken = getHostToken();
-      const res = await fetch('/api/quiz/create-room', {
+      const res = await apiFetch('/api/quiz/create-room', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -187,7 +198,7 @@
     }
 
     async joinQuizRoom(roomPin, name) {
-      const res = await fetch('/api/quiz/join', {
+      const res = await apiFetch('/api/quiz/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomPin, name, clientId: this.clientId })
@@ -200,7 +211,7 @@
     }
 
     async submitQuizStance(roomPin, name, stance, reasoning) {
-      const res = await fetch('/api/quiz/submit', {
+      const res = await apiFetch('/api/quiz/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -220,7 +231,7 @@
 
     async quizHostAction(roomPin, action) {
       const hostToken = getHostToken();
-      const res = await fetch('/api/quiz/action', {
+      const res = await apiFetch('/api/quiz/action', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -238,7 +249,7 @@
     // Courtroom & Jury Voting actions
     async createJuryRoom(questions) {
       const hostToken = getHostToken();
-      const res = await fetch('/api/jury/create-room', {
+      const res = await apiFetch('/api/jury/create-room', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -254,7 +265,7 @@
     }
 
     async joinJuryRoom(roomPin, name) {
-      const res = await fetch('/api/jury/join', {
+      const res = await apiFetch('/api/jury/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomPin, name, clientId: this.clientId })
@@ -267,7 +278,7 @@
     }
 
     async submitJuryVote(roomPin, optionIndex, reasoning) {
-      const res = await fetch('/api/jury/vote', {
+      const res = await apiFetch('/api/jury/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -286,7 +297,7 @@
 
     async juryHostAction(roomPin, action) {
       const hostToken = getHostToken();
-      const res = await fetch('/api/jury/action', {
+      const res = await apiFetch('/api/jury/action', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -304,6 +315,6 @@
 
   // Export singleton instance
   window.realtimeSync = new RealtimeSyncManager();
+  window.realtimeSync.apiUrl = apiUrl;
 
 })(window);
-

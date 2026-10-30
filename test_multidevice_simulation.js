@@ -50,6 +50,12 @@ async function runTests() {
   console.log('STARTING END-TO-END MULTI-DEVICE SYNCHRONIZATION TESTS');
   console.log('================================================================\n');
 
+  const vercelConfig = await request('GET', '/api/index.js?__route=%2Fapi%2Fconfig');
+  if (vercelConfig.status !== 200 || !vercelConfig.data.ok) {
+    throw new Error('Vercel serverless API route dispatch failed');
+  }
+  console.log(' ✓ Vercel serverless API route dispatch is available.');
+
   // --------------------------------------------------------------------------
   // TEST 1: HOST AUTHENTICATION
   // --------------------------------------------------------------------------
@@ -246,4 +252,3 @@ runTests().catch(err => {
   console.error('\n❌ TEST FAILED:', err);
   process.exit(1);
 });
-

@@ -13,9 +13,11 @@ body.embed .topbar,body.embed .hero,body.embed .tabs,body.embed .footer{display:
 @media(max-width:900px){.layout{grid-template-columns:1fr}.results-grid{grid-template-columns:1fr}.hero{padding-top:25px}.card{padding:19px}}
 @media(max-width:560px){.page{padding:0 14px 28px}.topbar{padding:13px 0}.brand-mark{width:35px;height:35px}.toplinks a{font-size:10px;padding:8px}.toplinks a:nth-child(1){display:none}.hero{padding:24px 0 18px}.hero p{font-size:12px}.tabs{width:100%}.tab{flex:1;padding:10px 8px}.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.stat{padding:10px}.stat strong{font-size:19px}.pie-wrap{grid-template-columns:120px minmax(0,1fr);gap:12px}.pie{width:120px;height:120px}.pie:after{inset:32px}.pie-center strong{font-size:21px}.editor-options{grid-template-columns:1fr}.codebox{align-items:flex-start}.room-code{font-size:25px}.question-text{font-size:15px}.btnrow .btn{flex:1}.result-mini .pie-wrap{grid-template-columns:86px minmax(0,1fr)}.result-mini .pie{width:86px;height:86px}.result-mini .pie:after{inset:23px}.result-mini .pie-center strong{font-size:15px}}
 </style>
-<script src="/socket.io/socket.io.js"></script>
 <script>
-if (typeof io === 'undefined') {
+if (!location.hostname.endsWith('.vercel.app')) document.write('<script src="/socket.io/socket.io.js"><\/script>');
+</script>
+<script>
+if (typeof io === 'undefined' && !location.hostname.endsWith('.vercel.app')) {
   document.write('<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.8.1/dist/socket.io.min.js"><\/script>');
 }
 </script>
@@ -23,6 +25,7 @@ if (typeof io === 'undefined') {
 <script>
 window.__jurySocketPromise = new Promise((resolve) => {
   if (typeof io !== 'undefined') return resolve();
+  if (location.hostname.endsWith('.vercel.app')) return resolve();
   const base = String(window.JURY_SOCKET_URL || location.origin).replace(/\/+$/, '');
   const s = document.createElement('script');
   s.src = base + '/socket.io/socket.io.js';
@@ -466,7 +469,7 @@ function renderHostRoom(){
   bind('exportJuryCsv', () => {
     const pin = hostState.roomCode || '';
     if (!pin) { toast('No active jury room to export.'); return; }
-    window.open('/api/jury/export?pin=' + encodeURIComponent(pin), '_blank');
+    window.open(window.realtimeSync.apiUrl('/api/jury/export?pin=' + encodeURIComponent(pin)), '_blank');
   });
   bind('copyJuryLink',copyParticipantLink);
   bind('copyRoomCode',()=>copyText(hostState.roomCode));bind('copyRoomCode2',()=>copyText(hostState.roomCode));

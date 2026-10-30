@@ -778,7 +778,9 @@ body {
 }
 
 </style>
-<script src="/socket.io/socket.io.js"></script>
+<script>
+if (!location.hostname.endsWith('.vercel.app')) document.write('<script src="/socket.io/socket.io.js"><\/script>');
+</script>
 </head>
 <body>
 <div class="app">
