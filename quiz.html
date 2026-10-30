@@ -76,6 +76,8 @@ main{max-width:1200px;margin:0 auto;padding:24px 20px 48px}
 .pin-hint strong{color:var(--green)}
 .actions-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/realtime-client.js"></script>
 </head>
 <body>
 <header class="top">
@@ -155,10 +157,10 @@ main{max-width:1200px;margin:0 auto;padding:24px 20px 48px}
       <form id="hostAuthForm">
         <div class="field">
           <label for="hostPinInput">Host PIN</label>
-          <input id="hostPinInput" type="password" value="2468" placeholder="Enter host PIN (default is 2468)" required autocomplete="current-password">
+          <input id="hostPinInput" type="password" placeholder="Enter your private Host PIN" required autocomplete="current-password">
         </div>
         <button class="btn primary full" type="submit" style="padding:12px 18px">Unlock Host Dashboard →</button>
-        <div class="pin-hint">Default Host PIN: <strong>2468</strong></div>
+        
       </form>
       <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line)">
         <p class="sub">Classmates joining from phones or other laptops can open the participant link directly without needing the host PIN.</p>
@@ -210,7 +212,7 @@ main{max-width:1200px;margin:0 auto;padding:24px 20px 48px}
         <div>
           <div class="eyebrow">Presenter Dashboard</div>
           <h2 style="margin:0 0 4px;font-size:20px;font-weight:850">Live Strategy Deliberation Room</h2>
-          <p class="sub">Room Code: <strong style="color:var(--green)">STRATEGY</strong> · Real-time classroom participation stream</p>
+          <p class="sub">Room PIN: <strong id="hostRoomPinDisplay" style="color:var(--green);font-size:1.3em;letter-spacing:2px">------</strong> · Real-time classroom participation stream</p>
         </div>
         <div class="actions-row" style="margin:0">
           <button class="btn primary" id="copyShareLinkBtn" type="button">📋 Copy Participant Link</button>
@@ -286,13 +288,6 @@ main{max-width:1200px;margin:0 auto;padding:24px 20px 48px}
 <div id="toast" class="toast"></div>
 
 <!-- SOCKET.IO CLIENT -->
-<script src="/socket.io/socket.io.js"></script>
-<script>
-if (typeof io === 'undefined') {
-  document.write('<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.8.1/dist/socket.io.min.js"><\/script>');
-}
-</script>
-
 <script>
 (()=>{
   'use strict';
@@ -312,317 +307,355 @@ if (typeof io === 'undefined') {
     const led = $('connectionLed');
     const txt = $('connectionText');
     if (led) led.classList.toggle('on', !!connected);
-    if (txt) txt.textContent = text || (connected ? 'Live server connected' : 'Connecting…');
+    if (txt) txt.textContent = text || (connected ? 'Live multi-device connected' : 'Connecting…');
   }
 
-  // Active question state
-  let currentQuestion = {
+  // Active room state
+  let currentRoomPin = '';
+  let isHost = false;
+  let activeQuestion = {
     id: 'q1',
     category: 'Strategic Decision',
     text: "Based on the evidence presented, do you support our solution for the company's future?",
-    type: 'descriptive'
+    stances: [
+      'Support Solution',
+      'Conditional Support',
+      'Oppose / Alternative'
+    ]
   };
+  let currentSubmissions = [];
 
-  let participantsData = [];
-  let isHost = false;
-  let myClientId = sessionStorage.getItem('scq_client_id') || ('p-' + Date.now() + Math.random().toString(36).slice(2, 6));
-  sessionStorage.setItem('scq_client_id', myClientId);
+  // Parse query parameters (e.g. ?pin=123456 or ?mode=host)
+  const urlParams = new URLSearchParams(window.location.search);
+  const pinFromUrl = urlParams.get('pin') || urlParams.get('room');
+  if (pinFromUrl && $('pRoomPinInput')) {
+    $('pRoomPinInput').value = pinFromUrl.trim();
+  }
+  if (urlParams.get('mode') === 'host') {
+    $('hostPinInput')?.focus();
+  }
 
-  // Stance buttons
+  // Stance buttons handling
   document.querySelectorAll('.stance-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.stance-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
-      $('pStanceInput').value = btn.dataset.stance;
+      const val = btn.dataset.stance || btn.textContent.trim();
+      $('pStanceInput').value = val;
     });
   });
 
-  // URL Mode Detection
-  const params = new URLSearchParams(location.search);
-  const isEmbed = window.self !== window.top || params.has('embed');
-  const modeParam = params.get('mode');
+  // Reconnection and State Recovery from localStorage
+  const savedPin = localStorage.getItem('biopopcorn_quiz_pin');
+  const savedName = localStorage.getItem('biopopcorn_quiz_name');
+  if (savedPin && $('pRoomPinInput') && !$('pRoomPinInput').value) {
+    $('pRoomPinInput').value = savedPin;
+  }
+  if (savedName && $('pNameInput')) {
+    $('pNameInput').value = savedName;
+  }
 
-  if (modeParam === 'host' || params.has('pin')) {
+  // Auto-reconnect participant if previous room exists
+  if (savedPin && savedName) {
+    currentRoomPin = savedPin;
+    window.realtimeSync.connectRoom('quiz', savedPin, false);
+  }
+
+  // Auto-reconnect host if valid token exists
+  const savedHostToken = localStorage.getItem('biopopcorn_host_token');
+  const savedHostPin = localStorage.getItem('biopopcorn_host_room_pin');
+  if (savedHostToken && savedHostPin) {
+    currentRoomPin = savedHostPin;
     isHost = true;
-    showView('host');
-  } else if (modeParam === 'participant' || params.has('join')) {
-    // Focus purely on participant entry
-    $('hostEntryCard')?.classList.add('hidden');
-    $('participantEntryCard')?.style.setProperty('grid-column', '1 / -1');
+    $('welcome')?.classList.add('hidden');
+    $('hostApp')?.classList.remove('hidden');
+    if ($('hostRoomPinDisplay')) $('hostRoomPinDisplay').textContent = currentRoomPin;
+    window.realtimeSync.connectRoom('quiz', savedHostPin, true);
   }
 
-  function showView(which) {
-    $('welcome').classList.toggle('hidden', which !== 'welcome');
-    $('playerApp').classList.toggle('hidden', which !== 'player');
-    $('hostApp').classList.toggle('hidden', which !== 'host');
-  }
+  // Realtime State Event Handler
+  window.realtimeSync.on('state', (state) => {
+    setStatus(true, 'Live synchronized');
+    if (!state || !state.ok) return;
 
-  // Socket Connection
-  let socket = null;
-  if (typeof io === 'function') {
-    try {
-      socket = io({
-        reconnectionAttempts: 8,
-        timeout: 4000,
-        transports: ['websocket', 'polling']
-      });
-    } catch (e) {
-      console.warn('Socket initialize note:', e);
+    if (state.question && state.question.text) {
+      activeQuestion = state.question;
+      if ($('deliberationQuestionTitle')) $('deliberationQuestionTitle').textContent = activeQuestion.text;
+      if ($('pConfirmedQuestion')) $('pConfirmedQuestion').textContent = activeQuestion.text;
+      if ($('qTextInput') && document.activeElement !== $('qTextInput')) $('qTextInput').value = activeQuestion.text;
+      if ($('qCategoryInput') && document.activeElement !== $('qCategoryInput')) $('qCategoryInput').value = activeQuestion.category || 'Strategic Decision';
     }
-  }
 
-  if (socket) {
-    socket.on('connect', () => {
-      setStatus(true, 'Live server connected');
-      if (isHost) {
-        socket.emit('host:authenticate', { pin: $('hostPinInput')?.value || '2468' });
-      }
-      // Request active state
-      socket.emit('jury:host:request-state');
-    });
+    if (isHost) {
+      renderHostDashboard(state);
+    } else {
+      renderParticipantState(state);
+    }
+  });
 
-    socket.on('disconnect', () => {
-      setStatus(false, 'Reconnecting to live server…');
-    });
-
-    socket.on('connect_error', () => {
-      setStatus(true, 'Live mode active');
-    });
-
-    socket.on('host:authenticated', res => {
-      if (res && res.ok) {
-        isHost = true;
-        showView('host');
-        toast('Host dashboard unlocked.');
-      } else {
-        toast(res?.message || 'Host authentication failed.');
-      }
-    });
-
-    socket.on('host:state', state => {
-      renderHostState(state);
-    });
-
-    socket.on('player:state', state => {
-      if (state && state.question) {
-        currentQuestion = state.question;
-        updateQuestionDOM();
-      }
-    });
-
-    socket.on('participant:answer-accepted', () => {
-      toast('✓ Your response is recorded on the live server.');
-    });
-  } else {
-    setStatus(true, 'Live server connected');
-  }
-
-  function updateQuestionDOM() {
-    const qEl = $('deliberationQuestionTitle');
-    if (qEl) qEl.textContent = currentQuestion.text;
-    const cEl = $('pConfirmedQuestion');
-    if (cEl) cEl.textContent = currentQuestion.text;
-    const inputQ = $('qTextInput');
-    if (inputQ && document.activeElement !== inputQ) inputQ.value = currentQuestion.text;
-    const inputC = $('qCategoryInput');
-    if (inputC && document.activeElement !== inputC) inputC.value = currentQuestion.category;
-  }
-
-  // Submit Participant Form
-  $('participantSubmitForm').addEventListener('submit', async e => {
+  // --------------------------------------------------------------------------
+  // PARTICIPANT FLOW
+  // --------------------------------------------------------------------------
+  $('participantSubmitForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const pin = $('pRoomPinInput').value.trim();
     const name = $('pNameInput').value.trim();
-    const stance = $('pStanceInput').value;
-    const text = $('pDescriptiveInput').value.trim();
+    const stance = $('pStanceInput').value.trim();
+    const reasoning = $('pDescriptiveInput').value.trim();
 
-    if (!name || !text) {
-      toast('Please enter your name and descriptive reasoning.');
+    if (!pin || pin.length !== 6) {
+      toast('Please enter a valid 6-digit room PIN.');
+      $('pRoomPinInput').focus();
+      return;
+    }
+    if (!name) {
+      toast('Please enter your name or student ID.');
+      $('pNameInput').focus();
+      return;
+    }
+    if (!reasoning) {
+      toast('Please provide your descriptive reasoning.');
+      $('pDescriptiveInput').focus();
       return;
     }
 
-    // Update Confirmation View
-    $('pConfirmedName').textContent = name;
-    $('pConfirmedStance').textContent = stance;
-    $('pConfirmedText').textContent = text;
-    showView('player');
-    toast('✓ Response submitted live!');
+    const btn = $('submitResponseBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Submitting response…'; }
 
-    // Send via WebSocket
-    if (socket && socket.connected) {
-      socket.emit('participant:answer', {
-        clientId: myClientId,
-        name,
-        stance,
-        descriptiveText: text
-      });
+    // Join room first
+    const joinRes = await window.realtimeSync.joinQuizRoom(pin, name);
+    if (!joinRes.ok) {
+      toast(joinRes.error || 'Could not join room. Check the PIN.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Submit Your Descriptive Response →'; }
+      return;
     }
 
-    // Also send via REST endpoint as reliable dual-transport
-    try {
-      await fetch('/api/quiz/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          clientId: myClientId,
-          name,
-          stance,
-          descriptiveText: text
-        })
-      });
-    } catch (_) {}
-  });
+    currentRoomPin = pin;
+    localStorage.setItem('biopopcorn_quiz_pin', pin);
+    localStorage.setItem('biopopcorn_quiz_name', name);
 
-  // Edit response button
-  $('pEditBtn').addEventListener('click', () => {
-    showView('welcome');
-  });
+    // Submit stance & reasoning
+    const subRes = await window.realtimeSync.submitQuizStance(pin, name, stance, reasoning);
+    if (btn) { btn.disabled = false; btn.textContent = 'Submit Your Descriptive Response →'; }
 
-  $('pRejoinBtn').addEventListener('click', () => {
-    $('pDescriptiveInput').value = '';
-    showView('welcome');
-  });
-
-  // Host Auth Form
-  $('hostAuthForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const pin = $('hostPinInput').value.trim();
-    if (socket && socket.connected) {
-      socket.emit('host:authenticate', { pin });
+    if (subRes.ok) {
+      showParticipantConfirmation(name, stance, reasoning);
+      toast('✓ Your response is live on the presenter courtroom screen.');
     } else {
-      if (pin === '2468' || pin.length >= 4) {
-        isHost = true;
-        showView('host');
-        toast('Host dashboard unlocked.');
-        fetchHostStateREST();
-      } else {
-        toast('Incorrect host PIN (default is 2468)');
-      }
+      toast(subRes.error || 'Failed to record response.');
     }
   });
 
-  // Host Question Save Form
-  $('questionEditForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const cat = $('qCategoryInput').value.trim();
-    const txt = $('qTextInput').value.trim();
-    if (!txt) return;
-
-    currentQuestion.category = cat;
-    currentQuestion.text = txt;
-    updateQuestionDOM();
-
-    if (socket && socket.connected) {
-      socket.emit('host:save-bank', {
-        questions: [{ id: 'q1', category: cat, text: txt, type: 'descriptive' }]
-      });
+  function showParticipantConfirmation(name, stance, reasoning) {
+    if ($('pConfirmedName')) $('pConfirmedName').textContent = name || 'Participant';
+    if ($('pConfirmedStance')) {
+      $('pConfirmedStance').textContent = stance;
+      $('pConfirmedStance').className = 'pill ' + getStancePillClass(stance);
     }
-    toast('Deliberation question saved and updated live.');
-  });
+    if ($('pConfirmedText')) $('pConfirmedText').textContent = reasoning;
 
-  // Copy Participant Link
-  $('copyShareLinkBtn').addEventListener('click', async () => {
-    const origin = window.location.origin || '';
-    const shareUrl = origin + '/quiz.html?mode=participant';
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      toast('Copied participant link: ' + shareUrl);
-    } catch (_) {
-      prompt('Share this link with classmates:', shareUrl);
-    }
-  });
-
-  // Clear / Reset Room
-  $('resetRoomBtn').addEventListener('click', async () => {
-    if (!confirm('Are you sure you want to clear all responses for a new round?')) return;
-    if (socket && socket.connected) {
-      socket.emit('host:reset');
-    }
-    try {
-      await fetch('/api/quiz/reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin: $('hostPinInput')?.value || '2468' })
-      });
-    } catch (_) {}
-    participantsData = [];
-    renderResponsesList();
-    toast('Room responses cleared for new round.');
-  });
-
-  // Logout Host
-  $('logoutHostBtn').addEventListener('click', () => {
-    isHost = false;
-    showView('welcome');
-  });
-
-  // Render Host State
-  function renderHostState(state) {
-    if (!state) return;
-    if (state.currentQuestion) {
-      currentQuestion = state.currentQuestion;
-      updateQuestionDOM();
-    }
-    if (Array.isArray(state.participants)) {
-      participantsData = state.participants;
-    }
-    $('statParticipants').textContent = state.totalParticipants || participantsData.length;
-    const answeredCount = participantsData.filter(p => p.answer && p.answer.descriptiveText).length;
-    $('statSubmitted').textContent = answeredCount;
-    renderResponsesList();
+    $('welcome')?.classList.add('hidden');
+    $('playerApp')?.classList.remove('hidden');
   }
 
-  function renderResponsesList() {
+  function getStancePillClass(stance) {
+    const s = String(stance).toLowerCase();
+    if (s.includes('support') && !s.includes('conditional')) return 'pill-green';
+    if (s.includes('conditional')) return 'pill-yellow';
+    return 'pill-red';
+  }
+
+  function renderParticipantState(state) {
+    if (state.mySubmission) {
+      showParticipantConfirmation(
+        localStorage.getItem('biopopcorn_quiz_name') || 'Participant',
+        state.mySubmission.stance,
+        state.mySubmission.reasoning
+      );
+    }
+    if (state.resultsRevealed && state.aggregateResults) {
+      let banner = $('aggregateResultsBanner');
+      if (!banner && $('playerApp')) {
+        banner = document.createElement('div');
+        banner.id = 'aggregateResultsBanner';
+        banner.style.cssText = 'margin-top:18px;padding:16px;background:#eef6f0;border:1px solid #c2e2cc;border-radius:12px;';
+        $('playerApp').querySelector('article')?.appendChild(banner);
+      }
+      if (banner) {
+        const pcts = state.aggregateResults.stancePercentages || {};
+        banner.innerHTML = `
+          <div style="font-weight:800;color:var(--green);font-size:13px;margin-bottom:8px">📊 Presenter Revealed Live Class Verdict</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">
+            <div style="background:#fff;padding:10px;border-radius:8px"><strong>${pcts['Support Solution'] || 0}%</strong><div style="font-size:11px;color:var(--muted)">Support</div></div>
+            <div style="background:#fff;padding:10px;border-radius:8px"><strong>${pcts['Conditional Support'] || 0}%</strong><div style="font-size:11px;color:var(--muted)">Conditional</div></div>
+            <div style="background:#fff;padding:10px;border-radius:8px"><strong>${pcts['Oppose / Alternative'] || 0}%</strong><div style="font-size:11px;color:var(--muted)">Oppose</div></div>
+          </div>
+        `;
+      }
+    }
+  }
+
+  $('pEditBtn')?.addEventListener('click', () => {
+    $('playerApp')?.classList.add('hidden');
+    $('welcome')?.classList.remove('hidden');
+    $('pDescriptiveInput')?.focus();
+  });
+
+  $('pRejoinBtn')?.addEventListener('click', () => {
+    localStorage.removeItem('biopopcorn_quiz_pin');
+    $('playerApp')?.classList.add('hidden');
+    $('welcome')?.classList.remove('hidden');
+    if ($('pDescriptiveInput')) $('pDescriptiveInput').value = '';
+    $('pRoomPinInput')?.focus();
+  });
+
+  // --------------------------------------------------------------------------
+  // HOST FLOW
+  // --------------------------------------------------------------------------
+  $('hostAuthForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pin = $('hostPinInput').value.trim();
+    if (!pin) {
+      toast('Please enter the host PIN.');
+      return;
+    }
+
+    const authRes = await window.realtimeSync.hostLogin(pin);
+    if (!authRes.ok) {
+      toast(authRes.error || 'Incorrect host PIN.');
+      return;
+    }
+
+    toast('Host authenticated. Creating classroom session…');
+    const roomRes = await window.realtimeSync.createQuizRoom(activeQuestion);
+    if (!roomRes.ok) {
+      toast(roomRes.error || 'Failed to create room.');
+      return;
+    }
+
+    currentRoomPin = roomRes.roomPin;
+    isHost = true;
+    localStorage.setItem('biopopcorn_host_room_pin', currentRoomPin);
+
+    $('welcome')?.classList.add('hidden');
+    $('hostApp')?.classList.remove('hidden');
+    if ($('hostRoomPinDisplay')) $('hostRoomPinDisplay').textContent = currentRoomPin;
+    if ($('downloadCsvBtn')) $('downloadCsvBtn').href = `/api/quiz/export?pin=${currentRoomPin}`;
+
+    toast(`Room ${currentRoomPin} is live! Share PIN with classmates.`);
+  });
+
+  function renderHostDashboard(state) {
+    if ($('hostRoomPinDisplay')) $('hostRoomPinDisplay').textContent = state.roomPin || currentRoomPin;
+    if ($('downloadCsvBtn')) $('downloadCsvBtn').href = `/api/quiz/export?pin=${state.roomPin || currentRoomPin}`;
+    if ($('statParticipants')) $('statParticipants').textContent = state.totalParticipants || 0;
+    if ($('statSubmitted')) $('statSubmitted').textContent = state.submittedCount || 0;
+
+    const tally = state.stanceTally || {};
+    const pcts = state.stancePercentages || {};
+    if ($('statSupport')) $('statSupport').textContent = `${tally['Support Solution'] || 0} (${pcts['Support Solution'] || 0}%)`;
+    if ($('statConditional')) $('statConditional').textContent = `${tally['Conditional Support'] || 0} (${pcts['Conditional Support'] || 0}%)`;
+    if ($('statOppose')) $('statOppose').textContent = `${tally['Oppose / Alternative'] || 0} (${pcts['Oppose / Alternative'] || 0}%)`;
+
+    if ($('toggleRevealBtn')) {
+      $('toggleRevealBtn').textContent = state.resultsRevealed ? '🙈 Hide Results from Class' : '👁 Reveal Results to Class';
+    }
+
+    currentSubmissions = state.submissions || [];
+    renderResponsesList(currentSubmissions);
+  }
+
+  function renderResponsesList(list) {
     const container = $('responsesContainer');
     if (!container) return;
 
-    const query = ($('responseSearchInput')?.value || '').toLowerCase();
-    const valid = participantsData
-      .filter(p => p.answer && p.answer.descriptiveText)
-      .filter(p => !query || p.name.toLowerCase().includes(query) || p.answer.descriptiveText.toLowerCase().includes(query) || (p.answer.stance || '').toLowerCase().includes(query));
+    const searchTerm = ($('responseSearchInput')?.value || '').toLowerCase().trim();
+    const filtered = searchTerm
+      ? list.filter(r => (r.name || '').toLowerCase().includes(searchTerm) || (r.reasoning || '').toLowerCase().includes(searchTerm))
+      : list;
 
-    if (!valid.length) {
+    if (!filtered.length) {
       container.innerHTML = `<div class="sub" style="text-align:center;padding:36px 12px;background:#fbfdfb;border:1px dashed var(--line);border-radius:12px">
-        Waiting for participant responses… Share the participant link above!
+        ${searchTerm ? 'No matching responses.' : 'Waiting for participant responses… Share room PIN with classmates!'}
       </div>`;
       return;
     }
 
-    container.innerHTML = valid.map(p => {
-      const a = p.answer || {};
-      const timeStr = a.answeredAt ? new Date(a.answeredAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-      const stance = a.stance || 'Submitted Stance';
-      const isAlt = stance.toLowerCase().includes('oppose') || stance.toLowerCase().includes('conditional');
-      return `
-        <div class="response-card">
-          <div class="response-head">
-            <span class="response-name"><span class="dot"></span>${esc(p.name)}</span>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="pill ${isAlt ? 'alt' : ''}">${esc(stance)}</span>
-              <span class="response-time">${esc(timeStr)}</span>
-            </div>
+    container.innerHTML = filtered.map((r, i) => `
+      <div class="response-card" style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.03)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <strong style="font-size:14px;color:#142820">${esc(r.name || 'Anonymous')}</strong>
+            <span style="font-size:10px;color:var(--muted);margin-left:8px">${r.submittedAt ? new Date(r.submittedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}</span>
           </div>
-          <div class="response-text">${esc(a.descriptiveText)}</div>
+          <span class="pill ${getStancePillClass(r.stance)}">${esc(r.stance || 'No stance')}</span>
         </div>
-      `;
-    }).join('');
+        <div style="font-size:12.5px;line-height:1.6;color:#2c3e35;white-space:pre-wrap">${esc(r.reasoning || 'No descriptive reasoning provided.')}</div>
+      </div>
+    `).join('');
   }
 
-  $('responseSearchInput')?.addEventListener('input', renderResponsesList);
+  $('responseSearchInput')?.addEventListener('input', () => {
+    renderResponsesList(currentSubmissions);
+  });
 
-  // Periodic REST Polling fallback for offline or campus networks
-  async function fetchHostStateREST() {
-    try {
-      const res = await fetch('/api/quiz/state');
-      if (res.ok) {
-        const data = await res.json();
-        renderHostState(data);
-      }
-    } catch (_) {}
+  $('copyShareLinkBtn')?.addEventListener('click', () => {
+    const pin = currentRoomPin || $('pRoomPinInput')?.value.trim();
+    if (!pin) {
+      toast('No active room PIN.');
+      return;
+    }
+    const shareUrl = `${window.location.origin}/quiz.html?pin=${pin}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      toast('✓ Participant link copied to clipboard: ' + shareUrl);
+    }).catch(() => {
+      prompt('Copy this participant link:', shareUrl);
+    });
+  });
+
+  $('toggleRevealBtn')?.addEventListener('click', async () => {
+    if (!currentRoomPin) return;
+    const res = await window.realtimeSync.quizHostAction(currentRoomPin, 'toggle-reveal');
+    if (res.ok) {
+      toast(res.resultsRevealed ? '✓ Results revealed to all connected students!' : 'Results hidden from students.');
+    }
+  });
+
+  $('closeSubmissionsBtn')?.addEventListener('click', async () => {
+    if (!currentRoomPin) return;
+    if (!confirm('Close submissions for this session?')) return;
+    const res = await window.realtimeSync.quizHostAction(currentRoomPin, 'close');
+    if (res.ok) {
+      toast('Submissions closed.');
+    }
+  });
+
+  $('resetRoomBtn')?.addEventListener('click', async () => {
+    if (!currentRoomPin) return;
+    if (!confirm('Clear all participant responses and start a new round?')) return;
+    const res = await window.realtimeSync.quizHostAction(currentRoomPin, 'reset');
+    if (res.ok) {
+      toast('Classroom responses cleared.');
+    }
+  });
+
+  $('logoutHostBtn')?.addEventListener('click', () => {
+    localStorage.removeItem('biopopcorn_host_room_pin');
+    localStorage.removeItem('biopopcorn_host_token');
+    isHost = false;
+    $('hostApp')?.classList.add('hidden');
+    $('welcome')?.classList.remove('hidden');
+    toast('Exited host mode.');
+  });
+
+  // Post message to adjust iframe height in dashboard
+  function postHeight() {
+    const h = document.documentElement.scrollHeight;
+    window.parent.postMessage({ type: 'strategy-quiz-height', height: h }, '*');
   }
-  setInterval(() => {
-    if (isHost) fetchHostStateREST();
-  }, 4000);
-  fetchHostStateREST();
+  window.addEventListener('load', postHeight);
+  window.addEventListener('resize', postHeight);
+  setInterval(postHeight, 2000);
 
 })();
 </script>

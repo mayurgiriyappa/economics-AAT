@@ -37,6 +37,8 @@ window.__jurySocketPromise = new Promise((resolve) => {
   document.head.appendChild(s);
 });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/realtime-client.js"></script>
 </head>
 <body>
 <div class="page">
@@ -170,262 +172,216 @@ if (typeof io === 'function') {
   } catch(e) { console.warn('Socket connect notice:', e); }
 }
 
-// Safe wrapper / fallback socket bus
-const localBus = new (class {
+// ============================================================================
+// REALTIME MULTI-DEVICE SYNCHRONIZATION BRIDGE (Supabase Realtime + REST API)
+// ============================================================================
+class RealtimeJuryBridge {
   constructor() {
     this.handlers = {};
-    try {
-      this.bc = new BroadcastChannel('biopopcorn_jury_bus');
-      this.bc.onmessage = (e) => {
-        if (e.data && e.data.event) {
-          const list = this.handlers[e.data.event] || [];
-          list.forEach(fn => fn(e.data.payload));
-        }
-      };
-    } catch(_) { this.bc = null; }
-  }
-  on(event, fn) {
-    if (!this.handlers[event]) this.handlers[event] = [];
-    this.handlers[event].push(fn);
-    if (realSocket) {
-      realSocket.on(event, fn);
-      if (event === 'connect' && realSocket.connected) {
-        setTimeout(fn, 10);
-      }
-    }
-  }
-  emit(event, payload, cb) {
-    if (realSocket && realSocket.connected) {
-      realSocket.emit(event, payload, cb);
-      return;
-    }
-    // Local / Broadcast fallback
-    if (this.bc) {
-      try { this.bc.postMessage({ event, payload }); } catch(_) {}
-    }
-    this.handleLocal(event, payload, cb);
-  }
-  handleLocal(event, payload, cb) {
-    let localData = null;
-    try { localData = JSON.parse(localStorage.getItem('biopopcorn_local_jury') || 'null'); } catch(_) {}
-    if (!localData || !Array.isArray(localData.questions) || localData.questions.length !== 4 || localData.questions[0]?.text !== defaultJuryQuestions[0].text) {
-      localData = {
-        hasRoom: false,
-        status: 'lobby',
-        roomCode: '',
-        currentIndex: -1,
-        questions: defaultJuryQuestions,
-        resultsVisible: false,
-        participants: {},
-        bank: defaultJuryQuestions
-      };
-      this.saveLocal(localData);
-    }
+    this.currentRoom = '';
+    this.currentRole = '';
+    this.currentJurorName = '';
 
+    // Listen to realtimeSync updates
+    window.realtimeSync.on('state', (state) => {
+      this.handleIncomingState(state);
+    });
+  }
+
+  on(event, handler) {
+    if (!this.handlers[event]) this.handlers[event] = [];
+    this.handlers[event].push(handler);
+  }
+
+  trigger(event, data) {
+    const list = this.handlers[event] || [];
+    list.forEach(fn => {
+      try { fn(data); } catch (e) { console.error('Handler error:', e); }
+    });
+  }
+
+  handleIncomingState(state) {
+    if (!state || !state.ok) return;
+
+    // Transform into hostState
+    const hostState = {
+      hasRoom: true,
+      status: state.status,
+      roomCode: state.roomPin,
+      currentIndex: state.currentIndex,
+      currentQuestion: state.currentQuestion,
+      participantCount: state.jurorCount,
+      connectedCount: state.jurorCount,
+      votedCount: state.votedCount,
+      resultsVisible: state.resultsRevealed,
+      optionCounts: state.optionCounts || [],
+      participants: (state.participants || []).map((p) => {
+        const v = (state.currentVotes || []).find(x => x.clientId === p.clientId);
+        return {
+          id: p.clientId,
+          name: p.name,
+          connected: p.connected,
+          vote: v ? {
+            option: v.optionText,
+            optionIndex: v.optionIndex,
+            reason: v.reasoning,
+            submittedAt: v.submittedAt
+          } : null
+        };
+      }),
+      bank: state.allQuestions || defaultJuryQuestions,
+      maxJurors: 6,
+      allResults: state.status === 'ended' ? state.allQuestions.map((q, idx) => ({
+        text: q.text,
+        totalVotes: state.votedCount,
+        totalJurors: state.jurorCount,
+        options: (state.optionCounts || []).map(o => ({ label: o.label, count: o.count, percent: o.pct }))
+      })) : null,
+      allResponses: state.status === 'ended' ? state.allQuestions.map((q, idx) => ({
+        text: q.text,
+        responses: (state.currentVotes || []).map(v => ({
+          name: v.name,
+          option: v.optionText,
+          reason: v.reasoning,
+          submittedAt: v.submittedAt
+        }))
+      })) : null
+    };
+
+    // Transform into participantState
+    const participantState = {
+      hasRoom: true,
+      status: state.status,
+      roomCode: state.roomPin,
+      currentIndex: state.currentIndex,
+      question: state.currentQuestion ? {
+        id: state.currentQuestion.id,
+        text: state.currentQuestion.text,
+        options: state.currentQuestion.options
+      } : null,
+      participantCount: state.jurorCount,
+      connectedCount: state.jurorCount,
+      votedCount: state.votedCount,
+      resultsVisible: state.resultsRevealed,
+      myVote: state.myVote ? {
+        optionIndex: state.myVote.optionIndex,
+        option: state.myVote.optionText,
+        reason: state.myVote.reasoning
+      } : null,
+      results: state.resultsRevealed ? {
+        totalVotes: state.votedCount,
+        totalJurors: state.jurorCount,
+        options: (state.optionCounts || []).map(c => ({
+          label: c.label,
+          count: c.count,
+          percent: c.pct
+        }))
+      } : null,
+      allResults: hostState.allResults
+    };
+
+    if (this.currentRole === 'host') {
+      this.trigger('jury:host:state', hostState);
+    } else {
+      this.trigger('jury:participant:state', participantState);
+    }
+  }
+
+  async emit(event, payload, cb) {
     if (event === 'jury:host:authenticate') {
       const pin = String(payload?.pin || '').trim();
-      const ok = pin === '2468' || pin.length > 0;
-      this.trigger('jury:host:authenticated', { ok, message: ok ? '' : 'Incorrect host PIN.' });
-      if (ok) this.trigger('jury:host:state', this.makeHostState(localData));
-    } else if (event === 'jury:host:request-state') {
-      this.trigger('jury:host:state', this.makeHostState(localData));
-    } else if (event === 'jury:host:create-room') {
-      localData.hasRoom = true;
-      localData.roomCode = Math.floor(100000 + Math.random() * 900000).toString();
-      localData.status = 'lobby';
-      localData.currentIndex = -1;
-      localData.resultsVisible = false;
-      localData.participants = {};
-      this.saveLocal(localData);
-      this.trigger('jury:room-created', { ok: true, roomCode: localData.roomCode });
-      this.broadcast(localData);
-      if (typeof cb === 'function') cb({ ok: true, roomCode: localData.roomCode });
-    } else if (event === 'jury:host:save-bank') {
-      if (Array.isArray(payload?.questions)) {
-        localData.bank = payload.questions;
-        localData.questions = payload.questions;
-        this.saveLocal(localData);
-        this.trigger('jury:bank-saved', { bank: localData.bank });
-        this.broadcast(localData);
-      }
-    } else if (event === 'jury:host:start') {
-      localData.status = 'live';
-      localData.currentIndex = 0;
-      localData.resultsVisible = false;
-      this.saveLocal(localData);
-      this.broadcast(localData);
-    } else if (event === 'jury:host:show-results') {
-      localData.resultsVisible = true;
-      this.saveLocal(localData);
-      this.broadcast(localData);
-    } else if (event === 'jury:host:hide-results') {
-      localData.resultsVisible = false;
-      this.saveLocal(localData);
-      this.broadcast(localData);
-    } else if (event === 'jury:host:next') {
-      const qTotal = localData.questions ? localData.questions.length : 4;
-      if (localData.currentIndex >= qTotal - 1) {
-        localData.status = 'ended';
+      const res = await window.realtimeSync.hostLogin(pin);
+      if (res.ok) {
+        this.currentRole = 'host';
+        this.trigger('jury:host:authenticated', { ok: true });
+        if (typeof cb === 'function') cb({ ok: true });
       } else {
-        localData.currentIndex++;
-        localData.resultsVisible = false;
+        this.trigger('jury:host:authenticated', { ok: false, message: res.error || 'Incorrect host PIN.' });
+        if (typeof cb === 'function') cb({ ok: false, message: res.error });
       }
-      this.saveLocal(localData);
-      this.broadcast(localData);
-    } else if (event === 'jury:participant:join') {
-      const code = String(payload?.roomCode || '').trim();
-      if (!localData.hasRoom || (localData.roomCode && code !== localData.roomCode)) {
-        this.trigger('jury:participant:join-error', { message: 'Room code not found.' });
-        return;
-      }
-      const cId = payload?.clientId || clientId;
-      localData.participants[cId] = {
-        id: cId,
-        name: payload?.name || 'Juror',
-        connected: true,
-        votes: localData.participants[cId]?.votes || {}
-      };
-      this.saveLocal(localData);
-      this.trigger('jury:participant:joined', { ok: true, name: payload.name });
-      this.broadcast(localData);
-    } else if (event === 'jury:participant:vote') {
-      const qIdx = localData.currentIndex;
-      if (localData.status === 'live' && qIdx >= 0) {
-        if (!localData.participants[clientId]) {
-          localData.participants[clientId] = { id: clientId, name: joinedInfo?.name || 'Juror', connected: true, votes: {} };
-        }
-        localData.participants[clientId].votes[qIdx] = {
-          optionIndex: Number(payload.optionIndex),
-          reason: String(payload.reason || '').trim(),
-          submittedAt: new Date().toISOString()
-        };
-        this.saveLocal(localData);
-        this.trigger('jury:participant:vote-accepted', {});
-        this.broadcast(localData);
-      }
+      return;
     }
-  }
-  saveLocal(data) {
-    try { localStorage.setItem('biopopcorn_local_jury', JSON.stringify(data)); } catch(_) {}
-  }
-  trigger(event, payload) {
-    const list = this.handlers[event] || [];
-    list.forEach(fn => fn(payload));
-  }
-  broadcast(localData) {
-    this.trigger('jury:host:state', this.makeHostState(localData));
-    this.trigger('jury:participant:state', this.makeParticipantState(localData));
-    if (this.bc) {
-      try {
-        this.bc.postMessage({ event: 'jury:host:state', payload: this.makeHostState(localData) });
-        this.bc.postMessage({ event: 'jury:participant:state', payload: this.makeParticipantState(localData) });
-      } catch(_) {}
-    }
-  }
-  makeHostState(data) {
-    const q = data.currentIndex >= 0 ? data.questions[data.currentIndex] : null;
-    const pList = Object.values(data.participants || {});
-    const votedCount = q ? pList.filter(p => p.votes && p.votes[data.currentIndex]).length : 0;
-    const counts = q ? q.options.map((opt, i) => ({
-      label: opt,
-      count: pList.filter(p => p.votes && p.votes[data.currentIndex]?.optionIndex === i).length
-    })) : [];
-    return {
-      hasRoom: data.hasRoom,
-      status: data.status,
-      roomCode: data.roomCode,
-      currentIndex: data.currentIndex,
-      currentQuestion: q,
-      participantCount: pList.length,
-      connectedCount: pList.length,
-      votedCount,
-      resultsVisible: data.resultsVisible,
-      optionCounts: counts,
-      participants: pList.map(p => ({
-        id: p.id,
-        name: p.name,
-        connected: true,
-        vote: p.votes && q && p.votes[data.currentIndex] ? {
-          option: q.options[p.votes[data.currentIndex].optionIndex],
-          optionIndex: p.votes[data.currentIndex].optionIndex,
-          reason: p.votes[data.currentIndex].reason,
-          submittedAt: p.votes[data.currentIndex].submittedAt
-        } : null
-      })),
-      bank: data.questions,
-      maxJurors: 6,
-      allResults: data.status === 'ended' ? this.makeAllResults(data) : null,
-      allResponses: data.status === 'ended' ? this.makeAllResponses(data) : null
-    };
-  }
-  makeParticipantState(data) {
-    const q = data.currentIndex >= 0 ? data.questions[data.currentIndex] : null;
-    const pList = Object.values(data.participants || {});
-    const p = data.participants[clientId];
-    const myVote = (p && p.votes && q && p.votes[data.currentIndex]) || null;
-    const votedCount = q ? pList.filter(x => x.votes && x.votes[data.currentIndex]).length : 0;
-    let results = null;
-    if (data.resultsVisible && q) {
-      const counts = q.options.map((opt, i) => ({
-        label: opt,
-        count: pList.filter(x => x.votes && x.votes[data.currentIndex]?.optionIndex === i).length,
-        percent: votedCount ? Number(((pList.filter(x => x.votes && x.votes[data.currentIndex]?.optionIndex === i).length / votedCount) * 100).toFixed(1)) : 0
-      }));
-      results = { options: counts, totalVotes: votedCount, totalJurors: pList.length };
-    }
-    return {
-      hasRoom: data.hasRoom,
-      status: data.status,
-      roomCode: data.roomCode,
-      currentIndex: data.currentIndex,
-      question: q,
-      participantCount: pList.length,
-      connectedCount: pList.length,
-      votedCount,
-      resultsVisible: data.resultsVisible,
-      myVote: myVote ? {
-        optionIndex: myVote.optionIndex,
-        option: q.options[myVote.optionIndex],
-        reason: myVote.reason
-      } : null,
-      results,
-      allResults: data.status === 'ended' ? this.makeAllResults(data) : null
-    };
-  }
-  makeAllResults(data) {
-    const pList = Object.values(data.participants || {});
-    return data.questions.map((q, qIdx) => {
-      let total = 0;
-      const counts = q.options.map((opt, i) => {
-        const count = pList.filter(p => p.votes && p.votes[qIdx]?.optionIndex === i).length;
-        total += count;
-        return { label: opt, count, percent: 0 };
-      });
-      counts.forEach(c => { c.percent = total ? Number(((c.count / total) * 100).toFixed(1)) : 0; });
-      return { text: q.text, totalVotes: total, totalJurors: pList.length, options: counts };
-    });
-  }
-  makeAllResponses(data) {
-    const pList = Object.values(data.participants || {});
-    return data.questions.map((q, qIdx) => {
-      const responses = [];
-      pList.forEach(p => {
-        if (p.votes && p.votes[qIdx]) {
-          responses.push({
-            name: p.name,
-            option: q.options[p.votes[qIdx].optionIndex],
-            reason: p.votes[qIdx].reason,
-            submittedAt: p.votes[qIdx].submittedAt
-          });
-        }
-      });
-      return { text: q.text, responses };
-    });
-  }
-})();
 
-// Active socket is realSocket or localBus fallback
-const socket = localBus;
+    if (event === 'jury:host:create-room') {
+      this.currentRole = 'host';
+      const res = await window.realtimeSync.createJuryRoom(payload?.questions);
+      if (res.ok && res.roomPin) {
+        this.currentRoom = res.roomPin;
+        this.trigger('jury:room-created', { ok: true, roomCode: res.roomPin });
+        if (typeof cb === 'function') cb({ ok: true, roomCode: res.roomPin });
+      } else {
+        this.trigger('jury:error', { message: res.error || 'Failed to create room.' });
+        if (typeof cb === 'function') cb({ ok: false, message: res.error });
+      }
+      return;
+    }
+
+    if (event === 'jury:participant:join') {
+      this.currentRole = 'participant';
+      const code = String(payload?.roomCode || '').trim();
+      const name = String(payload?.name || '').trim();
+      this.currentJurorName = name;
+      this.currentRoom = code;
+
+      const res = await window.realtimeSync.joinJuryRoom(code, name);
+      if (res.ok) {
+        this.trigger('jury:participant:joined', { ok: true, roomCode: code, name });
+        if (typeof cb === 'function') cb({ ok: true });
+      } else {
+        this.trigger('jury:participant:join-error', { message: res.error || 'Failed to join jury room.' });
+        if (typeof cb === 'function') cb({ ok: false, message: res.error });
+      }
+      return;
+    }
+
+    if (event === 'jury:participant:vote') {
+      const optionIndex = payload?.optionIndex;
+      const reasoning = payload?.reason || '';
+      const res = await window.realtimeSync.submitJuryVote(this.currentRoom, optionIndex, reasoning);
+      if (res.ok) {
+        this.trigger('jury:participant:vote-accepted', {});
+        if (typeof cb === 'function') cb({ ok: true });
+      } else {
+        this.trigger('jury:participant:vote-error', { message: res.error || 'Failed to record vote.' });
+        if (typeof cb === 'function') cb({ ok: false, message: res.error });
+      }
+      return;
+    }
+
+    if (event === 'jury:host:start') {
+      await window.realtimeSync.juryHostAction(this.currentRoom, 'start');
+      return;
+    }
+    if (event === 'jury:host:next') {
+      await window.realtimeSync.juryHostAction(this.currentRoom, 'next');
+      return;
+    }
+    if (event === 'jury:host:prev') {
+      await window.realtimeSync.juryHostAction(this.currentRoom, 'prev');
+      return;
+    }
+    if (event === 'jury:host:show-results') {
+      await window.realtimeSync.juryHostAction(this.currentRoom, 'show-results');
+      return;
+    }
+    if (event === 'jury:host:hide-results') {
+      await window.realtimeSync.juryHostAction(this.currentRoom, 'hide-results');
+      return;
+    }
+    if (event === 'jury:host:request-state') {
+      await window.realtimeSync.fetchState();
+      return;
+    }
+    if (event === 'jury:host:save-bank') {
+      this.trigger('jury:bank-saved', { bank: payload?.questions });
+      if (typeof cb === 'function') cb({ ok: true });
+      return;
+    }
+  }
+}
+
+const socket = new RealtimeJuryBridge();
+
 
 const JURY_MAX = 6;
 const COLORS = ['#1b6b4b', '#e4a03c', '#4a7ab5', '#8f7ac0', '#c45f55', '#2a9d8f'];
@@ -507,6 +463,11 @@ function renderHostRoom(){
   bind('hideResults',()=>socket.emit('jury:host:hide-results'));
   bind('advanceJury',()=>socket.emit('jury:host:next'));
   bind('createRoomAgain',createRoom);
+  bind('exportJuryCsv', () => {
+    const pin = hostState.roomCode || '';
+    if (!pin) { toast('No active jury room to export.'); return; }
+    window.open('/api/jury/export?pin=' + encodeURIComponent(pin), '_blank');
+  });
   bind('copyJuryLink',copyParticipantLink);
   bind('copyRoomCode',()=>copyText(hostState.roomCode));bind('copyRoomCode2',()=>copyText(hostState.roomCode));
   bind('copyFinalResults',copyFinalSummary);

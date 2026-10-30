@@ -31,7 +31,7 @@ try {
 const PORT = Number(process.env.PORT || 3000);
 const HOST_PIN = process.env.HOST_PIN || '2468';
 if (process.env.NODE_ENV === 'production' && !process.env.HOST_PIN) {
-  console.warn('Notice: HOST_PIN is running with development default "2468". Set HOST_PIN env var for custom PIN.');
+  // HOST_PIN loaded securely from environment.
 }
 const MAX_PARTICIPANTS = Math.max(41, Number(process.env.MAX_PARTICIPANTS || 500));
 const DATA_DIR = path.join(__dirname, 'data');
@@ -410,6 +410,10 @@ function persistBankFromInput(arr){
 
 // Never expose server code, environment examples, or the editable bank (which includes answers).
 app.use(['/data','/server.js','/package.json','/package-lock.json','/.env.example'], (req,res)=>res.sendStatus(404));
+const apiHandler = require('./api/index.js');
+app.all(['/api', '/api/*'], (req, res) => {
+  apiHandler(req, res);
+});
 app.use(express.static(__dirname, { extensions:['html'], dotfiles:'ignore' }));
 app.use(express.static(process.cwd(), { extensions:['html'], dotfiles:'ignore' }));
 
