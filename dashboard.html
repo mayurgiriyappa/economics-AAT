@@ -777,20 +777,22 @@ body {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 8px;
+  height: 28px;
   border-radius: 999px;
-  background: #d8e3dc;
+  background: transparent;
   outline: none;
   border: none;
-  margin: 6px 0;
+  margin: 0;
+  padding: 0;
   cursor: pointer;
   display: block;
+  touch-action: pan-y;
 }
 .assumption-field input[type=range]::-webkit-slider-runnable-track{
   width: 100%;
   height: 8px;
   border-radius: 999px;
-  background: transparent;
+  background: linear-gradient(to right, #1b6b4b 0%, #1b6b4b var(--range-progress, 0%), #d8e3dc var(--range-progress, 0%), #d8e3dc 100%);
   border: none;
 }
 .assumption-field input[type=range]::-moz-range-track{
@@ -1099,7 +1101,7 @@ function updateSliderFill(input){
   const max = Number(input.max) || 100;
   const val = Number(input.value) || 0;
   const pct = max > min ? Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100)) : 0;
-  input.style.background = `linear-gradient(to right, #1b6b4b 0%, #1b6b4b ${pct}%, #d8e3dc ${pct}%, #d8e3dc 100%)`;
+  input.style.setProperty('--range-progress', `${pct}%`);
   const bubble = document.getElementById(input.id + 'Bubble');
   if(bubble){
     bubble.style.left = `calc(${pct}% + (${10 - pct * 0.2}px))`;
