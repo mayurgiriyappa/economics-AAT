@@ -707,7 +707,73 @@ body {
 .slider-wrap:hover .slider-bubble,.slider-wrap input:active + .slider-bubble,.slider-wrap input:focus + .slider-bubble,.slider-wrap.dragging .slider-bubble{opacity:1;transform:translateX(-50%) translateY(-2px)}
 .assumption-value{font-size:12px;font-weight:850;color:#14583c;background:#eaf5ee;border:1px solid #d7eadf;padding:5px 8px;border-radius:8px;white-space:nowrap;font-variant-numeric:tabular-nums;transition:all .15s ease}
 .assumption-value.active{background:#1b6b4b!important;color:#fff!important;border-color:#1b6b4b!important;transform:scale(1.05);box-shadow:0 2px 10px rgba(27,107,75,.3)}
-.assumption-field input[type=range]{width:100%;padding:0;margin:0;accent-color:var(--green);cursor:pointer;border:0;background:transparent;box-shadow:none;height:22px}
+/* Clean, modern, cross-browser range slider with visible track and green thumb */
+.slider-wrap{position:relative;width:100%;margin:10px 0 6px}
+.slider-bubble{position:absolute;top:-28px;transform:translateX(-50%);background:#102a23;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;pointer-events:none;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.18);opacity:0;transition:opacity .15s ease,transform .15s ease;z-index:6}
+.slider-bubble::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border-width:4px;border-style:solid;border-color:#102a23 transparent transparent transparent}
+.slider-wrap:hover .slider-bubble,.slider-wrap input:active + .slider-bubble,.slider-wrap input:focus + .slider-bubble,.slider-wrap.dragging .slider-bubble{opacity:1;transform:translateX(-50%) translateY(-2px)}
+.assumption-value{font-size:12px;font-weight:850;color:#14583c;background:#eaf5ee;border:1px solid #d7eadf;padding:5px 8px;border-radius:8px;white-space:nowrap;font-variant-numeric:tabular-nums;transition:all .15s ease}
+.assumption-value.active{background:#1b6b4b!important;color:#fff!important;border-color:#1b6b4b!important;transform:scale(1.05);box-shadow:0 2px 10px rgba(27,107,75,.3)}
+.assumption-field input[type=range]{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: #d8e3dc;
+  outline: none;
+  border: none;
+  margin: 6px 0;
+  cursor: pointer;
+  display: block;
+}
+.assumption-field input[type=range]::-webkit-slider-runnable-track{
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: transparent;
+  border: none;
+}
+.assumption-field input[type=range]::-moz-range-track{
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: #d8e3dc;
+  border: none;
+}
+.assumption-field input[type=range]::-moz-range-progress{
+  height: 8px;
+  border-radius: 999px;
+  background: #1b6b4b;
+}
+.assumption-field input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1b6b4b;
+  cursor: pointer;
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  margin-top: -6px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+}
+.assumption-field input[type=range]::-moz-range-thumb{
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1b6b4b;
+  cursor: pointer;
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.assumption-field input[type=range]::-webkit-slider-thumb:hover,
+.assumption-field input[type=range]:active::-webkit-slider-thumb{
+  transform: scale(1.18);
+  background: #14583c;
+  box-shadow: 0 2px 8px rgba(27,107,75,0.45);
+}
 
 </style>
 <script src="/socket.io/socket.io.js"></script>
@@ -804,7 +870,7 @@ body {
     <div class="field assumption-field"><div class="assumption-head"><label for="horizon">Evaluation horizon (years)</label><output class="assumption-value" id="horizonValue">5 years</output></div><div class="slider-wrap"><input type="range" min="1" max="20" step="1" id="horizon" value="5"/><div class="slider-bubble" id="horizonBubble"></div></div><div class="range-limits"><span>1 year</span><span>20 years</span></div></div>
     <div class="field assumption-field"><div class="assumption-head"><label for="discount">Discount rate (%)</label><output class="assumption-value" id="discountValue">10%</output></div><div class="slider-wrap"><input type="range" min="0" max="30" step="0.5" id="discount" value="10"/><div class="slider-bubble" id="discountBubble"></div></div><div class="range-limits"><span>0%</span><span>30%</span></div></div>
   </div><div class="footnote">This simplified model assumes demand and prices remain constant through the evaluation horizon. It excludes working capital, inventory carrying costs, quality failures, tax depreciation, financing, ramp-up and disruption losses unless separately added. These omissions may materially change the decision.</div></div>
-  <div><div class="card panel"><div class="section-top"><div><h3 class="panel-title">Live cost outputs</h3><p class="panel-desc">Calculated from current inputs</p></div><span class="stat-chip">LIVE MODEL</span></div><div class="result-grid"><div class="result"><div class="r-label">Import landed cost / unit</div><div class="r-value" id="modelImportUnit">₹0</div><div class="r-note">Before recoverable GST and internal distributor margins</div></div><div class="result"><div class="r-label">Local cost / usable unit</div><div class="r-value" id="modelLocalUnit">₹0</div><div class="r-note">Variable cost adjusted for production yield</div></div><div class="result"><div class="r-label">Annual import cost</div><div class="r-value" id="modelImportAnnual">₹0</div></div><div class="result"><div class="r-label">Annual local equivalent cost</div><div class="r-value" id="modelLocalAnnual">₹0</div><div class="r-note">Includes annual quality cost and straight-line investment allocation</div></div><div class="result"><div class="r-label">Annual equivalent saving</div><div class="r-value" id="modelSavings">₹0</div><div class="r-note" id="modelSavingsNote">Positive = local equivalent cost is lower</div></div><div class="result"><div class="r-label">Break-even annual demand</div><div class="r-value" id="modelBreakEven">—</div><div class="r-note">Includes quality opex plus investment allocated across horizon</div></div><div class="result"><div class="r-label">Simple payback</div><div class="r-value" id="modelPayback">—</div><div class="r-note">Initial investment ÷ positive annual operating benefit</div></div><div class="result"><div class="r-label">Net present value (NPV)</div><div class="r-value" id="modelNPV">₹0</div><div class="r-note">Initial investment plus discounted annual operating benefits</div></div></div><div class="verdict-box"><div class="label">Rule-based signal · not a final verdict</div><h3 id="modelVerdict">Evaluate cost and readiness</h3><p id="modelVerdictText">The model will explain which economic condition drives the signal. Quality equivalence and regulatory readiness remain independent go/no-go gates.</p></div></div><div class="card panel" style="margin-top:16px"><h3 class="panel-title">Cost build-up</h3><p class="panel-desc">View the components behind the comparison.</p><div id="costBuildUp" class="inner-pad" style="padding-left:0;padding-right:0"></div><details style="font-size:11px;color:#52635a;margin-top:12px"><summary style="cursor:pointer;font-weight:800;color:var(--green)">Show calculation formulas</summary><div class="footnote" style="margin-top:10px"><p><strong>Import unit cost</strong> = (USD purchase price × INR/USD + freight and insurance per unit) × (1 + effective non-recoverable import charges).</p><p><strong>Local usable-unit variable cost</strong> = local attempted-unit production cost ÷ usable yield.</p><p><strong>Local annual equivalent cost</strong> = annual demand × local usable-unit variable cost + annual quality/maintenance costs + initial localization investment ÷ evaluation horizon.</p><p><strong>Break-even demand</strong> = (annual quality costs + initial investment ÷ horizon) ÷ (import unit cost − local usable-unit cost), where the denominator is positive.</p><p><strong>Payback</strong> = initial investment ÷ [annual demand × (import unit cost − local usable-unit cost) − annual quality costs], where annual operating benefit is positive.</p><p><strong>NPV</strong> = − initial investment + annual operating benefit × present-value annuity factor. Constant annual savings and end-of-year cash flows are assumed.</p><p>Yield is included once in local unit cost. GST is excluded only under the stated recoverable-input-tax assumption. No expected-disruption benefit is added.</p></div></details></div></div></div>
+  <div><div class="card panel"><div class="section-top"><div><h3 class="panel-title">Live cost outputs</h3><p class="panel-desc">Calculated from current inputs</p></div><span class="stat-chip">LIVE MODEL</span></div><div class="result-grid"><div class="result"><div class="r-label">Import landed cost / unit</div><div class="r-value" id="modelImportUnit">₹41,216</div><div class="r-note">Before recoverable GST and internal distributor margins</div></div><div class="result"><div class="r-label">Local cost / usable unit</div><div class="r-value" id="modelLocalUnit">₹22,826</div><div class="r-note">Variable cost adjusted for production yield</div></div><div class="result"><div class="r-label">Annual import cost</div><div class="r-value" id="modelImportAnnual">₹20.61 Cr</div></div><div class="result"><div class="r-label">Annual local equivalent cost</div><div class="r-value" id="modelLocalAnnual">₹12.09 Cr</div><div class="r-note">Includes annual quality cost and straight-line investment allocation</div></div><div class="result"><div class="r-label">Annual equivalent saving</div><div class="r-value" id="modelSavings">+₹8.52 Cr</div><div class="r-note" id="modelSavingsNote">Local equivalent cost is lower</div></div><div class="result"><div class="r-label">Break-even annual demand</div><div class="r-value" id="modelBreakEven">237 units</div><div class="r-note">Includes quality opex plus investment allocated across horizon</div></div><div class="result"><div class="r-label">Simple payback</div><div class="r-value" id="modelPayback">0.4 years</div><div class="r-note">Initial investment ÷ positive annual operating benefit</div></div><div class="result"><div class="r-label">Net present value (NPV)</div><div class="r-value" id="modelNPV">₹31.18 Cr</div><div class="r-note">Initial investment plus discounted annual operating benefits</div></div></div><div class="verdict-box"><div class="label">Rule-based signal · not a final verdict</div><h3 id="modelVerdict">Evaluate cost and readiness</h3><p id="modelVerdictText">The model will explain which economic condition drives the signal. Quality equivalence and regulatory readiness remain independent go/no-go gates.</p></div></div><div class="card panel" style="margin-top:16px"><h3 class="panel-title">Cost build-up</h3><p class="panel-desc">View the components behind the comparison.</p><div id="costBuildUp" class="inner-pad" style="padding-left:0;padding-right:0"></div><details style="font-size:11px;color:#52635a;margin-top:12px"><summary style="cursor:pointer;font-weight:800;color:var(--green)">Show calculation formulas</summary><div class="footnote" style="margin-top:10px"><p><strong>Import unit cost</strong> = (USD purchase price × INR/USD + freight and insurance per unit) × (1 + effective non-recoverable import charges).</p><p><strong>Local usable-unit variable cost</strong> = local attempted-unit production cost ÷ usable yield.</p><p><strong>Local annual equivalent cost</strong> = annual demand × local usable-unit variable cost + annual quality/maintenance costs + initial localization investment ÷ evaluation horizon.</p><p><strong>Break-even demand</strong> = (annual quality costs + initial investment ÷ horizon) ÷ (import unit cost − local usable-unit cost), where the denominator is positive.</p><p><strong>Payback</strong> = initial investment ÷ [annual demand × (import unit cost − local usable-unit cost) − annual quality costs], where annual operating benefit is positive.</p><p><strong>NPV</strong> = − initial investment + annual operating benefit × present-value annuity factor. Constant annual savings and end-of-year cash flows are assumed.</p><p>Yield is included once in local unit cost. GST is excluded only under the stated recoverable-input-tax assumption. No expected-disruption benefit is added.</p></div></details></div></div></div>
 </section>
 <section class="section" id="view-scenarios">
   <div class="page-head"><div><div class="eyebrow">Compare strategic pathways</div><h1>Scenario simulator</h1><p>Compare four sourcing strategies using a shared set of transparent model assumptions.</p></div><div class="head-actions"><button class="btn" data-go="model">Edit base assumptions ↗</button></div></div>
@@ -901,7 +967,15 @@ try{
   state.questions.forEach(q=>{if(Array.isArray(q.evidence)) q.evidence=q.evidence.filter(id=>id!=='E-03');});
   
   state.questions.forEach(q=>{if(Array.isArray(q.evidence)) q.evidence=q.evidence.filter(id=>id!=='E-03');});
-  state.model=Object.assign(makeInitial().model, state.model||{});
+  const _defaultM = makeInitial().model;
+  state.model = state.model || {};
+  for(const k of Object.keys(_defaultM)){
+    if(state.model[k] === undefined || state.model[k] === null || !Number.isFinite(Number(state.model[k]))){
+      state.model[k] = _defaultM[k];
+    } else {
+      state.model[k] = Number(state.model[k]);
+    }
+  }
   if(!state.votes||!Array.isArray(state.votes)) state.votes=makeInitial().votes;
   if(!state.activity||!Array.isArray(state.activity)) state.activity=makeInitial().activity;
   if(!state.verdict||typeof state.verdict!=='object') state.verdict=makeInitial().verdict;
@@ -922,12 +996,20 @@ document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',
 function counts(){const total=state.questions.length,answered=state.questions.filter(q=>q.status==='Answered').length,unanswered=total-answered;return {total,answered,unanswered,completion:total?answered/total*100:0}}
 function computeModel(m=state.model){const d=Math.max(0,Number(m.demand)||0),impUsd=Math.max(0,Number(m.importUsd)||0),fx=Math.max(0,Number(m.fx)||0),freight=Math.max(0,Number(m.freight)||0),duty=Math.max(0,Number(m.duty)||0)/100,localCost=Math.max(0,Number(m.localCost)||0),yieldPct=Math.max(1,Math.min(100,Number(m.yield)||1))/100,tooling=Math.max(0,Number(m.tooling)||0),validation=Math.max(0,Number(m.validation)||0),qualification=Math.max(0,Number(m.qualification)||0),quality=Math.max(0,Number(m.qualityOpex)||0),horizon=Math.max(1,Math.min(20,Number(m.horizon)||1)),rate=Math.max(0,Number(m.discount)||0)/100;const invest=tooling+validation+qualification,importUnit=(impUsd*fx+freight)*(1+duty),localUnit=localCost/yieldPct,importAnnual=d*importUnit,localOperating=d*localUnit+quality,localAnnual=localOperating+invest/horizon,savings=importAnnual-localAnnual,operatingBenefit=d*(importUnit-localUnit)-quality,delta=importUnit-localUnit,breakEven=delta>0?(quality+invest/horizon)/delta:null,payback=operatingBenefit>0?invest/operatingBenefit:null,annuity=rate===0?horizon:(1-Math.pow(1+rate,-horizon))/rate,npv=-invest+operatingBenefit*annuity;return {d,impUsd,fx,freight,duty,localCost,yieldPct,tooling,validation,qualification,quality,horizon,rate,invest,importUnit,localUnit,importAnnual,localOperating,localAnnual,savings,operatingBenefit,delta,breakEven,payback,annuity,npv}}
 function updateDashboard(){const c=counts(),answeredWithEvidence=state.questions.filter(q=>q.status==='Answered'&&q.evidence&&q.evidence.some(id=>state.evidence.some(e=>e.id===id))).length,evidenceCoverage=c.answered?answeredWithEvidence/c.answered*100:0,linked=state.evidence.filter(e=>e.linked).length;const setT=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};setT('kpiTotal',c.total);setT('kpiAnswered',c.answered);setT('kpiPending',c.unanswered);setT('kpiEvidence',state.evidence.length);setT('kpiCompletionFoot',pct(c.completion));setT('kpiEvidenceFoot',linked+' marked linked');setT('navQuestionCount',c.total);setT('donutTotal',c.total);setT('completionTag',pct(c.completion)+' resolved');setT('completionRatio',pct(c.completion));setT('completionFraction',c.answered+' of '+c.total);const prog=document.getElementById('completionProgress');if(prog)prog.style.width=c.completion+'%';setT('openRatio',pct(c.total?c.unanswered/c.total*100:0));setT('evidenceCoverage',pct(evidenceCoverage));renderStatusChart();renderTrend();renderCategoryBars();renderActivity();renderSnapshot();renderAdminSummary()}
-function renderStatusChart(){const donut=document.getElementById('statusDonut');if(!donut)return;const total=state.questions.length, countsBy={};STATUS_ORDER.forEach(s=>countsBy[s]=state.questions.filter(q=>q.status===s).length);const active=STATUS_ORDER.filter(s=>countsBy[s]>0);let acc=0,stops=[];active.forEach(s=>{const start=acc;acc+=total?countsBy[s]/total*100:0;stops.push(`${STATUS_COLORS[s]} ${start.toFixed(2)}% ${acc.toFixed(2)}%`)});donut.style.background=total?'conic-gradient('+stops.join(',')+')':'#e6ece6';const legend=document.getElementById('statusLegend');if(legend){legend.innerHTML=active.map(s=>`<div class="legend-row" data-status="${esc(s)}" title="Click to filter questions"><span class="legend-dot" style="background:${STATUS_COLORS[s]}"></span><span class="legend-label">${esc(s)}</span><strong class="legend-value">${countsBy[s]} <span style="font-weight:500;color:#89958e">(${pct(total?countsBy[s]/total*100:0)})</span></strong></div>`).join('')||'<div class="empty">No questions yet</div>';legend.querySelectorAll('[data-status]').forEach(el=>el.addEventListener('click',()=>{navTo('questions');document.getElementById('statusFilter').value=el.dataset.status;renderQuestions()}))}}
+function renderStatusChart(){const donut=document.getElementById('statusDonut');if(!donut)return;const total=state.questions.length, countsBy={};STATUS_ORDER.forEach(s=>countsBy[s]=state.questions.filter(q=>q.status===s).length);const active=STATUS_ORDER.filter(s=>countsBy[s]>0);let acc=0,stops=[];active.forEach(s=>{const start=acc;acc+=total?countsBy[s]/total*100:0;stops.push(`${STATUS_COLORS[s]} ${start.toFixed(2)}% ${acc.toFixed(2)}%`)});donut.style.background=total?'conic-gradient('+stops.join(',')+')':'#e6ece6';const legend=document.getElementById('statusLegend');if(legend){legend.innerHTML=active.map(s=>`<div class="legend-row" data-status="${esc(s)}" title="Click to filter questions"><span class="legend-dot" style="background:${STATUS_COLORS[s]}"></span><span class="legend-label">${esc(s)}</span><strong class="legend-value">${countsBy[s]} <span style="font-weight:500;color:#89958e">(${pct(total?countsBy[s]/total*100:0)})</span></strong></div>`).join('')||'<div class="empty">No questions yet</div>';legend.querySelectorAll('[data-status]').forEach(el=>el.addEventListener('click',()=>{navTo('questions');const sf=document.getElementById('statusFilter');if(sf)sf.value=el.dataset.status;renderQuestions()}))}}
 function renderTrend(){const svg=document.getElementById('trendSvg');if(!svg)return;const days=Number(document.getElementById('trendPeriod')?.value||7),w=330,h=145,pad={l:16,r:10,t:10,b:15};let submitted=[],answered=[],labels=[];for(let i=days-1;i>=0;i--){let d=new Date();d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);labels.push(key);submitted.push(state.questions.filter(q=>q.createdAt&&q.createdAt.slice(0,10)===key).length);answered.push(state.questions.filter(q=>q.status==='Answered'&&q.updatedAt&&q.updatedAt.slice(0,10)===key).length)}const max=Math.max(2,...submitted,...answered);const x=i=>pad.l+i*(w-pad.l-pad.r)/Math.max(1,days-1),y=v=>h-pad.b-v/max*(h-pad.t-pad.b);let grid='';for(let i=0;i<4;i++){const yy=pad.t+i*(h-pad.t-pad.b)/3;grid+=`<line x1="${pad.l}" y1="${yy}" x2="${w-pad.r}" y2="${yy}" stroke="#edf1ed" stroke-width="1"/>`}const path=arr=>arr.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ');const dots=(arr,col)=>arr.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v)}" r="2.3" fill="${col}"/>`).join('');svg.innerHTML=grid+`<path d="${path(submitted)}" fill="none" stroke="#2d865b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="${path(answered)}" fill="none" stroke="#6d91c6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`+dots(submitted,'#2d865b')+dots(answered,'#6d91c6');const idxs=[0,Math.floor((days-1)/3),Math.floor((days-1)*2/3),days-1];const lbls=document.getElementById('trendLabels');if(lbls){lbls.innerHTML=[...new Set(idxs)].map(i=>{const d=new Date(labels[i]+'T12:00:00');return '<span>'+d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})+'</span>'}).join('')}}
 function renderCategoryBars(){const box=document.getElementById('categoryBars');if(!box)return;const countsBy=CATEGORIES.map(c=>({name:c,n:state.questions.filter(q=>q.category===c).length})),max=Math.max(1,...countsBy.map(x=>x.n));box.innerHTML=countsBy.map(x=>`<div class="barrow"><span class="barlabel">${esc(x.name)}</span><div class="bartrack"><div class="barfill" style="width:${x.n/max*100}%"></div></div><span class="barcount">${x.n}</span></div>`).join('')}
 function renderActivity(){const box=document.getElementById('activityList');if(!box)return;const items=state.activity.slice(0,5);box.innerHTML=items.map(a=>`<div class="activity"><span class="activity-ico">${esc(a.icon||'↻')}</span><div class="activity-text">${esc(a.text)}</div><span class="activity-time">${timeAgo(a.at)}</span></div>`).join('')||'<div class="empty">No activity recorded yet.</div>'}
 function timeAgo(iso){const ms=Date.now()-new Date(iso).getTime();if(!Number.isFinite(ms)||ms<0)return 'just now';const mins=Math.floor(ms/60000);if(mins<1)return 'just now';if(mins<60)return mins+'m ago';const hrs=Math.floor(mins/60);if(hrs<24)return hrs+'h ago';const days=Math.floor(hrs/24);return days+'d ago'}
-function renderSnapshot(){const m=computeModel();document.getElementById('snapImport').textContent=money(m.importUnit);document.getElementById('snapLocal').textContent=money(m.localUnit);document.getElementById('snapSavings').textContent=money(m.savings);document.getElementById('snapSavings').style.color=m.savings>=0?'#24794e':'#b14c42';document.getElementById('snapSavingsNote').textContent=m.savings>=0?'Local equivalent cost is lower in this model':'Local equivalent cost is higher in this model';document.getElementById('snapBreakEven').textContent=m.breakEven!==null&&Number.isFinite(m.breakEven)?number(m.breakEven)+' units':'Not reached';}
+function renderSnapshot(){
+  const m=computeModel();
+  const setEl=(id,val,col)=>{const el=document.getElementById(id);if(el){if(val!==undefined)el.textContent=val;if(col!==undefined)el.style.color=col;}};
+  setEl('snapImport',money(m.importUnit));
+  setEl('snapLocal',money(m.localUnit));
+  setEl('snapSavings',money(m.savings),m.savings>=0?'#24794e':'#b14c42');
+  setEl('snapSavingsNote',m.savings>=0?'Local equivalent cost is lower in this model':'Local equivalent cost is higher in this model');
+  setEl('snapBreakEven',m.breakEven!==null&&Number.isFinite(m.breakEven)?number(m.breakEven)+' units':'Not reached');
+}
 
 
 
@@ -939,7 +1021,7 @@ function openModal(id){document.getElementById(id).classList.add('open')}
 
 document.getElementById('trendPeriod')?.addEventListener('change',renderTrend);
 function renderEvidence(){const search=(document.getElementById('evidenceSearch')?.value||'').toLowerCase(),type=document.getElementById('evidenceTypeFilter')?.value||'all';const list=state.evidence.filter(e=>(type==='all'||e.type===type)&&(!search||[e.title,e.publisher,e.note,e.id].join(' ').toLowerCase().includes(search)));document.getElementById('evidenceList').innerHTML=list.map(e=>`<div class="evidence-card"><div class="source-icon">${e.type==='Official policy'?'⌘':e.type==='Technical / quality'?'✓':e.type==='Peer-reviewed research'?'≋':e.type==='Industry report'?'▥':'✎'}</div><div><div class="evidence-title">${esc(e.title)}</div><div class="evidence-meta">${esc(e.id)} · ${esc(e.publisher)} · ${esc(e.type)} · ${e.linked?'Linked to workflow':'Not yet linked'}</div><div class="evidence-note">${esc(e.note)}</div></div>${e.url?`<a class="source-link" href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">Open source ↗</a>`:'<span class="badge">No URL</span>'}</div>`).join('')||'<div class="empty">No evidence records match this filter.</div>'}
-document.getElementById('evidenceSearch').addEventListener('input',renderEvidence);document.getElementById('evidenceTypeFilter').addEventListener('change',renderEvidence);document.getElementById('openEvidenceModal').addEventListener('click',()=>{document.getElementById('evidenceForm').reset();openModal('evidenceModal')});document.getElementById('evidenceForm').addEventListener('submit',e=>{e.preventDefault();let id='E-'+String(Date.now()).slice(-6);state.evidence.unshift({id,title:document.getElementById('eTitle').value.trim(),publisher:document.getElementById('ePublisher').value.trim(),type:document.getElementById('eType').value,url:document.getElementById('eUrl').value.trim(),note:document.getElementById('eNote').value.trim(),linked:false,createdAt:new Date().toISOString()});logActivity(`${id} evidence record added.`,'◈');persist();document.getElementById('evidenceModal').classList.remove('open');updateDashboard();renderEvidence();toast('Evidence record added. Verify the source before relying on it.')});
+document.getElementById('evidenceSearch').addEventListener('input',renderEvidence);document.getElementById('evidenceTypeFilter').addEventListener('change',renderEvidence);document.getElementById('openEvidenceModal')?.addEventListener('click',()=>{document.getElementById('evidenceForm').reset();openModal('evidenceModal')});document.getElementById('evidenceForm').addEventListener('submit',e=>{e.preventDefault();let id='E-'+String(Date.now()).slice(-6);state.evidence.unshift({id,title:document.getElementById('eTitle').value.trim(),publisher:document.getElementById('ePublisher').value.trim(),type:document.getElementById('eType').value,url:document.getElementById('eUrl').value.trim(),note:document.getElementById('eNote').value.trim(),linked:false,createdAt:new Date().toISOString()});logActivity(`${id} evidence record added.`,'◈');persist();document.getElementById('evidenceModal').classList.remove('open');updateDashboard();renderEvidence();toast('Evidence record added. Verify the source before relying on it.')});
 const modelInputs=['demand','importUsd','fx','freight','duty','localCost','yield','tooling','validation','qualification','qualityOpex','horizon','discount'];
 function formatAssumption(id,value){
   const n=Number(value)||0;
@@ -959,10 +1041,10 @@ function updateSliderFill(input){
   const max = Number(input.max) || 100;
   const val = Number(input.value) || 0;
   const pct = max > min ? Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100)) : 0;
-  input.style.background = `linear-gradient(to right, #1f6b49 0%, #2f9468 ${pct}%, #e0e7e3 ${pct}%, #e0e7e3 100%)`;
+  input.style.background = `linear-gradient(to right, #1b6b4b 0%, #1b6b4b ${pct}%, #d8e3dc ${pct}%, #d8e3dc 100%)`;
   const bubble = document.getElementById(input.id + 'Bubble');
   if(bubble){
-    bubble.style.left = `calc(${pct}% + (${8 - pct * 0.16}px))`;
+    bubble.style.left = `calc(${pct}% + (${10 - pct * 0.2}px))`;
     bubble.textContent = formatAssumption(input.id, val);
   }
 }
@@ -975,9 +1057,15 @@ function escalateNumber(elId, targetVal, formatFn, unit = '') {
     el.textContent = '—';
     return;
   }
-  const currentVal = el._currentEscalateVal !== undefined ? el._currentEscalateVal : targetVal;
+  const isFirstRun = el._currentEscalateVal === undefined;
+  if (isFirstRun) {
+    el._currentEscalateVal = targetVal;
+    el.textContent = formatFn(targetVal) + (unit ? ' ' + unit : '');
+    return;
+  }
   if (escalatingAnimators[elId]) cancelAnimationFrame(escalatingAnimators[elId]);
   
+  const currentVal = el._currentEscalateVal;
   const card = el.closest('.result');
   if (card) {
     card.classList.add('escalating');
@@ -1592,11 +1680,11 @@ function renderVotes() {
 
 // Cast Vote Button
 document.getElementById('castJuryVoteBtn')?.addEventListener('click', () => {
-  const name = (document.getElementById('voterName').value || '').trim() || 'Presenter';
+  const name = (document.getElementById('voterName')?.value || '').trim() || 'Presenter';
   const checked = document.querySelector('input[name="juryOptionRadio"]:checked');
   if (!checked) { toast('Please select one of the 3 options before casting your vote.'); return; }
   const optionIndex = parseInt(checked.value, 10);
-  const reason = (document.getElementById('voteReason').value || '').trim();
+  const reason = (document.getElementById('voteReason')?.value || '').trim();
   const questions = getJuryQuestions();
   const q = questions[currentJuryQIndex];
 
@@ -1618,7 +1706,7 @@ document.getElementById('castJuryVoteBtn')?.addEventListener('click', () => {
   }
 
   logActivity(name + ' cast a jury vote on Q' + (currentJuryQIndex + 1) + ' (' + q.category + ').', '⚖');
-  document.getElementById('voteReason').value = '';
+  const vr=document.getElementById('voteReason');if(vr)vr.value='';
 });
 
 // Showcase / Hide Results Live to Jurors Button
@@ -1696,14 +1784,14 @@ document.getElementById('openEditJuryBtn')?.addEventListener('click', () => {
         }).join('')
       + '</div>';
   }).join('');
-  document.getElementById('editJuryModal').classList.add('open');
+  document.getElementById('editJuryModal')?.classList.add('open');
 });
 
 document.getElementById('closeEditJuryModal')?.addEventListener('click', () => {
-  document.getElementById('editJuryModal').classList.remove('open');
+  document.getElementById('editJuryModal')?.classList.remove('open');
 });
 document.getElementById('cancelEditJuryBtn')?.addEventListener('click', () => {
-  document.getElementById('editJuryModal').classList.remove('open');
+  document.getElementById('editJuryModal')?.classList.remove('open');
 });
 
 document.getElementById('editJuryForm')?.addEventListener('submit', (e) => {
@@ -1724,7 +1812,7 @@ document.getElementById('editJuryForm')?.addEventListener('submit', (e) => {
     jurySocket.emit('jury:host-save-questions', { questions });
   }
 
-  document.getElementById('editJuryModal').classList.remove('open');
+  document.getElementById('editJuryModal')?.classList.remove('open');
   renderJuryTabs();
   renderJuryBallot();
   renderVotes();
@@ -1738,7 +1826,7 @@ document.getElementById('resetJuryDefaultsBtn')?.addEventListener('click', () =>
   if (jurySocket && jurySocket.connected) {
     jurySocket.emit('jury:host-save-questions', { questions: state.juryQuestions });
   }
-  document.getElementById('editJuryModal').classList.remove('open');
+  document.getElementById('editJuryModal')?.classList.remove('open');
   renderJuryTabs();
   renderJuryBallot();
   renderVotes();
@@ -1755,9 +1843,9 @@ function renderJury() {
 
 function renderVerdictSummary(){const v=state.verdict||{},quality=v.qualityGate||'not-tested',supplier=v.supplierGate||'unknown',notes=v.notes||'';const box=document.getElementById('verdictSummary');if(!box)return;let title='Provisional decision framing',text='Phased localization with qualified dual sourcing remains a hypothesis until cost and technical evidence support it.';if(quality==='failed'||supplier==='gap'){title='Do not switch critical supply yet';text='A material quality or supplier-capability gap is recorded. Maintain the qualified supply route while defining corrective actions and evidence needed to pass the gate.'}else if(quality==='passed'&&supplier==='qualified'){title='Localization may proceed to controlled decision';text='The worksheet records both quality qualification and supplier readiness as passed. Check current cost, capacity, change control and supply-continuity evidence before authorizing a sourcing switch.'}else if(quality==='in-progress'||supplier==='pilot'){title='Continue qualification with a transition plan';text='Keep the current supplier available while pilot production and quality evidence are completed. Do not interpret pilot capability as commercial-scale qualification.'}box.innerHTML=`<div class="label">Verdict worksheet · provisional</div><h3>${esc(title)}</h3><p>${esc(text)}${notes?' Recorded rationale: '+esc(notes):''}</p>`}
 function renderAdminSummary(){const q=document.getElementById('adminQCount');if(q)q.textContent=state.questions.length;const e=document.getElementById('adminECount');if(e)e.textContent=state.evidence.length;const v=document.getElementById('adminVCount');if(v)v.textContent=state.votes.length}
-function renderAdmin(){renderAdminSummary();const box=document.getElementById('adminActivity');box.innerHTML=state.activity.map(a=>`<div class="activity"><span class="activity-ico">${esc(a.icon||'↻')}</span><div class="activity-text">${esc(a.text)}</div><span class="activity-time">${new Date(a.at).toLocaleString('en-IN',{dateStyle:'short',timeStyle:'short'})}</span></div>`).join('')||'<div class="empty">No activity.</div>';document.getElementById('qualityGate').value=state.verdict?.qualityGate||'not-tested';document.getElementById('supplierGate').value=state.verdict?.supplierGate||'unknown';document.getElementById('verdictNotes').value=state.verdict?.notes||'';renderVerdictSummary()}
-function csvDownload(filename,rows){const content=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+content],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('CSV exported: '+filename)}function evidenceCSV(){csvDownload('strategy-court-evidence.csv',[['ID','Title','Publisher','Type','URL','Note','Linked'],...state.evidence.map(e=>[e.id,e.title,e.publisher,e.type,e.url,e.note,e.linked])])}function votesCSV(){csvDownload('strategy-court-jury-votes.csv',[['ID','Name','Round','Strategy','Reason','Timestamp'],...state.votes.map(v=>[v.id,v.name,v.round,v.strategy,v.reason,v.at])])}document.getElementById('adminExportEvidence').addEventListener('click',evidenceCSV);document.getElementById('exportVotes').addEventListener('click',votesCSV);document.getElementById('adminExportVotes').addEventListener('click',votesCSV);document.getElementById('exportTop').addEventListener('click',()=>toast('No question data to export.'));document.getElementById('resetDemo').addEventListener('click',()=>{if(confirm('Reset ALL evidence, model changes, jury votes and verdict notes in this browser to the original illustrative demo?')){state=makeInitial();persist();updateDashboard();renderEvidence();renderModel();renderScenarios();renderJury();renderAdmin();toast('Demo data reset.')}});
-document.getElementById('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){navTo('evidence');renderEvidence()}});
+function renderAdmin(){renderAdminSummary();const box=document.getElementById('adminActivity');box.innerHTML=state.activity.map(a=>`<div class="activity"><span class="activity-ico">${esc(a.icon||'↻')}</span><div class="activity-text">${esc(a.text)}</div><span class="activity-time">${new Date(a.at).toLocaleString('en-IN',{dateStyle:'short',timeStyle:'short'})}</span></div>`).join('')||'<div class="empty">No activity.</div>';const qg=document.getElementById('qualityGate');if(qg)qg.value=state.verdict?.qualityGate||'not-tested';const sg=document.getElementById('supplierGate');if(sg)sg.value=state.verdict?.supplierGate||'unknown';const vn=document.getElementById('verdictNotes');if(vn)vn.value=state.verdict?.notes||'';renderVerdictSummary()}
+function csvDownload(filename,rows){const content=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+content],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);toast('CSV exported: '+filename)}function evidenceCSV(){csvDownload('strategy-court-evidence.csv',[['ID','Title','Publisher','Type','URL','Note','Linked'],...state.evidence.map(e=>[e.id,e.title,e.publisher,e.type,e.url,e.note,e.linked])])}function votesCSV(){csvDownload('strategy-court-jury-votes.csv',[['ID','Name','Round','Strategy','Reason','Timestamp'],...state.votes.map(v=>[v.id,v.name,v.round,v.strategy,v.reason,v.at])])}document.getElementById('adminExportEvidence').addEventListener('click',evidenceCSV);document.getElementById('exportVotes').addEventListener('click',votesCSV);document.getElementById('adminExportVotes').addEventListener('click',votesCSV);document.getElementById('exportTop')?.addEventListener('click',()=>toast('No question data to export.'));document.getElementById('resetDemo').addEventListener('click',()=>{if(confirm('Reset ALL evidence, model changes, jury votes and verdict notes in this browser to the original illustrative demo?')){state=makeInitial();persist();updateDashboard();renderEvidence();renderModel();renderScenarios();renderJury();renderAdmin();toast('Demo data reset.')}});
+document.getElementById('globalSearch')?.addEventListener('keydown',e=>{if(e.key==='Enter'){navTo('evidence');renderEvidence()}});
 window.addEventListener('message',event=>{if(event.origin!==location.origin)return;const frame=document.getElementById('quizFrame');if(!frame||event.source!==frame.contentWindow||!event.data||event.data.type!=='strategy-quiz-height')return;const h=Number(event.data.height);if(Number.isFinite(h)&&h>0)frame.style.height=Math.max(850,Math.min(h+12,12000))+'px'});
 window.addEventListener('message', event => {
   if (event.origin !== location.origin) return;
@@ -1770,7 +1858,12 @@ window.addEventListener('message', event => {
   }
 });
 
-updateDashboard();renderEvidence();renderModel();renderScenarios();renderVotes();renderAdmin();
+try{updateDashboard();}catch(e){console.warn('updateDashboard error:',e)}
+try{renderEvidence();}catch(e){console.warn('renderEvidence error:',e)}
+try{renderModel(true);}catch(e){console.warn('renderModel error:',e)}
+try{renderScenarios();}catch(e){console.warn('renderScenarios error:',e)}
+try{renderVotes();}catch(e){console.warn('renderVotes error:',e)}
+try{renderAdmin();}catch(e){console.warn('renderAdmin error:',e)}
 </script>
 </body>
 </html>
