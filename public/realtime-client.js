@@ -259,16 +259,24 @@
       });
       const data = await res.json();
       if (data.ok && data.roomPin) {
+        this.currentSessionType = 'jury';
+        this.currentRoomPin = data.roomPin;
+        this.isHost = true;
         await this.connectRoom('jury', data.roomPin, true);
       }
       return data;
     }
 
     async joinJuryRoom(roomPin, name) {
+      this.currentSessionType = 'jury';
+      this.currentRoomPin = roomPin;
+      this.isHost = false;
+      const safeName = typeof name === 'string' ? name.trim() : '';
+      const resolvedName = (safeName || `Guest Juror ${this.clientId.slice(-4).toUpperCase()}`).slice(0, 35).trim() || 'Guest Juror';
       const res = await apiFetch('/api/jury/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomPin, name, clientId: this.clientId })
+        body: JSON.stringify({ roomPin, name: resolvedName, clientId: this.clientId })
       });
       const data = await res.json();
       if (data.ok) {
@@ -278,6 +286,8 @@
     }
 
     async submitJuryVote(roomPin, optionIndex, reasoning) {
+      this.currentSessionType = 'jury';
+      this.currentRoomPin = roomPin;
       const res = await apiFetch('/api/jury/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -290,13 +300,16 @@
       });
       const data = await res.json();
       if (data.ok) {
-        this.notifyChange();
+        await this.connectRoom('jury', roomPin, false);
       }
       return data;
     }
 
     async juryHostAction(roomPin, action) {
       const hostToken = getHostToken();
+      this.currentSessionType = 'jury';
+      this.currentRoomPin = roomPin;
+      this.isHost = true;
       const res = await apiFetch('/api/jury/action', {
         method: 'POST',
         headers: {
@@ -307,7 +320,7 @@
       });
       const data = await res.json();
       if (data.ok) {
-        this.notifyChange();
+        await this.connectRoom('jury', roomPin, true);
       }
       return data;
     }

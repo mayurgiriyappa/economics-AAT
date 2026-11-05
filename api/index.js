@@ -23,6 +23,9 @@ if (SUPABASE_URL && SUPABASE_KEY) {
 
 // Host authentication secret from environment (defaults to secure runtime fallback if not set)
 const HOST_PIN = process.env.HOST_PIN || '2468';
+if (process.env.NODE_ENV === 'production' && !process.env.HOST_PIN) {
+  throw new Error('HOST_PIN must be configured in production before starting the API.');
+}
 const HOST_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
 // ============================================================================
@@ -319,7 +322,7 @@ async function getJurySession(pin) {
           id: session.id,
           roomPin: session.room_pin,
           hostToken: session.host_token,
-          status: session.status,
+          status: (session.status === 'active' ? 'live' : session.status),
           currentIndex: session.current_question_index,
           resultsRevealed: !!session.results_revealed,
           questions: session.questions,
@@ -339,7 +342,7 @@ async function getJurySession(pin) {
   return {
     roomPin: s.roomPin,
     hostToken: s.hostToken,
-    status: s.status,
+    status: (s.status === 'active' ? 'live' : s.status),
     currentIndex: s.currentIndex,
     resultsRevealed: s.resultsRevealed,
     questions: s.questions,
@@ -745,12 +748,14 @@ module.exports = async (req, res) => {
   if (pathname === '/api/jury/join' && req.method === 'POST') {
     const body = await parseJsonBody(req);
     const roomPin = String(body.roomPin || body.pin || '').trim();
-    const name = String(body.name || '').trim();
+    const requestedName = String(body.name || '').trim();
     const clientId = String(body.clientId || '').trim() || generateToken();
 
-    if (!roomPin || !name) {
-      return sendJson(res, 400, { ok: false, error: 'Room code and your name are required.' });
+    if (!roomPin) {
+      return sendJson(res, 400, { ok: false, error: 'Room code is required.' });
     }
+
+    const name = (requestedName || `Guest Juror ${clientId.slice(-4).toUpperCase() || 'A'}`).slice(0, 35).trim() || 'Guest Juror';
 
     const session = await getJurySession(roomPin);
     if (!session) {
@@ -834,6 +839,11 @@ module.exports = async (req, res) => {
 
     const session = await getJurySession(roomPin);
     if (!session) return sendJson(res, 404, { ok: false, error: 'Jury room not found.' });
+
+    const normalizedStatus = session.status === 'active' ? 'live' : session.status;
+    if (normalizedStatus !== 'live') {
+      return sendJson(res, 400, { ok: false, error: 'Voting is not open yet. Start the jury session first.' });
+    }
 
     const qIdx = session.currentIndex;
     const q = session.questions[qIdx];
@@ -922,11 +932,54 @@ module.exports = async (req, res) => {
     }) : [];
 
     const isHost = isValidHostToken(hostToken);
+    const normalizedStatus = session.status === 'active' ? 'live' : session.status;
+    const allResults = session.questions.map((question, questionIndex) => {
+      const questionVotes = session.votes.filter(v => (v.question_index ?? v.questionIndex) === questionIndex)
+        .map(v => {
+          const p = participants.find(part => part.clientId === (v.client_id || v.clientId));
+          return {
+            clientId: v.client_id || v.clientId,
+            name: p ? p.name : 'Juror',
+            optionIndex: v.option_index ?? v.optionIndex,
+            optionText: v.option_text ?? v.optionText,
+            reasoning: v.reasoning || '',
+            submittedAt: v.submitted_at || v.submittedAt
+          };
+        });
+      const options = question.options.map((label, idx) => {
+        const count = questionVotes.filter(v => (v.optionIndex ?? v.option_index) === idx).length;
+        const pct = questionVotes.length ? Math.round((count / questionVotes.length) * 100) : 0;
+        return { label, count, percent: pct };
+      });
+
+      return {
+        text: question.text,
+        totalVotes: questionVotes.length,
+        totalJurors: participants.length,
+        options
+      };
+    });
+
+    const allResponses = session.questions.map((question, questionIndex) => ({
+      text: question.text,
+      responses: session.votes
+        .filter(v => (v.question_index ?? v.questionIndex) === questionIndex)
+        .map(v => {
+          const p = participants.find(part => part.clientId === (v.client_id || v.clientId));
+          return {
+            name: p ? p.name : 'Juror',
+            option: v.option_text ?? v.optionText ?? '',
+            reason: v.reasoning || '',
+            submittedAt: v.submitted_at || v.submittedAt || new Date().toISOString()
+          };
+        })
+        .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
+    }));
 
     const state = {
       ok: true,
       roomPin: session.roomPin,
-      status: session.status,
+      status: normalizedStatus,
       currentIndex: qIdx,
       totalQuestions: session.questions.length,
       currentQuestion: currentQ,
@@ -937,10 +990,19 @@ module.exports = async (req, res) => {
       isHost
     };
 
+    if (session.status === 'ended') {
+      state.allResults = allResults;
+      state.allResponses = allResponses;
+    }
+
     if (isHost) {
       state.participants = participants;
       state.currentVotes = currentVotes;
       state.allQuestions = session.questions;
+      if (session.status === 'ended') {
+        state.allResults = allResults;
+        state.allResponses = allResponses;
+      }
     } else if (clientId) {
       const myVote = currentVotes.find(v => v.clientId === clientId);
       state.myVote = myVote ? {
@@ -974,24 +1036,44 @@ module.exports = async (req, res) => {
     if (!isAuthed) return sendJson(res, 403, { ok: false, error: 'Unauthorized host token.' });
 
     if (action === 'start') {
+      const liveStatus = 'live';
       if (session.isSupabase) {
-        await supabase.from('jury_sessions').update({ status: 'active', current_question_index: 0, results_revealed: false }).eq('id', session.id);
+        await supabase.from('jury_sessions').update({ status: liveStatus, current_question_index: 0, results_revealed: false }).eq('id', session.id);
       } else {
         const s = memoryStore.jurySessions.get(roomPin);
-        if (s) { s.status = 'active'; s.currentIndex = 0; s.resultsRevealed = false; }
+        if (s) { s.status = liveStatus; s.currentIndex = 0; s.resultsRevealed = false; }
       }
-      return sendJson(res, 200, { ok: true, status: 'active', currentIndex: 0 });
+      return sendJson(res, 200, { ok: true, status: liveStatus, currentIndex: 0 });
     }
 
     if (action === 'next') {
-      const nextIdx = Math.min(session.questions.length - 1, session.currentIndex + 1);
+      const normalizedStatus = session.status === 'active' ? 'live' : session.status;
+      if (normalizedStatus !== 'live') {
+        return sendJson(res, 400, { ok: false, error: 'Voting must be live before moving to the next question.' });
+      }
+      const isLastQuestion = session.currentIndex >= session.questions.length - 1;
+      const nextIdx = isLastQuestion ? session.currentIndex : Math.min(session.questions.length - 1, session.currentIndex + 1);
+      const nextStatus = isLastQuestion ? 'ended' : 'live';
       if (session.isSupabase) {
-        await supabase.from('jury_sessions').update({ current_question_index: nextIdx, results_revealed: false }).eq('id', session.id);
+        await supabase.from('jury_sessions').update({
+          status: nextStatus,
+          current_question_index: nextIdx,
+          results_revealed: !isLastQuestion ? false : true
+        }).eq('id', session.id);
       } else {
         const s = memoryStore.jurySessions.get(roomPin);
-        if (s) { s.currentIndex = nextIdx; s.resultsRevealed = false; }
+        if (s) {
+          s.status = nextStatus;
+          s.currentIndex = nextIdx;
+          s.resultsRevealed = !isLastQuestion ? false : true;
+        }
       }
-      return sendJson(res, 200, { ok: true, currentIndex: nextIdx, resultsRevealed: false });
+      return sendJson(res, 200, {
+        ok: true,
+        status: nextStatus,
+        currentIndex: nextIdx,
+        resultsRevealed: !isLastQuestion ? false : true
+      });
     }
 
     if (action === 'prev') {

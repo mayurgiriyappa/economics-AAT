@@ -35,9 +35,17 @@ The local development host PIN is `2468`. To change it locally, copy `.env.examp
 
 ## Deploy for participants on different devices
 
-This is a Node.js + Socket.IO app; a static-only host such as a basic Cloudflare Pages deployment cannot run the included WebSocket server by itself. Deploy on a platform that supports a long-running Node.js server and WebSockets (for example, Render, Railway, Fly.io, or a VPS). Ensure its public URL uses HTTPS, then share that URL and the room code with participants. Use a single running server/instance for the quiz; multi-instance scaling requires a Socket.IO adapter and shared session storage.
+The app must be deployed to a public Node.js host; `localhost` is only reachable on the computer running the app. A Render blueprint is included:
 
-Vercel can serve the dashboard and its serverless HTTP API, but it does not host this app's Socket.IO server. The Vercel client therefore uses HTTP polling. For reliable rooms across serverless instances, configure `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in Vercel and apply `supabase-schema.sql`; without shared storage, in-memory rooms are best-effort and may not be visible to every participant. Use a long-running Node.js host for Socket.IO live updates.
+1. Push this project to a GitHub repository.
+2. In Render, choose **New → Blueprint** and connect that repository.
+3. Set a private `HOST_PIN` when Render prompts for it. Do not share or commit this PIN.
+4. Wait for deployment, then open the HTTPS `onrender.com` URL Render provides and append `/jury.html` (for example, `https://your-service.onrender.com/jury.html`).
+5. Sign in as host, open a jury room, and share the participant link shown by the app. The link uses the public host URL, so participants do not need to be on the same Wi-Fi.
+
+The blueprint uses Render's free instance. Free instances can sleep when idle; keep the host page open during voting. Room data is held in server memory and is lost if the service restarts. For an important event, use an always-on single instance and rehearse the complete flow first. Multi-instance scaling requires shared session storage and a Socket.IO adapter.
+
+Static-only hosting cannot run the included server. Vercel can serve the dashboard and serverless HTTP API, but does not host this app's Socket.IO server. For reliable rooms on Vercel, configure `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` and apply `supabase-schema.sql`; a long-running Node.js host is the recommended option for the live jury.
 
 Set these environment variables on the host:
 

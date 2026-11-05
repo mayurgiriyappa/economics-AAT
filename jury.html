@@ -206,6 +206,9 @@ class RealtimeJuryBridge {
   handleIncomingState(state) {
     if (!state || !state.ok) return;
 
+    const allResults = Array.isArray(state.allResults) ? state.allResults : null;
+    const allResponses = Array.isArray(state.allResponses) ? state.allResponses : null;
+
     // Transform into hostState
     const hostState = {
       hasRoom: true,
@@ -234,21 +237,8 @@ class RealtimeJuryBridge {
       }),
       bank: state.allQuestions || defaultJuryQuestions,
       maxJurors: 6,
-      allResults: state.status === 'ended' ? state.allQuestions.map((q, idx) => ({
-        text: q.text,
-        totalVotes: state.votedCount,
-        totalJurors: state.jurorCount,
-        options: (state.optionCounts || []).map(o => ({ label: o.label, count: o.count, percent: o.pct }))
-      })) : null,
-      allResponses: state.status === 'ended' ? state.allQuestions.map((q, idx) => ({
-        text: q.text,
-        responses: (state.currentVotes || []).map(v => ({
-          name: v.name,
-          option: v.optionText,
-          reason: v.reasoning,
-          submittedAt: v.submittedAt
-        }))
-      })) : null
+      allResults,
+      allResponses
     };
 
     // Transform into participantState
@@ -359,6 +349,10 @@ class RealtimeJuryBridge {
       await window.realtimeSync.juryHostAction(this.currentRoom, 'next');
       return;
     }
+    if (event === 'jury:host:end') {
+      await window.realtimeSync.juryHostAction(this.currentRoom, 'end');
+      return;
+    }
     if (event === 'jury:host:prev') {
       await window.realtimeSync.juryHostAction(this.currentRoom, 'prev');
       return;
@@ -391,6 +385,18 @@ const COLORS = ['#1b6b4b', '#e4a03c', '#4a7ab5', '#8f7ac0', '#c45f55', '#2a9d8f'
 const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 if (params.get('embed') === '1') document.body.classList.add('embed');
+const shareRoomCode = params.get('room');
+if (shareRoomCode && !localStorage.getItem('biopopcornJuryJoin')) {
+  setTimeout(() => {
+    const roomInput = $('roomCodeInput');
+    const nameInput = $('jurorNameInput');
+    if (roomInput) roomInput.value = shareRoomCode;
+    if (nameInput && !nameInput.value.trim()) nameInput.value = getGuestJurorName();
+    if (roomInput && /^\d{6}$/.test(shareRoomCode)) {
+      $('joinForm')?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    }
+  }, 120);
+}
 let activeTab = 'join';
 let hostPin = '';
 let hostAuthed = false;
@@ -464,7 +470,7 @@ function renderHostRoom(){
   bind('startJury',()=>socket.emit('jury:host:start'));
   bind('toggleResults',()=>socket.emit(hostState.resultsVisible?'jury:host:hide-results':'jury:host:show-results'));
   bind('hideResults',()=>socket.emit('jury:host:hide-results'));
-  bind('advanceJury',()=>socket.emit('jury:host:next'));
+  bind('advanceJury',()=>socket.emit(hostState.currentIndex >= bankLen - 1 ? 'jury:host:end' : 'jury:host:next'));
   bind('createRoomAgain',createRoom);
   bind('exportJuryCsv', () => {
     const pin = hostState.roomCode || '';
@@ -544,7 +550,8 @@ function createRoom(){hideNotice('hostActionNotice');if(serverBankSignature && J
 function copyText(text){if(!text)return;const result= navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(String(text)):Promise.reject();result.then(()=>toast('Copied to clipboard.')).catch(()=>{const el=document.createElement('textarea');el.value=String(text);document.body.appendChild(el);el.select();document.execCommand('copy');el.remove();toast('Copied to clipboard.')})}
 function copyParticipantLink(){const url=new URL('/jury.html',location.origin);copyText(url.toString()+(hostState.roomCode?'?room='+encodeURIComponent(hostState.roomCode):''))}
 function copyFinalSummary(){const lines=(hostState.allResults||[]).map((r,i)=>'Q' + (i+1) + ': ' + r.text + '\n' + r.options.map(o=>'- ' + o.label + ': ' + o.count + ' (' + o.percent + '%)').join('\n') + '\nLeading option: ' + leader(r.options)).join('\n\n');copyText(lines||'No final results available.')}
-$('joinForm').addEventListener('submit',e=>{e.preventDefault();hideNotice('joinNotice');const code=$('roomCodeInput').value.trim();const name=$('jurorNameInput').value.trim();if(!/^\d{6}$/.test(code)){showNotice('joinNotice','Enter the six-digit room code from your host.',true);return}joinedInfo={roomCode:code,name};localStorage.setItem('biopopcornJuryJoin',JSON.stringify(joinedInfo));socket.emit('jury:participant:join',{roomCode:code,name,clientId})});
+function getGuestJurorName(){return 'Guest Juror ' + Math.random().toString(36).slice(2,6).toUpperCase();}
+$('joinForm').addEventListener('submit',e=>{e.preventDefault();hideNotice('joinNotice');const code=$('roomCodeInput').value.trim();const rawName=$('jurorNameInput').value.trim();const name=rawName || getGuestJurorName();if(!/^\d{6}$/.test(code)){showNotice('joinNotice','Enter the six-digit room code from your host.',true);return}joinedInfo={roomCode:code,name};localStorage.setItem('biopopcornJuryJoin',JSON.stringify(joinedInfo));$('jurorNameInput').value=name;socket.emit('jury:participant:join',{roomCode:code,name,clientId})});
 $('hostLoginForm').addEventListener('submit',e=>{e.preventDefault();hostPin=$('hostPinInput').value.trim();socket.emit('jury:host:authenticate',{pin:hostPin})});
 $('saveQuestionBank').addEventListener('click',()=>{hideNotice('hostActionNotice');socket.emit('jury:host:save-bank',{questions:draftBank})});
 $('openJuryRoom').addEventListener('click',createRoom);

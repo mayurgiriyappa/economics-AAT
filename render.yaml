@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: strategy-court
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST_PIN
+        sync: false
+      - key: MAX_PARTICIPANTS
+        value: "500"

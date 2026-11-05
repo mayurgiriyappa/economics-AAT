@@ -31,9 +31,10 @@ try {
 const PORT = Number(process.env.PORT || 3000);
 const HOST_PIN = process.env.HOST_PIN || '2468';
 if (process.env.NODE_ENV === 'production' && !process.env.HOST_PIN) {
-  // HOST_PIN loaded securely from environment.
+  throw new Error('HOST_PIN must be configured in production before starting the server.');
 }
 const MAX_PARTICIPANTS = Math.max(41, Number(process.env.MAX_PARTICIPANTS || 500));
+const MAX_QUESTION_BANK_SIZE = 50;
 const DATA_DIR = path.join(__dirname, 'data');
 const BANK_PATH = path.join(DATA_DIR, 'quiz-questions.json');
 try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (_) {}
@@ -175,6 +176,10 @@ function getJuryAllResponses(game) {
   });
 }
 
+function normalizeJuryStatus(status) {
+  return status === 'active' ? 'live' : status || 'lobby';
+}
+
 function getJuryHostState() {
   if (!juryGame) return { hasRoom: false, bank: juryBank, maxJurors: JURY_MAX_PARTICIPANTS };
   const q = juryGame.currentIndex >= 0 ? juryGame.questions[juryGame.currentIndex] : null;
@@ -183,7 +188,7 @@ function getJuryHostState() {
 
   return {
     hasRoom: true,
-    status: juryGame.status,
+    status: normalizeJuryStatus(juryGame.status),
     roomCode: juryGame.roomCode,
     currentIndex: juryGame.currentIndex,
     currentQuestion: q ? { ...q } : null,
@@ -233,7 +238,7 @@ function getJuryParticipantState(clientId) {
 
   return {
     hasRoom: true,
-    status: juryGame.status,
+    status: normalizeJuryStatus(juryGame.status),
     roomCode: juryGame.roomCode,
     currentIndex: juryGame.currentIndex,
     question: q ? { id: q.id, text: q.text, options: q.options } : null,
@@ -258,7 +263,7 @@ function getJuryState(clientId) {
   return {
     ok: true,
     roomCode: juryGame ? juryGame.roomCode : 'JURY-000000',
-    status: juryGame ? juryGame.status : 'lobby',
+    status: juryGame ? normalizeJuryStatus(juryGame.status) : 'lobby',
     currentQuestionIndex: juryGame ? juryGame.currentIndex : 0,
     questionCount: juryGame ? juryGame.questions.length : juryBank.length,
     allQuestions: juryGame ? juryGame.questions : juryBank,
@@ -400,11 +405,20 @@ function pushStates(){
 function broadcastState(){ pushStates(); }
 function persistBankFromInput(arr){
   if(!Array.isArray(arr) || arr.length<1) throw new Error('Provide at least one question.');
-  questionBank = arr.slice(0, 1).map(normalizeQuestion);
+
+  const trimmedBank = arr
+    .filter(Boolean)
+    .slice(0, MAX_QUESTION_BANK_SIZE)
+    .map((q, index) => normalizeQuestion(q, index));
+
+  if (!trimmedBank.length) throw new Error('Provide at least one valid question.');
+
+  questionBank = trimmedBank;
   saveQuestionBank(questionBank);
   if (game) {
     game.questions = questionBank.map(q => ({...q}));
-    game.currentIndex = 0;
+    game.currentIndex = Math.min(game.currentIndex || 0, Math.max(0, game.questions.length - 1));
+    game.status = game.status === 'ended' ? 'ended' : 'lobby';
   }
 }
 
@@ -692,7 +706,8 @@ io.on('connection', socket=>{
   socket.on('jury:host:save-bank', (payload = {}) => {
     try {
       if (!socket.data?.isJuryHost) throw new Error('Host authorization required.');
-      if (juryGame && juryGame.status === 'live') throw new Error('Cannot edit questions during a live vote.');
+      const normalizedStatus = normalizeJuryStatus(juryGame && juryGame.status);
+      if (juryGame && normalizedStatus === 'live') throw new Error('Cannot edit questions during a live vote.');
       if (Array.isArray(payload.questions) && payload.questions.length >= 1) {
         juryBank = payload.questions.map((q, i) => ({
           id: q.id || 'j' + (i + 1),
@@ -701,7 +716,7 @@ io.on('connection', socket=>{
           category: String(q.category || 'Deliberation').trim(),
           options: (q.options || []).map(o => String(o || '').trim())
         }));
-        if (juryGame && juryGame.status === 'lobby') {
+        if (juryGame && normalizeJuryStatus(juryGame.status) === 'lobby') {
           juryGame.questions = JSON.parse(JSON.stringify(juryBank));
         }
         socket.emit('jury:bank-saved', { bank: juryBank });
@@ -716,6 +731,8 @@ io.on('connection', socket=>{
     try {
       if (!socket.data?.isJuryHost) throw new Error('Host authorization required.');
       if (!juryGame) throw new Error('No jury room opened.');
+      const normalizedStatus = normalizeJuryStatus(juryGame.status);
+      if (normalizedStatus !== 'lobby' && normalizedStatus !== 'live') throw new Error('The session is not in the lobby.');
       juryGame.status = 'live';
       juryGame.currentIndex = 0;
       juryGame.resultsVisible = false;
@@ -728,7 +745,7 @@ io.on('connection', socket=>{
   socket.on('jury:host:show-results', () => {
     try {
       if (!socket.data?.isJuryHost) throw new Error('Host authorization required.');
-      if (!juryGame || juryGame.status !== 'live') throw new Error('Cannot showcase results now.');
+      if (!juryGame || normalizeJuryStatus(juryGame.status) !== 'live') throw new Error('Cannot showcase results now.');
       juryGame.resultsVisible = true;
       broadcastJury();
     } catch (e) {
@@ -751,12 +768,26 @@ io.on('connection', socket=>{
     try {
       if (!socket.data?.isJuryHost) throw new Error('Host authorization required.');
       if (!juryGame) return;
+      if (normalizeJuryStatus(juryGame.status) !== 'live') throw new Error('Voting must be live before moving to the next question.');
       if (juryGame.currentIndex + 1 >= juryGame.questions.length) {
         juryGame.status = 'ended';
+        juryGame.resultsVisible = true;
       } else {
         juryGame.currentIndex++;
         juryGame.resultsVisible = false;
       }
+      broadcastJury();
+    } catch (e) {
+      socket.emit('jury:error', { message: e.message });
+    }
+  });
+
+  socket.on('jury:host:end', () => {
+    try {
+      if (!socket.data?.isJuryHost) throw new Error('Host authorization required.');
+      if (!juryGame) return;
+      juryGame.status = 'ended';
+      juryGame.resultsVisible = true;
       broadcastJury();
     } catch (e) {
       socket.emit('jury:error', { message: e.message });
@@ -770,7 +801,8 @@ io.on('connection', socket=>{
       const code = String(payload.roomCode || '').trim();
       if (code !== juryGame.roomCode) throw new Error('Room code not found. Check the code shared by your host.');
       if (juryGame.status === 'ended') throw new Error('This jury session has ended.');
-      const name = cleanText(payload.name, 35) || 'Juror';
+      const fallbackName = `Guest Juror ${String(socket.id || 'J').slice(-4).toUpperCase()}`;
+      const name = cleanText(payload.name, 35) || fallbackName;
       const clientId = cleanText(payload.clientId, 80) || socket.id;
 
       let p = juryGame.participants[clientId];
@@ -802,7 +834,8 @@ io.on('connection', socket=>{
 
   socket.on('jury:participant:vote', (payload = {}) => {
     try {
-      if (!juryGame || juryGame.status !== 'live') throw new Error('Voting is not open right now.');
+      const normalizedStatus = juryGame && juryGame.status === 'active' ? 'live' : (juryGame ? juryGame.status : null);
+      if (!juryGame || normalizedStatus !== 'live') throw new Error('Voting is not open right now.');
       if (juryGame.resultsVisible) throw new Error('Voting is locked while results are showcased.');
       const clientId = socket.data?.juryClientId;
       if (!clientId) throw new Error('Join the room before voting.');
